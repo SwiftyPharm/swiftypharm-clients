@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swift'Link — Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #0012ff;
+    --blue-light: #e8eaff;
+    --text: #111;
+    --muted: #666;
+    --border: #d0d0d0;
+    --bg: #f5f6fa;
+    --card: #fff;
+    --radius: 16px;
+    --input-radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ── LOGIN ── */
+  #login-overlay {
+    position:fixed; inset:0; background:#fff; z-index:9999;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .login-box {
+    width:360px; padding:40px 32px; border-radius:var(--radius);
+    box-shadow:var(--shadow); background:#fff; border:1px solid var(--border);
+    text-align:center;
+  }
+  .login-logo { margin-bottom:24px; }
+  .login-logo img { height:40px; object-fit:contain; }
+  .login-box h2 { font-size:17px; font-weight:600; margin-bottom:6px; color:var(--text); }
+  .login-box p { color:var(--muted); font-size:13px; margin-bottom:24px; }
+  .login-box .field { text-align:left; margin-bottom:14px; }
+  .login-error { color:#d00; font-size:13px; margin-top:10px; display:none; }
+
+  /* ── NAV ── */
+  #nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:#fff; border-bottom:1px solid #e0e0e0;
+    display:flex; align-items:center; gap:0; padding:0 24px; height:56px;
+  }
+  .nav-logo { margin-right:24px; display:flex; align-items:center; }
+  .nav-logo img { height:28px; object-fit:contain; }
+  .nav-tabs { display:flex; gap:0; flex:1; overflow-x:auto; }
+  .nav-tab {
+    padding:0 18px; height:56px; display:flex; align-items:center;
+    font-size:13px; font-weight:500; color:var(--muted); cursor:pointer;
+    border-bottom:3px solid transparent; white-space:nowrap;
+    transition:color .2s, border-color .2s; background:none; border-top:none; border-left:none; border-right:none;
+    font-family:inherit;
+  }
+  .nav-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+  .nav-tab:hover { color:var(--text); }
+  .nav-right { display:flex; align-items:center; gap:12px; margin-left:auto; }
+  #save-indicator { font-size:12px; color:#16a34a; font-weight:500; opacity:0; transition:opacity .3s; }
+  .btn-logout {
+    font-size:12px; color:var(--muted); background:none; border:1px solid var(--border);
+    border-radius:20px; padding:5px 14px; cursor:pointer; font-family:inherit;
+    transition:all .2s;
+  }
+  .btn-logout:hover { background:var(--bg); color:var(--text); }
+
+  /* ── LAYOUT ── */
+  #app { padding-top:56px; }
+  .section { display:none; padding:28px 24px 40px; max-width:860px; margin:0 auto; }
+  .section.active { display:block; }
+  .section-title { font-size:20px; font-weight:700; margin-bottom:20px; }
+
+  /* ── CARDS ── */
+  .card {
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:24px; margin-bottom:20px;
+  }
+  .card-title { font-size:14px; font-weight:600; margin-bottom:16px; color:var(--text); }
+
+  /* ── FORM ELEMENTS ── */
+  label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:5px; letter-spacing:.4px; text-transform:uppercase; }
+  input[type=text], input[type=url], input[type=tel], input[type=password], input[type=number], input[type=email], textarea {
+    width:100%; padding:10px 14px; border:1.5px solid var(--border);
+    border-radius:var(--input-radius); font-family:inherit; font-size:14px;
+    color:var(--text); background:#fff; outline:none; transition:border-color .2s;
+  }
+  input:focus, textarea:focus { border-color:var(--blue); }
+  textarea { resize:vertical; min-height:80px; }
+  .field { margin-bottom:16px; }
+  .field:last-child { margin-bottom:0; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:540px) { .field-row { grid-template-columns:1fr; } }
+
+  /* input with prefix */
+  .input-prefix-wrap { display:flex; align-items:center; border:1.5px solid var(--border); border-radius:var(--input-radius); overflow:hidden; background:#fff; transition:border-color .2s; }
+  .input-prefix-wrap:focus-within { border-color:var(--blue); }
+  .input-prefix { padding:10px 10px 10px 14px; font-size:14px; color:var(--muted); background:#f8f8f8; border-right:1px solid var(--border); white-space:nowrap; user-select:none; }
+  .input-prefix-wrap input { border:none; border-radius:0; flex:1; }
+  .input-prefix-wrap input:focus { border:none; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 22px; border-radius:30px; font-family:inherit; font-size:14px;
+    font-weight:600; cursor:pointer; border:none; transition:all .2s;
+  }
+  .btn-primary { background:var(--blue); color:#fff; }
+  .btn-primary:hover { background:#0010d0; }
+  .btn-secondary { background:#f0f0f0; color:#111; }
+  .btn-secondary:hover { background:#e0e0e0; }
+  .btn-danger { background:#fee2e2; color:#dc2626; }
+  .btn-danger:hover { background:#fecaca; }
+  .btn-sm { padding:7px 16px; font-size:13px; }
+
+  /* ── IMAGE UPLOAD ── */
+  .img-upload-wrap { position:relative; }
+  .img-upload-row { display:flex; align-items:center; gap:12px; }
+  .img-preview-box {
+    width:80px; height:56px; border-radius:10px; border:1.5px dashed var(--border);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; background:#f8f8f8; flex-shrink:0; cursor:pointer;
+  }
+  .img-preview-box img { width:100%; height:100%; object-fit:cover; display:none; }
+  .img-preview-box .img-placeholder { font-size:20px; color:#ccc; }
+  .img-url-field { flex:1; }
+  .img-file-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; border-radius:20px; font-family:inherit; font-size:13px;
+    font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:#fff; color:var(--text);
+    transition:all .2s; white-space:nowrap;
+  }
+  .img-file-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .img-file-btn input[type=file] { display:none; }
+  .img-hint { font-size:11px; color:var(--muted); margin-top:5px; }
+
+  /* Banner upload */
+  .banner-upload-area {
+    border:2px dashed var(--border); border-radius:12px;
+    padding:20px; text-align:center; cursor:pointer; transition:border-color .2s;
+    background:#f8f8f8; position:relative; overflow:hidden; min-height:100px;
+  }
+  .banner-upload-area:hover { border-color:var(--blue); }
+  .banner-preview-img { width:100%; max-height:160px; object-fit:cover; border-radius:8px; display:none; }
+  .banner-placeholder { color:var(--muted); font-size:13px; }
+  .banner-placeholder span { display:block; font-size:28px; margin-bottom:6px; }
+  .banner-placeholder strong { color:var(--blue); }
+  .banner-hint { font-size:11px; color:var(--muted); margin-top:8px; }
+  .banner-actions { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+
+  /* Logo upload */
+  .logo-upload-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .logo-preview-box {
+    width:120px; height:60px; border-radius:10px; border:1.5px dashed var(--border);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; background:#f8f8f8; flex-shrink:0;
+  }
+  .logo-preview-box img { max-width:100%; max-height:100%; object-fit:contain; display:none; }
+  .logo-preview-box .img-placeholder { font-size:24px; color:#ccc; }
+
+  /* ── SECTION 1 — Info ── */
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:600px) { .info-grid { grid-template-columns:1fr; } }
+
+  /* ── SECTION 2 — Promos ── */
+  .promo-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:620px) { .promo-grid { grid-template-columns:1fr; } }
+  .promo-card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+  .promo-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .promo-num { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.5px; }
+  .promo-inactive { opacity:.42; pointer-events:none; }
+
+  /* Toggle switch */
+  .toggle-wrap { display:flex; align-items:center; gap:8px; }
+  .toggle-label-txt { font-size:12px; font-weight:600; color:var(--muted); }
+  .toggle { position:relative; width:38px; height:22px; cursor:pointer; display:inline-block; }
+  .toggle input { opacity:0; width:0; height:0; position:absolute; }
+  .toggle-slider { position:absolute; inset:0; background:#ccc; border-radius:22px; transition:.3s; }
+  .toggle-slider::before {
+    content:''; position:absolute; width:16px; height:16px; left:3px; bottom:3px;
+    background:#fff; border-radius:50%; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-slider { background:var(--blue); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(16px); }
+
+  /* ── SECTION 3 — Notifs ── */
+  .subscribers-bar {
+    display:flex; align-items:center; gap:16px; padding:16px 20px;
+    background:var(--blue-light); border-radius:12px; margin-bottom:20px;
+  }
+  .subscribers-count { font-size:32px; font-weight:700; color:var(--blue); }
+  .subscribers-label { font-size:13px; color:var(--blue); font-weight:500; }
+  .subscribers-sub { font-size:11px; color:var(--muted); }
+  .notif-history { margin-top:0; }
+  .notif-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; border-radius:10px; background:var(--bg);
+    margin-bottom:8px; font-size:13px;
+  }
+  .notif-item-title { font-weight:600; color:var(--text); }
+  .notif-item-date { font-size:11px; color:var(--muted); margin-top:2px; }
+  .notif-empty { color:var(--muted); font-size:13px; font-style:italic; padding:12px 0; }
+  .notif-status { font-size:13px; margin-top:10px; font-weight:500; display:none; }
+  .notif-status.ok { color:#16a34a; display:block; }
+  .notif-status.err { color:#dc2626; display:block; }
+
+  /* ── SECTION 4 — Export ── */
+  #json-area { font-size:12px; font-family:monospace; min-height:200px; background:#f8f8f8; }
+  .export-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+
+  /* ── HORAIRES GRID ── */
+  .horaires-grid { display:flex; flex-direction:column; gap:8px; }
+  .horaire-row {
+    display:grid; grid-template-columns:90px 1fr auto 1fr auto;
+    align-items:center; gap:8px;
+    background:#f8f8f8; border-radius:10px; padding:10px 12px;
+  }
+  .horaire-day { font-size:13px; font-weight:700; color:var(--text); }
+  .horaire-sep { font-size:13px; color:var(--muted); text-align:center; }
+  .horaire-row input[type=time] {
+    padding:7px 10px; border:1.5px solid var(--border);
+    border-radius:8px; font-family:inherit; font-size:13px;
+    color:var(--text); background:#fff; outline:none; width:100%;
+    transition:border-color .2s;
+  }
+  .horaire-row input[type=time]:focus { border-color:var(--blue); }
+  .horaire-closed-wrap { grid-column:2/-1; display:flex; align-items:center; gap:6px; }
+  .horaire-row.is-closed input[type=time] { opacity:.3; pointer-events:none; }
+  .closed-toggle { display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--muted); font-weight:500; user-select:none; }
+  .closed-toggle input[type=checkbox] { width:14px; height:14px; accent-color:var(--blue); cursor:pointer; }
+  @media(max-width:500px) {
+    .horaire-row { grid-template-columns:72px 1fr auto 1fr; }
+  }
+
+  /* ── MOBILE NAV ── */
+  @media(max-width:480px) {
+    #nav { padding:0 12px; }
+    .nav-logo img { height:22px; }
+    .nav-tab { padding:0 10px; font-size:12px; }
+    .section { padding:20px 14px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <img id="login-logo-img" src="" alt="Swiftup">
+    </div>
+    <h2>Back Office</h2>
+    <p>Accès réservé à l'administrateur</p>
+    <div class="field">
+      <label>Identifiant (6 chiffres)</label>
+      <input type="text" id="login-id" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]{6}">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Accéder</button>
+    <p class="login-error" id="login-error">Identifiant ou mot de passe incorrect.</p>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">
+    <img id="nav-logo-img" src="" alt="Swiftup">
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('info',this)">Pharmacie</button>
+    <button class="nav-tab" onclick="showTab('promo',this)">Promotions</button>
+    <button class="nav-tab" onclick="showTab('notif',this)">Notifications</button>
+    <button class="nav-tab" onclick="showTab('export',this)">Export</button>
+  </div>
+  <div class="nav-right">
+    <span id="save-indicator">Sauvegardé ✓</span>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SECTION 1 — Infos -->
+  <div class="section active" id="section-info">
+    <div class="section-title">Informations pharmacie</div>
+
+    <!-- Logo -->
+    <div class="card">
+      <div class="card-title">Logo de la pharmacie</div>
+      <div class="logo-upload-row">
+        <div class="logo-preview-box" id="logo-preview-box">
+          <span class="img-placeholder">🏥</span>
+          <img id="logo-preview-img" src="" alt="">
+        </div>
+        <div>
+          <label class="img-file-btn">
+            ＋ Choisir un logo
+            <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
+          </label>
+          <p class="img-hint">PNG ou SVG recommandé · fond transparent · largeur max 400px</p>
+          <p class="img-hint" style="margin-top:4px">Ou coller une URL :</p>
+          <input type="url" id="ph-logo" placeholder="https://…/logo.png" oninput="onLogoUrlChange()" style="margin-top:6px">
+        </div>
+      </div>
+    </div>
+
+    <!-- Bannière -->
+    <div class="card">
+      <div class="card-title">Bannière principale</div>
+      <div class="banner-upload-area" id="banner-drop" onclick="document.getElementById('banner-file-input').click()">
+        <img class="banner-preview-img" id="banner-preview-img" src="" alt="">
+        <div class="banner-placeholder" id="banner-placeholder">
+          <span>🖼</span>
+          Cliquez ou glissez une image ici<br>
+          <strong>Choisir un fichier</strong>
+        </div>
+        <input type="file" id="banner-file-input" accept="image/*" style="display:none" onchange="handleBannerUpload(event)">
+      </div>
+      <div class="banner-hint">📐 Dimensions recommandées : <strong>1200 × 400 px</strong> · Format : JPG ou PNG · Poids max : 2 Mo · Ratio : 3:1</div>
+      <div style="margin-top:12px">
+        <label>Ou coller une URL de bannière</label>
+        <input type="url" id="ph-banner" placeholder="https://…/banniere.jpg" oninput="onBannerUrlChange()">
+      </div>
+      <div class="banner-actions" id="banner-actions" style="display:none">
+        <button class="btn btn-secondary btn-sm" onclick="clearBanner()">✕ Supprimer la bannière</button>
+      </div>
+    </div>
+
+    <!-- Infos générales -->
+    <div class="card">
+      <div class="card-title">Informations générales</div>
+      <div class="info-grid">
+        <div class="field">
+          <label>Nom de la pharmacie</label>
+          <input type="text" id="ph-name" placeholder="Pharmacie NHEAN" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>Sous-titre / accroche</label>
+          <input type="text" id="ph-sub" placeholder="Votre pharmacie de confiance" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>Téléphone</label>
+          <input type="tel" id="ph-tel" placeholder="+33 1 23 45 67 89" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>Pseudo Instagram</label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">instagram.com/</span>
+            <input type="text" id="ph-insta" placeholder="mapharmacie" oninput="autoSave()">
+          </div>
+          <p class="img-hint" style="margin-top:4px" id="insta-link-preview"></p>
+        </div>
+        <div class="field">
+          <label>URL Google Maps</label>
+          <input type="url" id="ph-maps" placeholder="https://maps.google.com/…" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>Nom pour Google Avis</label>
+          <input type="text" id="ph-avis-name" placeholder="Pharmacie NHEAN Paris" oninput="autoSave(); updateAvisPreview()">
+          <p class="img-hint" style="margin-top:4px" id="avis-link-preview"></p>
+        </div>
+        <div class="field">
+          <label>URL site web (optionnel)</label>
+          <input type="url" id="ph-web" placeholder="https://…" oninput="autoSave()">
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Horaires d'ouverture</label>
+        <div class="horaires-grid" id="horaires-grid">
+          <!-- généré par JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 — Promos -->
+  <div class="section" id="section-promo">
+    <div class="section-title">Articles en promotion</div>
+    <div class="promo-grid" id="promo-grid"></div>
+  </div>
+
+  <!-- SECTION 3 — Notifs -->
+  <div class="section" id="section-notif">
+    <div class="section-title">Notifications push</div>
+
+    <!-- Subscribers bar -->
+    <div class="subscribers-bar">
+      <div>
+        <div class="subscribers-count" id="sub-count">—</div>
+        <div class="subscribers-label">Abonnés aux notifications</div>
+        <div class="subscribers-sub" id="sub-updated">Dernière mise à jour : —</div>
+      </div>
+      <div style="margin-left:auto">
+        <button class="btn btn-secondary btn-sm" onclick="fetchSubscribers()">🔄 Actualiser</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Paramètres OneSignal</div>
+      <div class="field-row">
+        <div class="field">
+          <label>App ID OneSignal</label>
+          <input type="text" id="os-appid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>Clé REST API</label>
+          <input type="text" id="os-apikey" placeholder="REST API Key" oninput="autoSave()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Envoyer une notification</div>
+      <div class="field">
+        <label>Titre</label>
+        <input type="text" id="notif-title" placeholder="Promotion du jour !">
+      </div>
+      <div class="field">
+        <label>Message</label>
+        <textarea id="notif-body" placeholder="Découvrez nos offres exclusives…"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="sendNotification()">📣 Envoyer la notification</button>
+      <p class="notif-status" id="notif-status"></p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Historique (5 dernières)</div>
+      <div id="notif-history"></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 — Export -->
+  <div class="section" id="section-export">
+    <div class="section-title">Aperçu & Export</div>
+    <div class="card">
+      <div class="export-actions">
+        <button class="btn btn-secondary" onclick="showJson()">Voir config JSON</button>
+        <button class="btn btn-primary" onclick="exportJson()">Exporter config.json</button>
+        <label class="btn btn-secondary" style="cursor:pointer">
+          Importer config.json
+          <input type="file" accept=".json" style="display:none" onchange="importJson(event)">
+        </label>
+        <button class="btn btn-danger" onclick="resetConfig()">Réinitialiser</button>
+      </div>
+      <div class="field">
+        <label>Contenu localStorage</label>
+        <textarea id="json-area" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════
+const STORAGE_KEY = 'swiftlink_config';
+const SESSION_KEY = 'swiftlink_session';
+const DEFAULT_ID  = '000000';
+const DEFAULT_PW  = 'swift2024';
+
+const DEFAULTS = {
+  pharmacy: {
+    name:'Pharmacie NHEAN', sub:'Votre pharmacie de confiance',
+    tel:'', maps:'', insta:'', avisName:'', web:'', horaires:'',
+    logo:'', banner:'', horairesSemaine:{}
+  },
+  promos: Array.from({length:8}, () => ({
+    active:false, name:'', img:'', imgData:'', priceBefore:'', priceAfter:'', badge:''
+  })),
+  onesignal: { appid:'', apikey:'' },
+  notifHistory: [],
+  credentials: { id: DEFAULT_ID, pw: DEFAULT_PW }
+};
+
+  // ═══════════════════════════════════
+//  SUPABASE & AUTOSAVE (SYNCHRONISATION CLOUD)
+// ═══════════════════════════════════
+const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+const SLUG = 'pharmacie-nhean'; // ⚠️ Identifiant unique de cette pharmacie
+
+let cloudSyncTimer; // Timer pour éviter de spammer Supabase
+
+function autoSave() {
+  const cfg = collectAll();
+  
+  // 1. Sauvegarde instantanée de sécurité en local
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+  updateLivePreviews();
+
+  // 2. Préparation de l'indicateur visuel
+  const indicator = document.getElementById('save-indicator');
+  indicator.textContent = 'Enregistrement...';
+  indicator.style.color = '#eab308'; // Jaune/Orange pendant la frappe
+  indicator.style.opacity = '1';
+
+  // 3. Attente de 1 seconde sans frappe pour envoyer à Supabase
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => {
+    syncToSupabase(cfg, indicator);
+  }, 1000);
+}
+
+// Fonction d'envoi vers Supabase (Mode UPSERT : Met à jour ou Crée)
+async function syncToSupabase(cfg, indicator) {
+  try {
+    const payload = {
+      slug: SLUG,
+      horaires: cfg.pharmacy.horairesSemaine // On envoie les horaires dans la colonne JSONB
+    };
+
+    const response = await fetch(`${SUPABASE_URL}pharmacies?on_conflict=slug`, {
+      method: 'POST', // Avec le header Prefer, POST agit comme un UPSERT
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates' // Magique : Met à jour si le slug existe, sinon le crée
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Erreur réseau Supabase');
+
+    // Envoi des promos vers la table 'promos' (upsert sur pharmacie_slug + position)
+    const promosPayload = cfg.promos.map((p, i) => ({
+      pharmacie_slug: SLUG,
+      position: i + 1, // La table exige position entre 1 et 8
+      actif: p.active,
+      nom: p.name,
+      image_url: p.imgData || p.img || '',
+      prix_avant: p.priceBefore ? parseFloat(p.priceBefore) : null,
+      prix_apres: p.priceAfter ? parseFloat(p.priceAfter) : null,
+      badge: p.badge
+    }));
+
+    const promosResponse = await fetch(`${SUPABASE_URL}promos?on_conflict=pharmacie_slug,position`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(promosPayload)
+    });
+
+    if (!promosResponse.ok) throw new Error('Erreur réseau Supabase (promos)');
+
+    // Succès
+    indicator.textContent = 'En ligne ✓';
+    indicator.style.color = '#16a34a'; // Vert
+    setTimeout(() => {
+      if (indicator.textContent === 'En ligne ✓') indicator.style.opacity = '0';
+    }, 2500);
+
+  } catch (error) {
+    console.error("Échec de la synchro Cloud :", error);
+    indicator.textContent = 'Erreur Cloud ✗';
+    indicator.style.color = '#dc2626'; // Rouge
+  }
+}
+
+// ═══════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+    const cfg = JSON.parse(raw);
+    while (cfg.promos.length < 8) cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:''});
+    if (!cfg.credentials) cfg.credentials = { id: DEFAULT_ID, pw: DEFAULT_PW };
+    return cfg;
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+  flashSaved();
+}
+
+function getConfig() { return loadConfig(); }
+
+
+
+function flashSaved() {
+  const el = document.getElementById('save-indicator');
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 2000);
+}
+
+// ═══════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════
+function initAuth() {
+  const session = sessionStorage.getItem(SESSION_KEY);
+  if (session === 'ok') { hideLogin(); return; }
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-id').focus();
+}
+
+function doLogin() {
+  const cfg = getConfig();
+  const validId = cfg.credentials?.id || DEFAULT_ID;
+  const validPw = cfg.credentials?.pw || DEFAULT_PW;
+  const enteredId = document.getElementById('login-id').value.trim();
+  const enteredPw = document.getElementById('login-pw').value;
+  if (enteredId === validId && enteredPw === validPw) {
+    sessionStorage.setItem(SESSION_KEY, 'ok');
+    hideLogin();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pw').value = '';
+  }
+}
+
+function hideLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+  initApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+// ═══════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'export') showJson();
+  if (name === 'notif') fetchSubscribers();
+}
+
+// ═══════════════════════════════════
+//  LOGO UPLOAD
+// ═══════════════════════════════════
+function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const data = ev.target.result;
+    document.getElementById('ph-logo').value = '';
+    showLogoPreview(data);
+    autoSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+function onLogoUrlChange() {
+  const url = document.getElementById('ph-logo').value;
+  showLogoPreview(url);
+  autoSave();
+}
+
+function showLogoPreview(src) {
+  const img = document.getElementById('logo-preview-img');
+  const ph  = document.querySelector('#logo-preview-box .img-placeholder');
+  if (src) {
+    img.src = src; img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    if (ph) ph.style.display = 'block';
+  }
+}
+
+// ═══════════════════════════════════
+//  BANNER UPLOAD
+// ═══════════════════════════════════
+function handleBannerUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const data = ev.target.result;
+    document.getElementById('ph-banner').value = '';
+    showBannerPreview(data);
+    autoSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+function onBannerUrlChange() {
+  const url = document.getElementById('ph-banner').value;
+  showBannerPreview(url);
+  autoSave();
+}
+
+function showBannerPreview(src) {
+  const img = document.getElementById('banner-preview-img');
+  const ph  = document.getElementById('banner-placeholder');
+  const acts= document.getElementById('banner-actions');
+  if (src) {
+    img.src = src; img.style.display = 'block';
+    ph.style.display = 'none';
+    acts.style.display = 'flex';
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'block';
+    acts.style.display = 'none';
+  }
+}
+
+function clearBanner() {
+  document.getElementById('ph-banner').value = '';
+  showBannerPreview('');
+  autoSave();
+}
+
+// Drag & drop banner
+document.addEventListener('DOMContentLoaded', () => {
+  const drop = document.getElementById('banner-drop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor='var(--blue)'; });
+  drop.addEventListener('dragleave', () => drop.style.borderColor='var(--border)');
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.style.borderColor='var(--border)';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = ev => { showBannerPreview(ev.target.result); autoSave(); };
+      reader.readAsDataURL(file);
+    }
+  });
+});
+
+// ═══════════════════════════════════
+//  LIVE PREVIEWS
+// ═══════════════════════════════════
+function updateLivePreviews() {
+  // Instagram link preview
+  const insta = document.getElementById('ph-insta').value.trim();
+  const instaEl = document.getElementById('insta-link-preview');
+  if (insta) {
+    instaEl.innerHTML = '🔗 <a href="https://instagram.com/' + insta + '" target="_blank" style="color:var(--blue)">instagram.com/' + insta + '</a>';
+  } else {
+    instaEl.innerHTML = '';
+  }
+}
+
+function updateAvisPreview() {
+  const name = document.getElementById('ph-avis-name').value.trim();
+  const el = document.getElementById('avis-link-preview');
+  if (name) {
+    const q = encodeURIComponent(name + ' avis google');
+    el.innerHTML = '🔗 <a href="https://www.google.com/search?q=' + q + '&tbm=lcl" target="_blank" style="color:var(--blue)">Voir les avis Google →</a>';
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+// ═══════════════════════════════════
+//  SECTION 1 — INFO
+// ═══════════════════════════════════
+function fillInfo(cfg) {
+  const p = cfg.pharmacy || {};
+  document.getElementById('ph-name').value      = p.name || '';
+  document.getElementById('ph-sub').value       = p.sub  || '';
+  document.getElementById('ph-tel').value       = p.tel  || '';
+  document.getElementById('ph-maps').value      = p.maps || '';
+  document.getElementById('ph-insta').value     = p.insta || '';
+  document.getElementById('ph-avis-name').value = p.avisName || '';
+  document.getElementById('ph-web').value       = p.web  || '';
+  document.getElementById('ph-horaires-legacy') && (document.getElementById('ph-horaires-legacy').value = p.horaires || '');
+  buildHorairesGrid(p.horairesSemaine || {});
+  document.getElementById('ph-logo').value      = '';
+  document.getElementById('ph-banner').value    = '';
+
+  // Logo
+  const logoSrc = p.logoData || p.logo || '';
+  if (logoSrc) showLogoPreview(logoSrc);
+
+  // Banner
+  const bannerSrc = p.bannerData || p.banner || '';
+  if (bannerSrc) showBannerPreview(bannerSrc);
+
+  updateLivePreviews();
+  updateAvisPreview();
+}
+
+function collectInfo() {
+  const logoData = document.getElementById('logo-preview-img').src || '';
+  const bannerData = document.getElementById('banner-preview-img').src || '';
+  return {
+    name:      document.getElementById('ph-name').value,
+    sub:       document.getElementById('ph-sub').value,
+    tel:       document.getElementById('ph-tel').value,
+    maps:      document.getElementById('ph-maps').value,
+    insta:     document.getElementById('ph-insta').value,
+    avisName:  document.getElementById('ph-avis-name').value,
+    web:       document.getElementById('ph-web').value,
+    horaires:  collectHoraires().texte,
+    horairesSemaine: collectHoraires().semaine,
+    logoData:  logoData.startsWith('data:') ? logoData : '',
+    logo:      logoData.startsWith('data:') ? '' : logoData,
+    bannerData: bannerData.startsWith('data:') ? bannerData : '',
+    banner:     bannerData.startsWith('data:') ? '' : bannerData,
+  };
+}
+
+// ═══════════════════════════════════
+//  SECTION 2 — PROMOS
+// ═══════════════════════════════════
+
+// ── SAUVEGARDER INFOS PHARMACIE ──
+
+  
+function buildPromoGrid(cfg) {
+  const grid = document.getElementById('promo-grid');
+  grid.innerHTML = '';
+  cfg.promos.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'promo-card';
+    card.id = 'promo-card-' + i;
+    const imgSrc = p.imgData || p.img || '';
+    card.innerHTML = `
+      <div class="promo-header">
+        <span class="promo-num">ARTICLE ${i+1}</span>
+        <div class="toggle-wrap">
+          <span class="toggle-label-txt">Actif</span>
+          <label class="toggle">
+            <input type="checkbox" id="promo-active-${i}" ${p.active?'checked':''} onchange="onPromoToggle(${i})">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div id="promo-body-${i}" class="${p.active?'':'promo-inactive'}">
+        <div class="field">
+          <label>Image du produit</label>
+          <div class="img-upload-row">
+            <div class="img-preview-box" id="promo-thumb-${i}" data-imgdata="${esc(imgSrc)}" onclick="document.getElementById('promo-file-${i}').click()" title="Cliquer pour changer l'image">
+              ${imgSrc ? `<img src="${esc(imgSrc)}" style="display:block;width:100%;height:100%;object-fit:cover">` : '<span class="img-placeholder">🖼</span>'}
+            </div>
+            <div style="flex:1">
+              <label class="img-file-btn" style="margin-bottom:6px;display:inline-flex">
+                ＋ Joindre un fichier
+                <input type="file" id="promo-file-${i}" accept="image/*" onchange="handlePromoImg(${i}, event)" style="display:none">
+              </label>
+              <input type="url" id="promo-img-${i}" placeholder="Ou coller une URL…" value="${esc(p.img||'')}" oninput="onPromoImgUrl(${i})" style="margin-top:4px">
+              <div class="field-error-msg" id="promo-img-error-${i}" style="display:none;color:#cc2222;font-size:11px;margin-top:4px;">Image trop lourde (max 400 Ko). Choisis-en une autre ou compresse-la.</div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Nom du produit</label>
+          <input type="text" id="promo-name-${i}" placeholder="Ex: Vitamine C 1000mg" value="${esc(p.name)}" oninput="autoSave()">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Prix avant (€)</label>
+            <input type="number" id="promo-before-${i}" placeholder="12.99" value="${esc(p.priceBefore)}" step="0.01" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Prix après (€)</label>
+            <input type="number" id="promo-after-${i}" placeholder="8.99" value="${esc(p.priceAfter)}" step="0.01" oninput="autoSave()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Badge (ex: -30%, Nouveau…)</label>
+          <input type="text" id="promo-badge-${i}" placeholder="-30%" value="${esc(p.badge)}" oninput="autoSave()">
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+const PROMO_IMG_MAX_KB = 400; // Limite après compression
+
+function handlePromoImg(i, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const errEl = document.getElementById('promo-img-error-'+i);
+  errEl.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      // Redimensionne max 800px de large, recompresse en JPEG qualité dégressive
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, 800 / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      let quality = 0.85;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+      // Réduit la qualité tant que c'est trop lourd (jusqu'à un plancher raisonnable)
+      while (dataUrl.length * 0.75 / 1024 > PROMO_IMG_MAX_KB && quality > 0.3) {
+        quality -= 0.1;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      const finalSizeKB = (dataUrl.length * 0.75 / 1024);
+      if (finalSizeKB > PROMO_IMG_MAX_KB) {
+        errEl.style.display = 'block';
+        return;
+      }
+
+      updatePromoThumb(i, dataUrl);
+      document.getElementById('promo-img-'+i).value = '';
+      autoSave();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updatePromoThumb(i, src) {
+  const box = document.getElementById('promo-thumb-'+i);
+  box.innerHTML = src ? `<img src="${src}" style="display:block;width:100%;height:100%;object-fit:cover">` : '<span class="img-placeholder">🖼</span>';
+  box.dataset.imgdata = src;
+}
+
+function onPromoImgUrl(i) {
+  const url = document.getElementById('promo-img-'+i).value;
+  updatePromoThumb(i, url);
+  autoSave();
+}
+
+
+function onPromoToggle(i) {
+  const active = document.getElementById('promo-active-'+i).checked;
+  document.getElementById('promo-body-'+i).className = active ? '' : 'promo-inactive';
+  autoSave();
+}
+
+function collectPromos() {
+  return Array.from({length:8}, (_,i) => {
+    const thumbBox = document.getElementById('promo-thumb-'+i);
+    const imgData  = thumbBox?.dataset.imgdata && thumbBox.dataset.imgdata.startsWith('data:') ? thumbBox.dataset.imgdata : '';
+    const imgUrl   = document.getElementById('promo-img-'+i)?.value || '';
+    return {
+      active:     document.getElementById('promo-active-'+i)?.checked || false,
+      name:       document.getElementById('promo-name-'+i)?.value || '',
+      img:        imgData ? '' : imgUrl,
+      imgData:    imgData,
+      priceBefore:document.getElementById('promo-before-'+i)?.value || '',
+      priceAfter: document.getElementById('promo-after-'+i)?.value || '',
+      badge:      document.getElementById('promo-badge-'+i)?.value || '',
+    };
+  });
+}
+
+// ═══════════════════════════════════
+//  SECTION 3 — NOTIFS
+// ═══════════════════════════════════
+async function fetchSubscribers() {
+  const cfg = getConfig();
+  const appid  = cfg.onesignal?.appid || document.getElementById('os-appid')?.value;
+  const apikey = cfg.onesignal?.apikey || document.getElementById('os-apikey')?.value;
+  const countEl = document.getElementById('sub-count');
+  const updEl   = document.getElementById('sub-updated');
+  if (!appid || !apikey) { countEl.textContent = '—'; return; }
+  countEl.textContent = '…';
+  try {
+    const res = await fetch('https://onesignal.com/api/v1/apps/' + appid, {
+      headers: { 'Authorization': 'Basic ' + apikey }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      countEl.textContent = (data.players || 0).toLocaleString('fr-FR');
+      updEl.textContent = 'Mis à jour : ' + new Date().toLocaleTimeString('fr-FR');
+    } else {
+      countEl.textContent = '—';
+    }
+  } catch(e) { countEl.textContent = '—'; }
+}
+
+function fillNotif(cfg) {
+  document.getElementById('os-appid').value  = cfg.onesignal?.appid  || '';
+  document.getElementById('os-apikey').value = cfg.onesignal?.apikey || '';
+  renderHistory(cfg.notifHistory || []);
+}
+
+function renderHistory(history) {
+  const el = document.getElementById('notif-history');
+  if (!history.length) {
+    el.innerHTML = '<p class="notif-empty">Aucune notification envoyée.</p>';
+    return;
+  }
+  el.innerHTML = [...history].reverse().slice(0,5).map(h => `
+    <div class="notif-item">
+      <div>
+        <div class="notif-item-title">${h.title}</div>
+        <div class="notif-item-date">${h.date}</div>
+      </div>
+      <span style="font-size:11px;color:${h.ok?'#16a34a':'#dc2626'}">${h.ok?'✓ Envoyé':'✗ Échoué'}</span>
+    </div>
+  `).join('');
+}
+
+async function sendNotification() {
+  const cfg    = getConfig();
+  const appid  = document.getElementById('os-appid').value.trim();
+  const apikey = document.getElementById('os-apikey').value.trim();
+  const title  = document.getElementById('notif-title').value.trim();
+  const body   = document.getElementById('notif-body').value.trim();
+  const status = document.getElementById('notif-status');
+
+  if (!appid || !apikey) { status.className='notif-status err'; status.textContent='⚠ Configurez votre App ID et clé API OneSignal.'; return; }
+  if (!title || !body)   { status.className='notif-status err'; status.textContent='⚠ Titre et message requis.'; return; }
+
+  status.className='notif-status'; status.textContent='Envoi en cours…'; status.style.display='block';
+
+  let ok = false;
+  try {
+    const res = await fetch('https://onesignal.com/api/v1/notifications', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Basic '+apikey},
+      body: JSON.stringify({
+        app_id: appid,
+        included_segments: ['Subscribed Users'],
+        headings: { fr: title },
+        contents: { fr: body }
+      })
+    });
+    ok = res.ok;
+    const data = await res.json();
+    if (data.errors) { ok=false; status.textContent='✗ Erreur: '+JSON.stringify(data.errors); }
+    else status.textContent = '✓ Notification envoyée !';
+  } catch(e) {
+    status.textContent = '✗ Erreur réseau: '+e.message;
+  }
+  status.className = 'notif-status '+(ok?'ok':'err');
+
+  const entry = { title, date: new Date().toLocaleString('fr-FR'), ok };
+  cfg.notifHistory = cfg.notifHistory || [];
+  cfg.notifHistory.push(entry);
+  if (cfg.notifHistory.length > 10) cfg.notifHistory.shift();
+  saveConfig(cfg);
+  renderHistory(cfg.notifHistory);
+  if (ok) fetchSubscribers();
+}
+
+function collectOnesignal() {
+  return {
+    appid:  document.getElementById('os-appid').value,
+    apikey: document.getElementById('os-apikey').value,
+  };
+}
+
+// ═══════════════════════════════════
+//  HORAIRES PAR JOUR
+// ═══════════════════════════════════
+const JOURS = [
+  { id:'lun', label:'Lundi' },
+  { id:'mar', label:'Mardi' },
+  { id:'mer', label:'Mercredi' },
+  { id:'jeu', label:'Jeudi' },
+  { id:'ven', label:'Vendredi' },
+  { id:'sam', label:'Samedi' },
+  { id:'dim', label:'Dimanche' },
+];
+
+function buildHorairesGrid(saved) {
+  const grid = document.getElementById('horaires-grid');
+  grid.innerHTML = '';
+  JOURS.forEach(j => {
+    const d = saved[j.id] || { open:'09:00', close:'19:00', closed:false };
+    const row = document.createElement('div');
+    row.className = 'horaire-row' + (d.closed ? ' is-closed' : '');
+    row.id = 'hrow-' + j.id;
+    row.innerHTML = `
+      <span class="horaire-day">${j.label}</span>
+      <input type="time" id="h-open-${j.id}" value="${d.open || '09:00'}" oninput="autoSave()">
+      <span class="horaire-sep">→</span>
+      <input type="time" id="h-close-${j.id}" value="${d.close || '19:00'}" oninput="autoSave()">
+      <label class="closed-toggle" title="Fermé ce jour">
+        <input type="checkbox" id="h-closed-${j.id}" ${d.closed ? 'checked' : ''} onchange="onClosedToggle('${j.id}')">
+        Fermé
+      </label>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+function onClosedToggle(id) {
+  const closed = document.getElementById('h-closed-' + id).checked;
+  const row = document.getElementById('hrow-' + id);
+  row.classList.toggle('is-closed', closed);
+  autoSave();
+}
+
+function collectHoraires() {
+  const semaine = {};
+  let lignes = [];
+  JOURS.forEach(j => {
+    const open   = document.getElementById('h-open-'  + j.id)?.value || '09:00';
+    const close  = document.getElementById('h-close-' + j.id)?.value || '19:00';
+    const closed = document.getElementById('h-closed-'+ j.id)?.checked || false;
+    semaine[j.id] = { open, close, closed };
+    lignes.push(`${j.label} : ${closed ? 'Fermé' : open + ' – ' + close}`);
+  });
+  return { semaine, texte: lignes.join('\n') };
+}
+
+// ═══════════════════════════════════
+//  COLLECT ALL
+// ═══════════════════════════════════
+function collectAll() {
+  const cfg = getConfig();
+  cfg.pharmacy  = collectInfo();
+  cfg.promos    = collectPromos();
+  cfg.onesignal = collectOnesignal();
+  return cfg;
+}
+
+// ═══════════════════════════════════
+//  SECTION 4 — EXPORT
+// ═══════════════════════════════════
+function showJson() {
+  const cfg = getConfig();
+  document.getElementById('json-area').value = JSON.stringify(cfg, null, 2);
+}
+
+function exportJson() {
+  const cfg = getConfig();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'swiftlink_config.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importJson(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const cfg = JSON.parse(ev.target.result);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      initApp();
+      document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelector('.nav-tab').classList.add('active');
+      showTab('info', document.querySelector('.nav-tab'));
+      flashSaved();
+    } catch(err) { alert('Fichier JSON invalide.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetConfig() {
+  if (!confirm('Réinitialiser toute la configuration ? Cette action est irréversible.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  initApp();
+  flashSaved();
+}
+
+// ═══════════════════════════════════
+//  INIT
+// ═══════════════════════════════════
+function initApp() {
+  const cfg = loadConfig();
+  fillInfo(cfg);
+  buildHorairesGrid(cfg.pharmacy?.horairesSemaine || {});
+  buildPromoGrid(cfg);
+  fillNotif(cfg);
+}
+
+// Expose all functions globally pour les onclick HTML
+window.doLogin            = doLogin;
+window.doLogout           = doLogout;
+window.showTab            = showTab;
+window.autoSave           = autoSave;
+window.handleLogoUpload   = handleLogoUpload;
+window.onLogoUrlChange    = onLogoUrlChange;
+window.handleBannerUpload = handleBannerUpload;
+window.onBannerUrlChange  = onBannerUrlChange;
+window.clearBanner        = clearBanner;
+window.updateAvisPreview  = updateAvisPreview;
+window.onPromoToggle      = onPromoToggle;
+window.onPromoImgUrl      = onPromoImgUrl;
+window.handlePromoImg     = handlePromoImg;
+window.fetchSubscribers   = fetchSubscribers;
+window.sendNotification   = sendNotification;
+window.showJson           = showJson;
+window.exportJson         = exportJson;
+window.importJson         = importJson;
+window.resetConfig        = resetConfig;
+
+document.addEventListener("DOMContentLoaded", initAuth);
+</script>
+</body>
+</html>
