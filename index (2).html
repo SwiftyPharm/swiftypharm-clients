@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Swift'Link — Pharmacie du Quatrième</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH4392ZE5G"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KH4392ZE5G');
+    function trackSend() { gtag('event', 'ordonnance_envoyee'); }
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){ emailjs.init("Apzn8FzYNZlXAQTs-"); })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 64px;
+      background-color: #d2d2d2;
+    }
+
+    /* ══ BANNIÈRE ══ */
+    .banniere {
+      width: calc(100% - 32px);
+      max-width: 448px;
+      height: 160px;
+      border-radius: 20px;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin: 16px 0 0;
+    }
+    .banniere img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ══ HEADER PROFIL ══ */
+    .profile-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 480px;
+      padding: 0 16px;
+    }
+    .profile-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffffff;
+      margin-top: -48px;
+      border: 3px solid #ffffff;
+      position: relative;
+      z-index: 10;
+    }
+    .profile-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: -0.5px;
+      text-align: center;
+    }
+    .profile-sub {
+      font-size: 15px;
+      color: #555;
+      font-weight: 400;
+      text-align: center;
+      margin-top: -1.25em;
+    }
+
+    /* ══ ICÔNES DE CONTACT ══ */
+    .contact-icons {
+      display: flex;
+      gap: 11px;
+      margin-top: 6px;
+      align-items: flex-start;
+      justify-content: center;
+      transform: translateY(-1.25em);
+    }
+    .contact-icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s, opacity 0.18s;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 4px;
+    }
+    .contact-icon-btn:hover {
+      transform: scale(1.12);
+      opacity: 0.7;
+      box-shadow: none;
+    }
+    .contact-icon-btn img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .icon-label {
+      font-size: 9px;
+      color: #555;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    /* ══ BENTO GRID ══ */
+    .bento {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 480px;
+      padding: 0 16px;
+    }
+
+    /* ══ CARD DE BASE ══ */
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: #ffffff;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+    /* ══ BENTO ORDONNANCE ══ */
+    .card-ordonnance {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      cursor: default;
+    }
+    .card-ordonnance:hover { transform: none; box-shadow: none; }
+
+    /* ══ CHAMPS FORMULAIRE ══ */
+    .input-group label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 500;
+      color: #111;
+      font-size: 13px;
+    }
+    .input-group input {
+      width: 100%; padding: 11px 12px; border-radius: 10px;
+      border: 1.5px solid #d0d0d0;
+      background: #f7f7f7; color: #111;
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      margin-bottom: 14px; transition: border 0.2s;
+    }
+    .input-group input::placeholder { color: #aaa; }
+    .input-group input:focus { outline: none; border-color: #0012ff; background: #fff; }
+    .input-group input.input-error { border-color: rgba(220, 50, 50, 0.9) !important; }
+    .input-group input.input-ok { border-color: rgba(40, 180, 100, 0.8) !important; }
+    .field-error-msg { display: none; color: #cc2222; font-size: 11px; font-weight: 500; margin-top: -10px; margin-bottom: 12px; }
+
+    /* ══ ZONE DÉPÔT ══ */
+    .file-trigger-zone {
+      position: relative;
+      padding: 16px;
+      background: #f0f0f0;
+      border: 1.5px dashed #bbb;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .file-trigger-zone:hover { background: #e8e8e8; }
+    .file-trigger-zone.drag-over {
+      background: #e8edff;
+      border: 1.5px solid #0012ff;
+      box-shadow: 0 0 0 3px rgba(0,18,255,0.15);
+    }
+    .file-trigger-zone input[type="file"] {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;
+    }
+    .file-info-row { display: flex; align-items: center; gap: 14px; }
+
+    /* ══ ICÔNE DOSSIER ══ */
+    .folder-icon-container { position: relative; width: 60px; height: 50px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); flex-shrink: 0; }
+    .folder-back { position: absolute; top: 0; left: 0; width: 52px; height: 40px; background: #c0c8e8; border-radius: 5px 10px 5px 5px; }
+    .folder-back::before { content: ''; position: absolute; top: -4px; left: 0; width: 20px; height: 8px; background: #c0c8e8; border-radius: 3px 3px 0 0; }
+    .folder-front { position: absolute; bottom: 0; left: 2px; width: 56px; height: 38px; background: #d8e0f5; border-radius: 5px; transform: skewX(-2deg); }
+    .badge-files { position: absolute; bottom: 2px; left: -8px; z-index: 10; background: #0012ff; border: 1px solid rgba(0,18,255,0.2); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.5px; }
+
+    .text-details { display: flex; flex-direction: column; gap: 3px; }
+    .file-title { color: #111; font-size: 15px; font-weight: 700; }
+    .file-subtitle { color: #888; font-size: 11px; font-weight: 500; }
+
+    /* ══ CROIX ══ */
+    .file-remove-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 30;
+      background: none; border: none; color: #aaa;
+      font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 4px;
+      border-radius: 4px; display: none; transition: color 0.2s, transform 0.2s;
+    }
+    .file-remove-btn:hover { color: #cc2222; transform: scale(1.2) rotate(90deg); }
+
+    /* ══ APERÇU ══ */
+    .file-preview { display: none; width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
+    .file-preview-pdf { display: none; width: 44px; height: 44px; border-radius: 8px; background: #e8edff; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+
+    .file-error-msg { display: none; color: #cc2222; font-size: 12px; font-weight: 600; margin-top: 8px; text-align: center; }
+
+    /* ══ BARRE DE PROGRESSION ══ */
+    .progress-panel { margin-top: 14px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; padding: 12px 14px; display: none; flex-direction: column; gap: 10px; }
+    .progress-status-row { display: flex; justify-content: space-between; align-items: center; }
+    .status-left { display: flex; align-items: center; gap: 8px; }
+    .spinner { width: 13px; height: 13px; border: 2px solid #555; border-right-color: transparent; border-radius: 50%; animation: rotate 1s linear infinite; }
+    .status-text { color: #444; font-size: 13px; }
+    .percentage { color: #111; font-size: 16px; font-weight: 700; }
+    .progress-bar-bg { width: 100%; height: 5px; background: #ddd; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: #0012ff; border-radius: 10px; transition: width 0.5s ease-out; }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ══ BOUTON ENVOYER ══ */
+    .btn-send {
+      width: 100%; height: 3.2em; border-radius: 30em;
+      font-size: 15px; font-family: 'Poppins', inherit; font-weight: 800;
+      border: none; cursor: pointer; color: #fff;
+      background: #0012ff;
+      box-shadow: 0 4px 16px rgba(0,18,255,0.25);
+      margin-top: 16px; transition: all 0.2s; display: block;
+    }
+    .btn-send:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(0,18,255,0.4); transform: translateY(-1px); }
+    .btn-send:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    /* ══ FEEDBACK SUCCÈS ══ */
+    .success-overlay { display: none; flex-direction: column; align-items: center; gap: 16px; padding: 28px 16px 20px; text-align: center; }
+    .success-icon { width: 80px; height: 80px; object-fit: contain; animation: pop-in 0.5s cubic-bezier(0.175,0.885,0.32,2.2) both; }
+    .success-title { color: #111; font-size: 20px; font-weight: 800; }
+    .success-sub { color: #555; font-size: 13px; font-weight: 500; line-height: 1.6; }
+    .success-actions { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; }
+    .btn-back-home { width: 48px; height: 48px; border-radius: 12px; border: 1.5px solid #ddd; background: #f0f0f0; color: #555; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .btn-back-home:hover { background: #e0e0e0; color: #111; }
+    .btn-google-review { flex: 1; height: 48px; border-radius: 12px; border: none; background: #0012ff; color: #fff; font-family: 'Poppins', inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: box-shadow 0.2s, transform 0.2s; }
+    .btn-google-review:hover { box-shadow: 0 4px 16px rgba(0,18,255,0.3); transform: translateY(-1px); }
+    @keyframes pop-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* ══ LOADER ══ */
+    .loader-section { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin-top: 48px; width: 100%; }
+    .loader-label { font-size: 12px; font-weight: 500; color: rgba(0,18,255,0.45); letter-spacing: 0.5px; }
+    .loader { --size: 110px; --dur: 4s; height: var(--size); aspect-ratio: 1; position: relative; }
+    .loader .box { position: absolute; background: linear-gradient(0deg, rgba(0,18,255,0.06) 0%, rgba(0,18,255,0.14) 100%); border-radius: 50%; border-top: 1px solid rgba(0,18,255,0.4); animation: ripple var(--dur) infinite ease-in-out; }
+    .loader .box:nth-child(1) { inset: 40%; z-index: 99; }
+    .loader .box:nth-child(2) { inset: 30%; z-index: 98; border-color: rgba(0,18,255,0.28); animation-delay: 0.4s; }
+    .loader .box:nth-child(3) { inset: 20%; z-index: 97; border-color: rgba(0,18,255,0.18); animation-delay: 0.8s; }
+    .loader .box:nth-child(4) { inset: 10%; z-index: 96; border-color: rgba(0,18,255,0.10); animation-delay: 1.2s; }
+    .loader .box:nth-child(5) { inset: 0%;  z-index: 95; border-color: rgba(0,18,255,0.05); animation-delay: 1.6s; }
+    .loader .logo { position: absolute; inset: 0; display: grid; place-content: center; padding: 28%; z-index: 100; }
+    .loader .logo img { width: 100%; animation: logo-pulse var(--dur) infinite ease-in-out; }
+    @keyframes ripple { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+    @keyframes logo-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+
+    /* ══ MODALE HORAIRES ══ */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
+      align-items:flex-end; justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-sheet {
+      background:#fff; border-radius:24px 24px 0 0;
+      width:100%; max-width:480px; padding:24px 20px 40px;
+      animation:slide-up .3s cubic-bezier(.25,1,.5,1);
+    }
+    @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 20px; }
+    .modal-title { font-size:18px; font-weight:800; color:#111; margin-bottom:18px; }
+    .horaire-liste { display:flex; flex-direction:column; gap:6px; }
+    .horaire-ligne {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-radius:12px; background:#f5f6fa; font-size:14px;
+    }
+    .horaire-ligne.today { background:#e8eaff; }
+    .horaire-ligne .jour { font-weight:700; color:#111; min-width:90px; }
+    .horaire-ligne .heure { color:#0012ff; font-weight:600; }
+    .horaire-ligne .heure.ferme { color:#aaa; font-weight:500; }
+    .modal-close {
+      margin-top:18px; width:100%; padding:13px; border-radius:30px;
+      background:#f0f0f0; border:none; font-family:'Inter',sans-serif;
+      font-size:14px; font-weight:700; color:#111; cursor:pointer;
+    }
+
+    /* ══ CADRE DESKTOP (ombre légère, n'impacte que l'affichage large écran) ══ */
+    @media (min-width: 769px) {
+      html {
+        background: #d2d2d2;
+      }
+      body {
+        max-width: 580px;
+        margin: 24px auto;
+        border-radius: 28px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>document.body.style.overflow = '';</script>
+
+  <!-- ══ BANNIÈRE ══ -->
+  <div class="banniere">
+    <img src="banniere_test.png" alt="Bannière pharmacie">
+  </div>
+
+  <!-- ══ HEADER PROFIL ══ -->
+  <div class="profile-section">
+    <img class="profile-avatar" src="logo-pharma-quatrieme.jpg" alt="Logo pharmacie">
+    <div class="profile-name">Pharmacie du Quatrième</div>
+    <div class="profile-sub">Votre pharmacie de confiance à Marseille</div>
+
+    <!-- 4 icônes de contact -->
+    <div class="contact-icons">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" href="tel:+33491649598">
+          <img src="phone.svg" alt="Téléphone">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x12c9bfe2e004eff7:0x66654153b7053591?sa=X&ved=1t:8290&ictx=111" target="_blank">
+          <img src="map-pin.svg" alt="Adresse">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" href="#">
+          <img src="infos.svg" alt="Infos">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" id="link-clock" href="#">
+          <img src="clock.svg" alt="Horaires">
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LIENS SOCIAUX ══ -->
+  <div style="display:flex; gap:32px; justify-content:center; align-items:flex-start; width:100%; max-width:480px; padding:0 16px; margin-bottom:20px;">
+
+    <!-- Google Avis -->
+    <a href="avis.html" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
+      <img src="google-avis-icon.png" alt="Google Avis" style="width:100px; height:100px; object-fit:contain; border-radius:20px;">
+      <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
+        Notez nous sur <br>Google !
+      </div>
+    </a>
+
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/pharmacieduquatrieme?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
+      <img src="instagram-icon.png" alt="Instagram" style="width:100px; height:100px; object-fit:contain; border-radius:22px;">
+      <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
+        Suivez nous sur<br>Instagram !
+      </div>
+    </a>
+
+  </div>
+
+  <!-- ══ BENTO ══ -->
+  <div class="bento">
+
+    <!-- Formulaire ordonnance — pleine largeur -->
+    <div class="card card-ordonnance">
+      <div id="form-content">
+        <div style="color:#111; font-weight:800; font-size:18px; margin-bottom:24px; text-align:center;">Envoyer votre ordonnance</div>
+
+        <div class="input-group">
+          <label for="sender-name">Nom et Prénom :</label>
+          <input type="text" id="sender-name" autocomplete="name" placeholder="Ex: DUPONT Jean">
+          <div class="field-error-msg" id="name-error">Veuillez renseigner votre nom et prénom.</div>
+
+          <label for="sender-phone">Téléphone — pour vous rappeler si besoin :</label>
+          <input type="tel" id="sender-phone" autocomplete="tel" placeholder="06 12 34 56 78">
+          <div class="field-error-msg" id="phone-error">Format invalide.</div>
+        </div>
+
+        <div class="file-trigger-zone" id="drop-zone">
+          <button class="file-remove-btn" id="removeFileBtn" title="Supprimer le fichier">✕</button>
+          <input type="file" id="fileInput" accept="image/*,application/pdf">
+          <div class="file-info-row">
+            <img class="file-preview" id="filePreviewImg" alt="Aperçu">
+            <div class="file-preview-pdf" id="filePreviewPdf">📄</div>
+            <div class="folder-icon-container" id="folderIcon">
+              <div class="folder-back"></div>
+              <div class="folder-front"></div>
+              <div class="badge-files">FILES</div>
+            </div>
+            <div class="text-details">
+              <div id="Title" class="file-title">Déposez votre ordonnance ici</div>
+              <div id="Subtitle" class="file-subtitle">JPG, PNG ou PDF · 5 MB max</div>
+            </div>
+          </div>
+        </div>
+        <div class="file-error-msg" id="file-error-msg">Fichier trop lourd (5 MB max). Veuillez en choisir un autre.</div>
+
+        <div id="progressPanel" class="progress-panel">
+          <div class="progress-status-row">
+            <div class="status-left">
+              <div class="spinner" id="spinner"></div>
+              <span class="status-text" id="statusText">Préparation...</span>
+            </div>
+            <div class="percentage" id="percentage">0%</div>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <button class="btn-send" id="btn-send" onclick="sendWithAttachment()" disabled>Envoyer à la pharmacie</button>
+      </div>
+
+      <div class="success-overlay" id="success-overlay">
+        <img class="success-icon" src="confirm_icon.png" alt="Succès">
+        <div class="success-title">Ordonnance envoyée !</div>
+        <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
+        <div class="success-actions">
+          <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
+          <a href="avis.html" class="btn-google-review">⭐ Vous satisfait ? Laissez-nous un avis !</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ LOADER ══ -->
+  <div class="loader-section">
+    <div class="loader">
+      <div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div>
+      <div class="logo"><img src="Logo-test-swiftlink.png" alt="Swift'Link"></div>
+    </div>
+    <span class="loader-label">Propulsé par Swift'Link</span>
+  </div>
+
+  <script>
+  const fileInput      = document.getElementById('fileInput');
+  const Title          = document.getElementById('Title');
+  const Subtitle       = document.getElementById('Subtitle');
+  const progressPanel  = document.getElementById('progressPanel');
+  const progressBarFill= document.getElementById('progressBarFill');
+  const percentageText = document.getElementById('percentage');
+  const statusText     = document.getElementById('statusText');
+  const spinner        = document.getElementById('spinner');
+  const btnSend        = document.getElementById('btn-send');
+  const phoneInput     = document.getElementById('sender-phone');
+  const nameInput      = document.getElementById('sender-name');
+  const removeFileBtn  = document.getElementById('removeFileBtn');
+  const dropZone       = document.getElementById('drop-zone');
+  const filePreviewImg = document.getElementById('filePreviewImg');
+  const filePreviewPdf = document.getElementById('filePreviewPdf');
+  const folderIcon     = document.getElementById('folderIcon');
+  const fileErrorMsg   = document.getElementById('file-error-msg');
+  const successOverlay = document.getElementById('success-overlay');
+  const formContent    = document.getElementById('form-content');
+
+  const MAX_SIZE_MB = 5;
+  let selectedFile  = null;
+
+  // ── SONS ──
+  function playSound(type) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'success') {
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } else if (type === 'error') {
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.setValueAtTime(200, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(); osc.stop(ctx.currentTime + 0.4);
+    }
+  }
+
+  // ── VALIDATION NOM ──
+  nameInput.addEventListener('blur', validateName);
+  nameInput.addEventListener('input', validateName);
+  function validateName() {
+    const val = nameInput.value.trim();
+    const err = document.getElementById('name-error');
+    if (val.length < 2) {
+      nameInput.classList.add('input-error'); nameInput.classList.remove('input-ok');
+      err.style.display = 'block';
+    } else {
+      nameInput.classList.remove('input-error'); nameInput.classList.add('input-ok');
+      err.style.display = 'none';
+    }
+    updateSendBtn();
+  }
+
+  // ── VALIDATION TÉLÉPHONE ──
+  let phoneValidateTimer = null;
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function(e) {
+      let raw = e.target.value;
+      phoneInput.classList.remove('input-error');
+      document.getElementById('phone-error').style.display = 'none';
+      if (raw.startsWith('+33')) {
+        let digits = raw.replace(/^\+33/, '').replace(/\D/g, '').substring(0, 9);
+        let formatted = '+33';
+        if (digits.length > 0) formatted += ' ' + digits.substring(0, 1);
+        if (digits.length > 1) formatted += ' ' + digits.substring(1, 3);
+        if (digits.length > 3) formatted += ' ' + digits.substring(3, 5);
+        if (digits.length > 5) formatted += ' ' + digits.substring(5, 7);
+        if (digits.length > 7) formatted += ' ' + digits.substring(7, 9);
+        e.target.value = formatted;
+      } else {
+        let digits = raw.replace(/\D/g, '');
+        if (digits.startsWith('0') && digits.length > 10) digits = digits.substring(0, 10);
+        e.target.value = digits.replace(/(\d{2})(?=\d)/g, '$1 ');
+      }
+      clearTimeout(phoneValidateTimer);
+      phoneValidateTimer = setTimeout(validatePhone, 3000);
+    });
+    phoneInput.addEventListener('blur', validatePhone);
+  }
+  function validatePhone() {
+    const val = phoneInput.value.trim().replace(/\s+/g, '');
+    const err = document.getElementById('phone-error');
+    if (val.length === 0) { phoneInput.classList.remove('input-error', 'input-ok'); err.style.display = 'none'; return; }
+    let ok = false;
+    if (val.startsWith('0')) ok = val.length === 10 && /^\d+$/.test(val);
+    else if (val.startsWith('+33')) ok = val.replace(/^\+33/, '').replace(/\D/g,'').length === 9;
+    else ok = /^\d+$/.test(val) && val.length >= 7;
+    phoneInput.classList.toggle('input-error', !ok);
+    phoneInput.classList.toggle('input-ok', ok);
+    err.style.display = ok ? 'none' : 'block';
+  }
+
+  function updateSendBtn() {
+    btnSend.disabled = !(selectedFile && nameInput.value.trim().length >= 2);
+  }
+
+  // ── DRAG & DROP ──
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
+
+  function handleFile(file) {
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > MAX_SIZE_MB) { playSound('error'); fileErrorMsg.style.display = 'block'; return; }
+    fileErrorMsg.style.display = 'none';
+    selectedFile = file;
+    Title.innerText = file.name;
+    Subtitle.innerText = sizeMB.toFixed(2) + ' MB';
+    removeFileBtn.style.display = 'block';
+    folderIcon.style.display = 'none';
+    if (file.type === 'application/pdf') {
+      filePreviewImg.style.display = 'none';
+      filePreviewPdf.style.display = 'flex';
+    } else {
+      filePreviewPdf.style.display = 'none';
+      filePreviewImg.style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = (ev) => { filePreviewImg.src = ev.target.result; };
+      reader.readAsDataURL(file);
+    }
+    progressPanel.style.display = 'flex';
+    spinner.style.display = 'block';
+    updateSendBtn();
+    startSatisfyingLoading();
+  }
+
+  // ── SUPPRESSION FICHIER ──
+  removeFileBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    selectedFile = null; fileInput.value = '';
+    Title.innerText = 'Déposez votre ordonnance ici';
+    Subtitle.innerText = 'JPG, PNG ou PDF · 5 MB max';
+    removeFileBtn.style.display = 'none';
+    filePreviewImg.style.display = 'none';
+    filePreviewPdf.style.display = 'none';
+    folderIcon.style.display = 'block';
+    progressPanel.style.display = 'none';
+    progressBarFill.style.width = '0%';
+    spinner.style.display = 'block';
+    fileErrorMsg.style.display = 'none';
+    updateSendBtn();
+  });
+
+  // ── BARRE DE PROGRESSION ──
+  function startSatisfyingLoading() {
+    const bar = progressBarFill;
+    bar.style.transition = "none"; bar.style.width = "0%";
+    percentageText.innerText = "0%"; statusText.innerText = "Préparation...";
+    function animatePercent(from, to, duration, onDone) {
+      const start = performance.now();
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        percentageText.innerText = Math.round(from + (to - from) * progress) + "%";
+        if (progress < 1) requestAnimationFrame(step);
+        else if (onDone) onDone();
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(() => {
+      bar.style.transition = "width 0.5s ease-out"; bar.style.width = "50%";
+      statusText.innerText = "Téléchargement..."; animatePercent(0, 50, 500);
+    });
+    setTimeout(() => {
+      bar.style.transition = "width 2.5s ease-in-out"; bar.style.width = "75%";
+      animatePercent(50, 75, 2500);
+    }, 500);
+    setTimeout(() => {
+      bar.style.transition = "width 0.4s ease-in"; bar.style.width = "100%";
+      statusText.innerText = "Fichier prêt !";
+      animatePercent(75, 100, 400, () => { if (spinner) spinner.style.display = 'none'; });
+    }, 3000);
+  }
+
+  // ── ENVOI ──
+  function sendWithAttachment() {
+    const senderName  = nameInput ? nameInput.value.trim() : "";
+    const senderPhone = phoneInput ? phoneInput.value.trim().replace(/\s+/g, '') : "";
+    if (!senderName) {
+      nameInput.classList.add('input-error');
+      document.getElementById('name-error').style.display = 'block';
+      nameInput.focus(); return;
+    }
+    if (!selectedFile) {
+      fileErrorMsg.innerText = "Veuillez sélectionner un fichier.";
+      fileErrorMsg.style.display = 'block'; return;
+    }
+    btnSend.textContent = "Envoi en cours...";
+    btnSend.style.opacity = "0.6";
+    btnSend.disabled = true;
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onload = function() {
+      const templateParams = {
+        name_sender:  senderName,
+        phone_sender: senderPhone || "Non renseigné",
+        file_name:    selectedFile.name,
+        my_file:      reader.result,
+        sent_at:      new Date().toLocaleString('fr-FR')
+      };
+      emailjs.send('service_3svkyii', 'template_qehzg98', templateParams)
+        .then(function() {
+          trackSend();
+          playSound('success');
+          formContent.style.display = 'none';
+          successOverlay.style.display = 'flex';
+        }, function(error) {
+          console.error("Échec EmailJS :", error);
+          playSound('error');
+          alert("Erreur lors de l'envoi. Veuillez réessayer.");
+          btnSend.textContent = "Envoyer à la pharmacie";
+          btnSend.style.opacity = "1";
+          btnSend.disabled = false;
+        });
+    };
+    reader.onerror = function() {
+      alert("Impossible de lire le fichier.");
+      btnSend.textContent = "Envoyer à la pharmacie";
+      btnSend.style.opacity = "1";
+      btnSend.disabled = false;
+    };
+  }
+
+  // ── BOUTON RETOUR ──
+  document.getElementById('btn-back-home').addEventListener('click', function() {
+    successOverlay.style.display = 'none';
+    formContent.style.display = 'block';
+    selectedFile = null; fileInput.value = '';
+    nameInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    Title.innerText = 'Déposez votre ordonnance ici';
+    Subtitle.innerText = 'JPG, PNG ou PDF · 5 MB max';
+    removeFileBtn.style.display = 'none';
+    filePreviewImg.style.display = 'none';
+    filePreviewPdf.style.display = 'none';
+    folderIcon.style.display = 'block';
+    progressPanel.style.display = 'none';
+    progressBarFill.style.width = '0%';
+    spinner.style.display = 'block';
+    nameInput.classList.remove('input-ok', 'input-error');
+    if (phoneInput) phoneInput.classList.remove('input-ok', 'input-error');
+    updateSendBtn();
+  });
+  </script>
+
+  <!-- ══ MODALE HORAIRES ══ -->
+  <div class="modal-overlay" id="modal-horaires" onclick="if(event.target===this)closeHoraires()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🕐 Nos horaires</div>
+      <div class="horaire-liste" id="horaire-liste"></div>
+      <button class="modal-close" onclick="closeHoraires()">Fermer</button>
+    </div>
+  </div>
+
+  <script>
+  // ── MODALE HORAIRES (Cloud Supabase) ──
+  const JOURS_FR = [
+    {id:'lun',label:'Lundi'},{id:'mar',label:'Mardi'},{id:'mer',label:'Mercredi'},
+    {id:'jeu',label:'Jeudi'},{id:'ven',label:'Vendredi'},
+    {id:'sam',label:'Samedi'},{id:'dim',label:'Dimanche'},
+  ];
+  const JOUR_INDEX = ['dim','lun','mar','mer','jeu','ven','sam'];
+
+  document.getElementById('link-clock').addEventListener('click', async function(e) {
+    e.preventDefault();
+    await openHoraires();
+  });
+
+  async function openHoraires() {
+    const liste   = document.getElementById('horaire-liste');
+    const todayId = JOUR_INDEX[new Date().getDay()];
+
+    liste.innerHTML = '<div style="color:#555;font-size:14px;text-align:center;padding:16px 0">Chargement des horaires...</div>';
+    document.getElementById('modal-horaires').classList.add('open');
+
+    let semaine = {};
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('pharmacies')
+        .select('horaires')
+        .eq('slug', 'pharmacie-quatrieme')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data && data.horaires) {
+        semaine = typeof data.horaires === 'string' ? JSON.parse(data.horaires) : data.horaires;
+      }
+    } catch(e) {
+      console.error("Erreur de récupération des horaires :", e);
+    }
+
+    if (!Object.keys(semaine).length) {
+      liste.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0">Horaires non renseignés.<br>Contactez-nous par téléphone.</div>';
+    } else {
+      liste.innerHTML = JOURS_FR.map(j => {
+        const d = semaine[j.id] || {open:'09:00',close:'19:00',closed:false};
+        const isToday = j.id === todayId;
+        const badge = isToday ? ' <span style="font-size:10px;color:#0012ff;background:#d0d4ff;padding:1px 6px;border-radius:10px;font-weight:700">Auj.</span>' : '';
+        const heure = d.closed
+          ? '<span class="heure ferme">Fermé</span>'
+          : (d.open2 && d.close2
+              ? `<span class="heure">${d.open} – ${d.close}, ${d.open2} – ${d.close2}</span>`
+              : `<span class="heure">${d.open} – ${d.close}</span>`);
+        return `<div class="horaire-ligne${isToday?' today':''}"><span class="jour">${j.label}${badge}</span>${heure}</div>`;
+      }).join('');
+    }
+  }
+
+  function closeHoraires() {
+    document.getElementById('modal-horaires').classList.remove('open');
+  }
+  </script>
+</body>
+</html>
