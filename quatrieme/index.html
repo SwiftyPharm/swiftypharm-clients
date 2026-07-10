@@ -280,20 +280,7 @@
     .btn-google-review:hover { box-shadow: 0 4px 16px rgba(0,18,255,0.3); transform: translateY(-1px); }
     @keyframes pop-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-    /* ══ LOADER ══ */
-    .loader-section { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin-top: 48px; width: 100%; }
-    .loader-label { font-size: 12px; font-weight: 500; color: rgba(0,18,255,0.45); letter-spacing: 0.5px; }
-    .loader { --size: 110px; --dur: 4s; height: var(--size); aspect-ratio: 1; position: relative; }
-    .loader .box { position: absolute; background: linear-gradient(0deg, rgba(0,18,255,0.06) 0%, rgba(0,18,255,0.14) 100%); border-radius: 50%; border-top: 1px solid rgba(0,18,255,0.4); animation: ripple var(--dur) infinite ease-in-out; }
-    .loader .box:nth-child(1) { inset: 40%; z-index: 99; }
-    .loader .box:nth-child(2) { inset: 30%; z-index: 98; border-color: rgba(0,18,255,0.28); animation-delay: 0.4s; }
-    .loader .box:nth-child(3) { inset: 20%; z-index: 97; border-color: rgba(0,18,255,0.18); animation-delay: 0.8s; }
-    .loader .box:nth-child(4) { inset: 10%; z-index: 96; border-color: rgba(0,18,255,0.10); animation-delay: 1.2s; }
-    .loader .box:nth-child(5) { inset: 0%;  z-index: 95; border-color: rgba(0,18,255,0.05); animation-delay: 1.6s; }
-    .loader .logo { position: absolute; inset: 0; display: grid; place-content: center; padding: 28%; z-index: 100; }
-    .loader .logo img { width: 100%; animation: logo-pulse var(--dur) infinite ease-in-out; }
-    @keyframes ripple { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-    @keyframes logo-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+   
 
     /* ══ MODALE HORAIRES ══ */
     .modal-overlay {
@@ -379,7 +366,7 @@
   </div>
 
   <!-- ══ LIENS SOCIAUX ══ -->
-  <div style="display:flex; gap:32px; justify-content:center; align-items:flex-start; width:100%; max-width:480px; padding:0 16px; margin-bottom:20px;">
+  <div style="display:flex; gap:20px; justify-content:center; align-items:flex-start; width:100%; max-width:480px; padding:0 16px; margin-bottom:20px;">
 
     <!-- Google Avis -->
     <a href="https://reviewthis.biz/PHA-QUATRIEME" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
@@ -396,6 +383,14 @@
         Suivez nous sur<br>Instagram !
       </div>
     </a>
+
+    <!-- Website -->
+<a href="https://www.pharmacieduquatrieme.fr" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
+  <img src="website-icon.png" alt="Site web" style="width:100px; height:100px; object-fit:contain; border-radius:20px;">
+  <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
+    Visitez notre<br>site web !
+  </div>
+</a>
 
   </div>
 
@@ -464,14 +459,7 @@
 
   </div>
 
-  <!-- ══ LOADER ══ -->
-  <div class="loader-section">
-    <div class="loader">
-      <div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div>
-      <div class="logo"><img src="Logo-test-swiftlink.png" alt="Swift'Link"></div>
-    </div>
-    <span class="loader-label">Propulsé par Swift'Link</span>
-  </div>
+
 
   <script>
   const fileInput      = document.getElementById('fileInput');
