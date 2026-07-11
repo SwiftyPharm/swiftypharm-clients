@@ -280,9 +280,7 @@
     .btn-google-review:hover { box-shadow: 0 4px 16px rgba(0,18,255,0.3); transform: translateY(-1px); }
     @keyframes pop-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-   
-
-    /* ══ MODALE HORAIRES ══ */
+    /* ══ MODALE HORAIRES / INFOS ══ */
     .modal-overlay {
       display:none; position:fixed; inset:0; z-index:9000;
       background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
@@ -292,11 +290,13 @@
     .modal-sheet {
       background:#fff; border-radius:24px 24px 0 0;
       width:100%; max-width:480px; padding:24px 20px 40px;
+      max-height:75vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
       animation:slide-up .3s cubic-bezier(.25,1,.5,1);
     }
     @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
     .modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 20px; }
-    .modal-title { font-size:18px; font-weight:800; color:#111; margin-bottom:18px; }
+    .modal-title { font-size:19px; font-weight:800; color:#0012ff; margin-bottom:18px; text-align:center; }
     .horaire-liste { display:flex; flex-direction:column; gap:6px; }
     .horaire-ligne {
       display:flex; align-items:center; justify-content:space-between;
@@ -314,7 +314,7 @@
 
     /* ══ POPUP INFOS ══ */
     .infos-section-title {
-      font-size:15px; font-weight:800; color:#111; margin:18px 0 10px;
+      font-size:15px; font-weight:800; color:#111; margin:32px 0 12px;
     }
     .infos-section-title:first-child { margin-top: 0; }
     .infos-intro {
@@ -334,7 +334,7 @@
     .urgence-desc { font-size:12px; color:#777; line-height:1.4; }
     .infos-garde-box {
       background:#e8eaff; border-radius:14px; padding:14px 16px;
-      margin:16px 0; font-size:13px; color:#333; line-height:1.5; text-align:center;
+      margin:24px 0; font-size:13px; color:#333; line-height:1.5; text-align:center;
     }
     .infos-garde-box a {
       color:#0012ff; font-weight:700; text-decoration:none;
@@ -425,12 +425,12 @@
     </a>
 
     <!-- Website -->
-<a href="https://www.pharmacieduquatrieme.fr" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
-  <img src="website-icon.png" alt="Site web" style="width:100px; height:100px; object-fit:contain; border-radius:20px;">
-  <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
-    Visitez notre<br>site web !
-  </div>
-</a>
+    <a href="https://www.pharmacieduquatrieme.fr" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
+      <img src="website-icon.png" alt="Site web" style="width:100px; height:100px; object-fit:contain; border-radius:20px;">
+      <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
+        Visitez notre<br>site web !
+      </div>
+    </a>
 
   </div>
 
@@ -493,13 +493,12 @@
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
           <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
-<a href="https://reviewthis.biz/PHA-QUATRIEME" target="_blank" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>        </div>
+          <a href="https://reviewthis.biz/PHA-QUATRIEME" target="_blank" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
+        </div>
       </div>
     </div>
 
   </div>
-
-
 
   <script>
   const fileInput      = document.getElementById('fileInput');
@@ -764,7 +763,7 @@
   <div class="modal-overlay" id="modal-horaires" onclick="if(event.target===this)closeHoraires()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">🕐 Nos horaires</div>
+      <div class="modal-title">Nos horaires</div>
       <div class="horaire-liste" id="horaire-liste"></div>
       <button class="modal-close" onclick="closeHoraires()">Fermer</button>
     </div>
@@ -774,7 +773,7 @@
   <div class="modal-overlay" id="modal-infos" onclick="if(event.target===this)closeInfos()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">ℹ️ Informations utiles</div>
+      <div class="modal-title">Informations utiles</div>
 
       <div class="infos-section-title">En cas d'urgence</div>
       <div class="infos-intro">Voici les numéros principaux à contacter pour vos urgences.</div>
@@ -849,6 +848,7 @@
 
     liste.innerHTML = '<div style="color:#555;font-size:14px;text-align:center;padding:16px 0">Chargement des horaires...</div>';
     document.getElementById('modal-horaires').classList.add('open');
+    document.body.style.overflow = 'hidden';
 
     let semaine = {};
 
@@ -884,8 +884,9 @@
     }
   }
 
-  function closeHoraires() {
+ function closeHoraires() {
     document.getElementById('modal-horaires').classList.remove('open');
+    document.body.style.overflow = '';
   }
   </script>
 
@@ -908,10 +909,12 @@
     avatarEl.textContent = initiales;
 
     document.getElementById('modal-infos').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 
   function closeInfos() {
     document.getElementById('modal-infos').classList.remove('open');
+    document.body.style.overflow = '';
   }
   </script>
 </body>
