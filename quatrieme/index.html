@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Swift'Link — Pharmacie du Quatrième</title>
+  <title>Swiftup — Pharmacie du Quatrième</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
@@ -730,6 +730,65 @@
     </div>
   </div>
 
+  <!-- ══ MODALE INFOS ══ -->
+  <div class="modal-overlay" id="modal-infos" onclick="if(event.target===this)closeInfos()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">ℹ️ Informations utiles</div>
+
+      <div class="infos-section-title">En cas d'urgence</div>
+      <div class="infos-intro">Voici les numéros principaux à contacter pour vos urgences.</div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">15</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Samu</div>
+          <div class="urgence-desc">En cas d'urgences vitales</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">18</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Pompiers</div>
+          <div class="urgence-desc">Situation de péril ou accident</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">114</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Sourds / Malentendants</div>
+          <div class="urgence-desc">Numéro unique, national et gratuit, accessible par visiophonie, tchat, SMS ou fax, 24h/24, 7j/7.</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">17</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Police secours</div>
+          <div class="urgence-desc">Signaler une infraction</div>
+        </div>
+      </div>
+
+      <div class="infos-garde-box">
+        Pour connaître la pharmacie de garde près de chez vous, rendez-vous sur<br>
+        <a href="https://www.3237.fr" target="_blank">www.3237.fr</a>
+      </div>
+
+      <div class="infos-section-title">Votre docteur en pharmacie</div>
+      <div class="docteur-box">
+        <div class="docteur-avatar" id="docteur-initiales">DR</div>
+        <div class="docteur-info">
+          <div class="docteur-nom" id="docteur-nom">Dr. Amine YAHIAOUI</div>
+          <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
+        </div>
+      </div>
+
+      <button class="modal-close" onclick="closeInfos()">Fermer</button>
+    </div>
+  </div>
+
   <script>
   // ── MODALE HORAIRES (Cloud Supabase) ──
   const JOURS_FR = [
@@ -787,6 +846,32 @@
 
   function closeHoraires() {
     document.getElementById('modal-horaires').classList.remove('open');
+  }
+  </script>
+
+  <script>
+  // ── MODALE INFOS ──
+  document.getElementById('link-infos').addEventListener('click', function(e) {
+    e.preventDefault();
+    openInfos();
+  });
+
+  function openInfos() {
+    // Calcule les initiales à partir du nom affiché (ex: "Dr. Amine Yahiaoui" -> "AY")
+    const nomEl = document.getElementById('docteur-nom');
+    const avatarEl = document.getElementById('docteur-initiales');
+    const nomComplet = nomEl.textContent.replace(/^Dr\.?\s*/i, '').trim();
+    const parts = nomComplet.split(' ').filter(Boolean);
+    const initiales = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : nomComplet.substring(0, 2).toUpperCase();
+    avatarEl.textContent = initiales;
+
+    document.getElementById('modal-infos').classList.add('open');
+  }
+
+  function closeInfos() {
+    document.getElementById('modal-infos').classList.remove('open');
   }
   </script>
 </body>
