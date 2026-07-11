@@ -312,6 +312,46 @@
       font-size:14px; font-weight:700; color:#111; cursor:pointer;
     }
 
+    /* ══ POPUP INFOS ══ */
+    .infos-section-title {
+      font-size:15px; font-weight:800; color:#111; margin:18px 0 10px;
+    }
+    .infos-section-title:first-child { margin-top: 0; }
+    .infos-intro {
+      font-size:13px; color:#666; margin-bottom:14px; line-height:1.5;
+    }
+    .urgence-ligne {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px; border-radius:12px; background:#f5f6fa;
+      margin-bottom:8px;
+    }
+    .urgence-numero {
+      font-size:18px; font-weight:800; color:#0012ff;
+      min-width:44px; text-align:center;
+    }
+    .urgence-texte { display:flex; flex-direction:column; gap:1px; }
+    .urgence-nom { font-size:14px; font-weight:700; color:#111; }
+    .urgence-desc { font-size:12px; color:#777; line-height:1.4; }
+    .infos-garde-box {
+      background:#e8eaff; border-radius:14px; padding:14px 16px;
+      margin:16px 0; font-size:13px; color:#333; line-height:1.5; text-align:center;
+    }
+    .infos-garde-box a {
+      color:#0012ff; font-weight:700; text-decoration:none;
+    }
+    .docteur-box {
+      display:flex; align-items:center; gap:12px;
+      background:#f5f6fa; border-radius:14px; padding:14px 16px; margin-top:6px;
+    }
+    .docteur-avatar {
+      width:44px; height:44px; border-radius:50%;
+      background:#0012ff; color:#fff; display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:16px; flex-shrink:0;
+    }
+    .docteur-info { display:flex; flex-direction:column; gap:1px; }
+    .docteur-nom { font-size:14px; font-weight:800; color:#111; }
+    .docteur-titre { font-size:12px; color:#666; }
+
     /* ══ CADRE DESKTOP (ombre légère, n'impacte que l'affichage large écran) ══ */
     @media (min-width: 769px) {
       html {
