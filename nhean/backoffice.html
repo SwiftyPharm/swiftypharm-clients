@@ -44,7 +44,7 @@
     background:#fff; border-bottom:1px solid #e0e0e0;
     display:flex; align-items:center; gap:0; padding:0 24px; height:56px;
   }
-  .nav-logo { margin-right:24px; display:flex; align-items:center; }
+  .nav-logo { margin-right:24px; display:flex; align-items:center; font-weight:800; color:var(--blue); font-size:18px; }
   .nav-logo img { height:28px; object-fit:contain; }
   .nav-tabs { display:flex; gap:0; flex:1; overflow-x:auto; }
   .nav-tab {
@@ -98,6 +98,13 @@
   .input-prefix { padding:10px 10px 10px 14px; font-size:14px; color:var(--muted); background:#f8f8f8; border-right:1px solid var(--border); white-space:nowrap; user-select:none; }
   .input-prefix-wrap input { border:none; border-radius:0; flex:1; }
   .input-prefix-wrap input:focus { border:none; }
+
+  /* ── SOCIAL PLATFORMS TOGGLES ── */
+  .social-row { display:flex; align-items:center; gap:16px; padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; background:#fff; transition:border-color .2s; }
+  .social-row:focus-within { border-color:var(--blue); }
+  .social-toggle { display:flex; align-items:center; gap:8px; min-width:140px; font-weight:600; font-size:14px; cursor:pointer; color:var(--text); user-select:none; }
+  .social-toggle input[type=checkbox] { width:18px; height:18px; accent-color:var(--blue); cursor:pointer; }
+  @media(max-width:540px) { .social-row { flex-direction:column; align-items:stretch; gap:8px; } }
 
   /* ── BUTTONS ── */
   .btn {
@@ -267,10 +274,10 @@
 <!-- NAV -->
 <nav id="nav">
   <div class="nav-logo">
-    <img id="nav-logo-img" src="" alt="Swiftup">
+    ⚡ Swift'Link BO
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showTab('info',this)">Pharmacie</button>
+    <button class="nav-tab active" onclick="showTab('info',this)">Pharmacie & Profil</button>
     <button class="nav-tab" onclick="showTab('promo',this)">Promotions</button>
     <button class="nav-tab" onclick="showTab('notif',this)">Notifications</button>
     <button class="nav-tab" onclick="showTab('export',this)">Export</button>
@@ -290,7 +297,7 @@
 
     <!-- Logo -->
     <div class="card">
-      <div class="card-title">Logo de la pharmacie</div>
+      <div class="card-title">Logo de la pharmacie (sauvegardé en Base64)</div>
       <div class="logo-upload-row">
         <div class="logo-preview-box" id="logo-preview-box">
           <span class="img-placeholder">🏥</span>
@@ -301,7 +308,7 @@
             ＋ Choisir un logo
             <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
           </label>
-          <p class="img-hint">PNG ou SVG recommandé · fond transparent · largeur max 400px</p>
+          <p class="img-hint">PNG ou SVG recommandé · fond transparent · max 1 Mo</p>
           <p class="img-hint" style="margin-top:4px">Ou coller une URL :</p>
           <input type="url" id="ph-logo" placeholder="https://…/logo.png" oninput="onLogoUrlChange()" style="margin-top:6px">
         </div>
@@ -347,32 +354,64 @@
           <input type="tel" id="ph-tel" placeholder="+33 1 23 45 67 89" oninput="autoSave()">
         </div>
         <div class="field">
-          <label>Pseudo Instagram</label>
-          <div class="input-prefix-wrap">
-            <span class="input-prefix">instagram.com/</span>
-            <input type="text" id="ph-insta" placeholder="mapharmacie" oninput="autoSave()">
-          </div>
-          <p class="img-hint" style="margin-top:4px" id="insta-link-preview"></p>
-        </div>
-        <div class="field">
           <label>URL Google Maps</label>
           <input type="url" id="ph-maps" placeholder="https://maps.google.com/…" oninput="autoSave()">
         </div>
-        <div class="field">
-          <label>Nom pour Google Avis</label>
-          <input type="text" id="ph-avis-name" placeholder="Pharmacie NHEAN Paris" oninput="autoSave(); updateAvisPreview()">
-          <p class="img-hint" style="margin-top:4px" id="avis-link-preview"></p>
-        </div>
-        <div class="field">
-          <label>URL site web (optionnel)</label>
-          <input type="url" id="ph-web" placeholder="https://…" oninput="autoSave()">
+      </div>
+    </div>
+
+    <!-- Mid Icons / Réseaux Sociaux -->
+    <div class="card">
+      <div class="card-title">🌐 Icônes et Réseaux sociaux (Mid Icons visibles)</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px;">Cochez uniquement les plateformes que vous souhaitez afficher sur l'application client.</p>
+
+      <!-- Instagram -->
+      <div class="social-row">
+        <label class="social-toggle">
+          <input type="checkbox" id="soc-insta-active" checked onchange="autoSave()">
+          <span>📸 Instagram</span>
+        </label>
+        <div class="input-prefix-wrap" style="flex:1;">
+          <span class="input-prefix">instagram.com/</span>
+          <input type="text" id="soc-insta-val" placeholder="pseudo_sans_arobase" oninput="autoSave(); updateLivePreviews()">
         </div>
       </div>
-      <div class="field" style="margin-top:14px">
-        <label>Horaires d'ouverture</label>
-        <div class="horaires-grid" id="horaires-grid">
-          <!-- généré par JS -->
-        </div>
+      <p class="img-hint" id="insta-link-preview" style="margin:-4px 0 12px 12px;"></p>
+
+      <!-- Facebook -->
+      <div class="social-row">
+        <label class="social-toggle">
+          <input type="checkbox" id="soc-fb-active" onchange="autoSave()">
+          <span>📘 Facebook</span>
+        </label>
+        <input type="text" id="soc-fb-val" placeholder="Nom de la page ou URL complète" oninput="autoSave()" style="flex:1;">
+      </div>
+
+      <!-- Google Avis -->
+      <div class="social-row">
+        <label class="social-toggle">
+          <input type="checkbox" id="soc-avis-active" checked onchange="autoSave(); updateAvisPreview()">
+          <span>⭐ Google Avis</span>
+        </label>
+        <input type="text" id="soc-avis-val" placeholder="Nom exact sur Google Maps (ex: Pharmacie NHEAN Paris)" oninput="autoSave(); updateAvisPreview()" style="flex:1;">
+      </div>
+      <p class="img-hint" id="avis-link-preview" style="margin:-4px 0 12px 12px;"></p>
+
+      <!-- Site Web -->
+      <div class="social-row">
+        <label class="social-toggle">
+          <input type="checkbox" id="soc-web-active" onchange="autoSave()">
+          <span>🌐 Site Web</span>
+        </label>
+        <input type="url" id="soc-web-val" placeholder="https://votre-pharmacie.fr" oninput="autoSave()" style="flex:1;">
+      </div>
+    </div>
+
+    <!-- Horaires -->
+    <div class="card">
+      <div class="card-title">🕐 Horaires d'ouverture</div>
+      <div class="horaires-grid" id="horaires-grid">
+        <!-- généré par JS -->
       </div>
     </div>
   </div>
@@ -457,7 +496,7 @@
 
 <script>
 // ═══════════════════════════════════
-//  CONSTANTS
+//  CONSTANTS & DEFAULTS
 // ═══════════════════════════════════
 const STORAGE_KEY = 'swiftlink_config';
 const SESSION_KEY = 'swiftlink_session';
@@ -467,7 +506,13 @@ const DEFAULT_PW  = 'swift2024';
 const DEFAULTS = {
   pharmacy: {
     name:'Pharmacie NHEAN', sub:'Votre pharmacie de confiance',
-    tel:'', maps:'', insta:'', avisName:'', web:'', horaires:'',
+    tel:'', maps:'', 
+    reseaux_sociaux: {
+      insta: { active: true, val: '' },
+      fb:    { active: false, val: '' },
+      avis:  { active: true, val: '' },
+      web:   { active: false, val: '' }
+    },
     logo:'', banner:'', horairesSemaine:{}
   },
   promos: Array.from({length:8}, () => ({
@@ -478,60 +523,61 @@ const DEFAULTS = {
   credentials: { id: DEFAULT_ID, pw: DEFAULT_PW }
 };
 
-  // ═══════════════════════════════════
-//  SUPABASE & AUTOSAVE (SYNCHRONISATION CLOUD)
+// ═══════════════════════════════════
+//  SUPABASE & SYNCHRONISATION CLOUD
 // ═══════════════════════════════════
 const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co/rest/v1/';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
-const SLUG = 'pharmacie-nhean'; // ⚠️ Identifiant unique de cette pharmacie
+const SLUG = 'pharmacie-nhean';
 
-let cloudSyncTimer; // Timer pour éviter de spammer Supabase
+let cloudSyncTimer;
 
 function autoSave() {
   const cfg = collectAll();
-  
-  // 1. Sauvegarde instantanée de sécurité en local
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
   updateLivePreviews();
+  updateAvisPreview();
 
-  // 2. Préparation de l'indicateur visuel
   const indicator = document.getElementById('save-indicator');
   indicator.textContent = 'Enregistrement...';
-  indicator.style.color = '#eab308'; // Jaune/Orange pendant la frappe
+  indicator.style.color = '#eab308';
   indicator.style.opacity = '1';
 
-  // 3. Attente de 1 seconde sans frappe pour envoyer à Supabase
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = setTimeout(() => {
     syncToSupabase(cfg, indicator);
   }, 1000);
 }
 
-// Fonction d'envoi vers Supabase (Mode UPSERT : Met à jour ou Crée)
 async function syncToSupabase(cfg, indicator) {
   try {
+    // 1. Sauvegarde des infos globales dans la table "pharmacies"
     const payload = {
       slug: SLUG,
-      horaires: cfg.pharmacy.horairesSemaine // On envoie les horaires dans la colonne JSONB
+      nom: cfg.pharmacy.name,
+      soustitre: cfg.pharmacy.sub,
+      logo_base64: cfg.pharmacy.logoData || null,
+      reseaux_sociaux: cfg.pharmacy.reseaux_sociaux,
+      horaires: cfg.pharmacy.horairesSemaine
     };
 
     const response = await fetch(`${SUPABASE_URL}pharmacies?on_conflict=slug`, {
-      method: 'POST', // Avec le header Prefer, POST agit comme un UPSERT
+      method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + SUPABASE_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates' // Magique : Met à jour si le slug existe, sinon le crée
+        'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) throw new Error('Erreur réseau Supabase');
+    if (!response.ok) throw new Error('Erreur réseau Supabase (pharmacies)');
 
-    // Envoi des promos vers la table 'promos' (upsert sur pharmacie_slug + position)
+    // 2. Sauvegarde des promotions dans la table "promos"
     const promosPayload = cfg.promos.map((p, i) => ({
       pharmacie_slug: SLUG,
-      position: i + 1, // La table exige position entre 1 et 8
+      position: i + 1,
       actif: p.active,
       nom: p.name,
       image_url: p.imgData || p.img || '',
@@ -553,9 +599,8 @@ async function syncToSupabase(cfg, indicator) {
 
     if (!promosResponse.ok) throw new Error('Erreur réseau Supabase (promos)');
 
-    // Succès
     indicator.textContent = 'En ligne ✓';
-    indicator.style.color = '#16a34a'; // Vert
+    indicator.style.color = '#16a34a';
     setTimeout(() => {
       if (indicator.textContent === 'En ligne ✓') indicator.style.opacity = '0';
     }, 2500);
@@ -563,12 +608,41 @@ async function syncToSupabase(cfg, indicator) {
   } catch (error) {
     console.error("Échec de la synchro Cloud :", error);
     indicator.textContent = 'Erreur Cloud ✗';
-    indicator.style.color = '#dc2626'; // Rouge
+    indicator.style.color = '#dc2626';
+  }
+}
+
+// Interroge Supabase au démarrage pour garantir d'avoir les données du Cloud
+async function loadFromSupabase() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}pharmacies?slug=eq.${SLUG}&select=*`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows && rows.length > 0) {
+        const data = rows[0];
+        const cfg = getConfig();
+        if (data.nom) cfg.pharmacy.name = data.nom;
+        if (data.soustitre) cfg.pharmacy.sub = data.soustitre;
+        if (data.logo_base64) {
+          cfg.pharmacy.logoData = data.logo_base64;
+          cfg.pharmacy.logo = '';
+        }
+        if (data.reseaux_sociaux) cfg.pharmacy.reseaux_sociaux = data.reseaux_sociaux;
+        if (data.horaires) cfg.pharmacy.horairesSemaine = data.horaires;
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+        fillInfo(cfg);
+      }
+    }
+  } catch(e) {
+    console.error("Erreur chargement Supabase:", e);
   }
 }
 
 // ═══════════════════════════════════
-//  STORAGE
+//  STORAGE & HELPERS
 // ═══════════════════════════════════
 function loadConfig() {
   try {
@@ -577,6 +651,7 @@ function loadConfig() {
     const cfg = JSON.parse(raw);
     while (cfg.promos.length < 8) cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:''});
     if (!cfg.credentials) cfg.credentials = { id: DEFAULT_ID, pw: DEFAULT_PW };
+    if (!cfg.pharmacy.reseaux_sociaux) cfg.pharmacy.reseaux_sociaux = DEFAULTS.pharmacy.reseaux_sociaux;
     return cfg;
   } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
 }
@@ -587,8 +662,6 @@ function saveConfig(cfg) {
 }
 
 function getConfig() { return loadConfig(); }
-
-
 
 function flashSaved() {
   const el = document.getElementById('save-indicator');
@@ -645,7 +718,7 @@ function showTab(name, btn) {
 }
 
 // ═══════════════════════════════════
-//  LOGO UPLOAD
+//  LOGO & BANNER UPLOAD
 // ═══════════════════════════════════
 function handleLogoUpload(e) {
   const file = e.target.files[0];
@@ -678,9 +751,6 @@ function showLogoPreview(src) {
   }
 }
 
-// ═══════════════════════════════════
-//  BANNER UPLOAD
-// ═══════════════════════════════════
 function handleBannerUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -721,44 +791,44 @@ function clearBanner() {
   autoSave();
 }
 
-// Drag & drop banner
 document.addEventListener('DOMContentLoaded', () => {
   const drop = document.getElementById('banner-drop');
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor='var(--blue)'; });
-  drop.addEventListener('dragleave', () => drop.style.borderColor='var(--border)');
-  drop.addEventListener('drop', e => {
-    e.preventDefault(); drop.style.borderColor='var(--border)';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = ev => { showBannerPreview(ev.target.result); autoSave(); };
-      reader.readAsDataURL(file);
-    }
-  });
+  if (drop) {
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor='var(--blue)'; });
+    drop.addEventListener('dragleave', () => drop.style.borderColor='var(--border)');
+    drop.addEventListener('drop', e => {
+      e.preventDefault(); drop.style.borderColor='var(--border)';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = ev => { showBannerPreview(ev.target.result); autoSave(); };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
 });
 
 // ═══════════════════════════════════
 //  LIVE PREVIEWS
 // ═══════════════════════════════════
 function updateLivePreviews() {
-  // Instagram link preview
-  const insta = document.getElementById('ph-insta').value.trim();
+  const insta = document.getElementById('soc-insta-val')?.value.trim();
   const instaEl = document.getElementById('insta-link-preview');
-  if (insta) {
-    instaEl.innerHTML = '🔗 <a href="https://instagram.com/' + insta + '" target="_blank" style="color:var(--blue)">instagram.com/' + insta + '</a>';
-  } else {
-    instaEl.innerHTML = '';
+  if (instaEl) {
+    instaEl.innerHTML = insta ? '🔗 <a href="https://instagram.com/' + insta + '" target="_blank" style="color:var(--blue)">instagram.com/' + insta + '</a>' : '';
   }
 }
 
 function updateAvisPreview() {
-  const name = document.getElementById('ph-avis-name').value.trim();
+  const name = document.getElementById('soc-avis-val')?.value.trim();
   const el = document.getElementById('avis-link-preview');
-  if (name) {
-    const q = encodeURIComponent(name + ' avis google');
-    el.innerHTML = '🔗 <a href="https://www.google.com/search?q=' + q + '&tbm=lcl" target="_blank" style="color:var(--blue)">Voir les avis Google →</a>';
-  } else {
-    el.innerHTML = '';
+  if (el) {
+    if (name) {
+      const q = encodeURIComponent(name + ' avis google');
+      el.innerHTML = '🔗 <a href="https://www.google.com/search?q=' + q + '&tbm=lcl" target="_blank" style="color:var(--blue)">Voir les avis Google →</a>';
+    } else {
+      el.innerHTML = '';
+    }
   }
 }
 
@@ -767,23 +837,28 @@ function updateAvisPreview() {
 // ═══════════════════════════════════
 function fillInfo(cfg) {
   const p = cfg.pharmacy || {};
-  document.getElementById('ph-name').value      = p.name || '';
-  document.getElementById('ph-sub').value       = p.sub  || '';
-  document.getElementById('ph-tel').value       = p.tel  || '';
-  document.getElementById('ph-maps').value      = p.maps || '';
-  document.getElementById('ph-insta').value     = p.insta || '';
-  document.getElementById('ph-avis-name').value = p.avisName || '';
-  document.getElementById('ph-web').value       = p.web  || '';
-  document.getElementById('ph-horaires-legacy') && (document.getElementById('ph-horaires-legacy').value = p.horaires || '');
-  buildHorairesGrid(p.horairesSemaine || {});
-  document.getElementById('ph-logo').value      = '';
-  document.getElementById('ph-banner').value    = '';
+  document.getElementById('ph-name').value = p.name || '';
+  document.getElementById('ph-sub').value  = p.sub  || '';
+  document.getElementById('ph-tel').value  = p.tel  || '';
+  document.getElementById('ph-maps').value = p.maps || '';
+  
+  const soc = p.reseaux_sociaux || { insta:{active:true,val:''}, fb:{active:false,val:''}, avis:{active:true,val:''}, web:{active:false,val:''} };
+  document.getElementById('soc-insta-active').checked = soc.insta?.active ?? true;
+  document.getElementById('soc-insta-val').value      = soc.insta?.val || p.insta || '';
+  document.getElementById('soc-fb-active').checked    = soc.fb?.active ?? false;
+  document.getElementById('soc-fb-val').value         = soc.fb?.val || '';
+  document.getElementById('soc-avis-active').checked  = soc.avis?.active ?? true;
+  document.getElementById('soc-avis-val').value       = soc.avis?.val || p.avisName || '';
+  document.getElementById('soc-web-active').checked   = soc.web?.active ?? false;
+  document.getElementById('soc-web-val').value        = soc.web?.val || p.web || '';
 
-  // Logo
+  buildHorairesGrid(p.horairesSemaine || {});
+  document.getElementById('ph-logo').value   = '';
+  document.getElementById('ph-banner').value = '';
+
   const logoSrc = p.logoData || p.logo || '';
   if (logoSrc) showLogoPreview(logoSrc);
 
-  // Banner
   const bannerSrc = p.bannerData || p.banner || '';
   if (bannerSrc) showBannerPreview(bannerSrc);
 
@@ -799,25 +874,24 @@ function collectInfo() {
     sub:       document.getElementById('ph-sub').value,
     tel:       document.getElementById('ph-tel').value,
     maps:      document.getElementById('ph-maps').value,
-    insta:     document.getElementById('ph-insta').value,
-    avisName:  document.getElementById('ph-avis-name').value,
-    web:       document.getElementById('ph-web').value,
-    horaires:  collectHoraires().texte,
+    reseaux_sociaux: {
+      insta: { active: document.getElementById('soc-insta-active')?.checked || false, val: document.getElementById('soc-insta-val')?.value || '' },
+      fb:    { active: document.getElementById('soc-fb-active')?.checked || false,    val: document.getElementById('soc-fb-val')?.value || '' },
+      avis:  { active: document.getElementById('soc-avis-active')?.checked || false,  val: document.getElementById('soc-avis-val')?.value || '' },
+      web:   { active: document.getElementById('soc-web-active')?.checked || false,   val: document.getElementById('soc-web-val')?.value || '' }
+    },
+    horaires:        collectHoraires().texte,
     horairesSemaine: collectHoraires().semaine,
-    logoData:  logoData.startsWith('data:') ? logoData : '',
-    logo:      logoData.startsWith('data:') ? '' : logoData,
-    bannerData: bannerData.startsWith('data:') ? bannerData : '',
-    banner:     bannerData.startsWith('data:') ? '' : bannerData,
+    logoData:        logoData.startsWith('data:') ? logoData : '',
+    logo:            logoData.startsWith('data:') ? '' : logoData,
+    bannerData:      bannerData.startsWith('data:') ? bannerData : '',
+    banner:          bannerData.startsWith('data:') ? '' : bannerData,
   };
 }
 
 // ═══════════════════════════════════
 //  SECTION 2 — PROMOS
 // ═══════════════════════════════════
-
-// ── SAUVEGARDER INFOS PHARMACIE ──
-
-  
 function buildPromoGrid(cfg) {
   const grid = document.getElementById('promo-grid');
   grid.innerHTML = '';
@@ -880,7 +954,7 @@ function buildPromoGrid(cfg) {
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
-const PROMO_IMG_MAX_KB = 400; // Limite après compression
+const PROMO_IMG_MAX_KB = 400;
 
 function handlePromoImg(i, e) {
   const file = e.target.files[0];
@@ -892,7 +966,6 @@ function handlePromoImg(i, e) {
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      // Redimensionne max 800px de large, recompresse en JPEG qualité dégressive
       const canvas = document.createElement('canvas');
       const scale = Math.min(1, 800 / img.width);
       canvas.width = img.width * scale;
@@ -903,7 +976,6 @@ function handlePromoImg(i, e) {
       let quality = 0.85;
       let dataUrl = canvas.toDataURL('image/jpeg', quality);
 
-      // Réduit la qualité tant que c'est trop lourd (jusqu'à un plancher raisonnable)
       while (dataUrl.length * 0.75 / 1024 > PROMO_IMG_MAX_KB && quality > 0.3) {
         quality -= 0.1;
         dataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -936,7 +1008,6 @@ function onPromoImgUrl(i) {
   autoSave();
 }
 
-
 function onPromoToggle(i) {
   const active = document.getElementById('promo-active-'+i).checked;
   document.getElementById('promo-body-'+i).className = active ? '' : 'promo-inactive';
@@ -949,13 +1020,13 @@ function collectPromos() {
     const imgData  = thumbBox?.dataset.imgdata && thumbBox.dataset.imgdata.startsWith('data:') ? thumbBox.dataset.imgdata : '';
     const imgUrl   = document.getElementById('promo-img-'+i)?.value || '';
     return {
-      active:     document.getElementById('promo-active-'+i)?.checked || false,
-      name:       document.getElementById('promo-name-'+i)?.value || '',
-      img:        imgData ? '' : imgUrl,
-      imgData:    imgData,
-      priceBefore:document.getElementById('promo-before-'+i)?.value || '',
-      priceAfter: document.getElementById('promo-after-'+i)?.value || '',
-      badge:      document.getElementById('promo-badge-'+i)?.value || '',
+      active:      document.getElementById('promo-active-'+i)?.checked || false,
+      name:        document.getElementById('promo-name-'+i)?.value || '',
+      img:         imgData ? '' : imgUrl,
+      imgData:     imgData,
+      priceBefore: document.getElementById('promo-before-'+i)?.value || '',
+      priceAfter:  document.getElementById('promo-after-'+i)?.value || '',
+      badge:       document.getElementById('promo-badge-'+i)?.value || '',
     };
   });
 }
@@ -1177,9 +1248,10 @@ function initApp() {
   buildHorairesGrid(cfg.pharmacy?.horairesSemaine || {});
   buildPromoGrid(cfg);
   fillNotif(cfg);
+  loadFromSupabase(); // Interroge le cloud après le rendu initial local
 }
 
-// Expose all functions globally pour les onclick HTML
+// Expose all functions globally
 window.doLogin            = doLogin;
 window.doLogout           = doLogout;
 window.showTab            = showTab;
@@ -1199,6 +1271,7 @@ window.showJson           = showJson;
 window.exportJson         = exportJson;
 window.importJson         = importJson;
 window.resetConfig        = resetConfig;
+window.updateLivePreviews = updateLivePreviews;
 
 document.addEventListener("DOMContentLoaded", initAuth);
 </script>
