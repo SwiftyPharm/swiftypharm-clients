@@ -2,12 +2,13 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">  <title>Swift'Link — Pharmacie NHEAN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Swift'Link — Pharmacie NHEAN</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH4392ZE5G"></script>
-  <script> 
+  <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
@@ -53,20 +54,20 @@
 
     /* ══ BANNIÈRE ══ */
     .banniere {
-  width: calc(100% - 32px);
-  max-width: 448px;
-  height: 160px;
-  border-radius: 20px;
-  overflow: hidden;
-  flex-shrink: 0;
-  margin: 16px 0 0;
-}
-.banniere img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+      width: calc(100% - 32px);
+      max-width: 448px;
+      height: 160px;
+      border-radius: 20px;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin: 16px 0 0;
+    }
+    .banniere img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
     /* ══ HEADER PROFIL ══ */
     .profile-section {
@@ -80,16 +81,16 @@
       padding: 0 16px;
     }
     .profile-avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #ffffff;
-  margin-top: -48px;
-  border: 3px solid #ffffff;
-  position: relative;
-  z-index: 10;
-}
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffffff;
+      margin-top: -48px;
+      border: 3px solid #ffffff;
+      position: relative;
+      z-index: 10;
+    }
     .profile-name {
       font-size: 26px;
       font-weight: 800;
@@ -115,50 +116,80 @@
       transform: translateY(-0.5em);
     }
     .contact-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: transform 0.18s, opacity 0.18s;
-  width: auto;
-  height: auto;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 4px;
-}
-.contact-icon-btn:hover {
-  transform: scale(1.12);
-  opacity: 0.7;
-  box-shadow: none;
-}
-.contact-icon-btn img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-    .icon-label {
-      font-size: 9px;
-      color: #555;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s, opacity 0.18s;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 4px;
+    }
+    .contact-icon-btn:hover {
+      transform: scale(1.12);
+      opacity: 0.7;
+      box-shadow: none;
+    }
+    .contact-icon-btn img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
     }
 
-    /* ══ LIENS SOCIAUX (sous les icônes) ══ */
-    .social-links {
+    /* ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ */
+    .dynamic-social-container {
       display: flex;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-start;
       width: 100%;
       max-width: 480px;
       padding: 0 16px;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
-  
-   
-   
+    .social-card-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .social-card-item:hover {
+      transform: translateY(-3px);
+    }
+    .social-card-img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border-radius: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .social-card-fallback {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .social-card-txt {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+      line-height: 1.4;
+    }
+
     /* ══ BENTO GRID ══ */
     .bento {
       width: 100%;
@@ -182,7 +213,7 @@
     /* ══ CARD PROMO (pleine largeur) ══ */
     .card-promo {
       width: 100%;
-      height: 200px; /* hauteur fixe */
+      height: 200px;
       padding: 0;
       cursor: pointer;
     }
@@ -305,55 +336,108 @@
     .btn-google-review:hover { box-shadow: 0 4px 16px rgba(0,18,255,0.3); transform: translateY(-1px); }
     @keyframes pop-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-    /* ══ LOADER ══ */
-    .loader-section { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin-top: 48px; width: 100%; }
-    .loader-label { font-size: 12px; font-weight: 500; color: rgba(0,18,255,0.45); letter-spacing: 0.5px; }
-    .loader { --size: 110px; --dur: 4s; height: var(--size); aspect-ratio: 1; position: relative; }
-    .loader .box { position: absolute; background: linear-gradient(0deg, rgba(0,18,255,0.06) 0%, rgba(0,18,255,0.14) 100%); border-radius: 50%; border-top: 1px solid rgba(0,18,255,0.4); animation: ripple var(--dur) infinite ease-in-out; }
-    .loader .box:nth-child(1) { inset: 40%; z-index: 99; }
-    .loader .box:nth-child(2) { inset: 30%; z-index: 98; border-color: rgba(0,18,255,0.28); animation-delay: 0.4s; }
-    .loader .box:nth-child(3) { inset: 20%; z-index: 97; border-color: rgba(0,18,255,0.18); animation-delay: 0.8s; }
-    .loader .box:nth-child(4) { inset: 10%; z-index: 96; border-color: rgba(0,18,255,0.10); animation-delay: 1.2s; }
-    .loader .box:nth-child(5) { inset: 0%;  z-index: 95; border-color: rgba(0,18,255,0.05); animation-delay: 1.6s; }
-    .loader .logo { position: absolute; inset: 0; display: grid; place-content: center; padding: 28%; z-index: 100; }
-    .loader .logo img { width: 100%; animation: logo-pulse var(--dur) infinite ease-in-out; }
-    @keyframes ripple { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-    @keyframes logo-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
-  /* ══ MODALE HORAIRES ══ */
-  .modal-overlay {
-    display:none; position:fixed; inset:0; z-index:9000;
-    background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
-    align-items:flex-end; justify-content:center;
-  }
-  .modal-overlay.open { display:flex; }
-  .modal-sheet {
-    background:#fff; border-radius:24px 24px 0 0;
-    width:100%; max-width:480px; padding:24px 20px 40px;
-    animation:slide-up .3s cubic-bezier(.25,1,.5,1);
-  }
-  @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
-  .modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 20px; }
-  .modal-title { font-size:18px; font-weight:800; color:#111; margin-bottom:18px; }
-  .horaire-liste { display:flex; flex-direction:column; gap:6px; }
-  .horaire-ligne {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px; border-radius:12px; background:#f5f6fa; font-size:14px;
-  }
-  .horaire-ligne.today { background:#e8eaff; }
-  .horaire-ligne .jour { font-weight:700; color:#111; min-width:90px; }
-  .horaire-ligne .heure { color:#0012ff; font-weight:600; }
-  .horaire-ligne .heure.ferme { color:#aaa; font-weight:500; }
-  .modal-close {
-    margin-top:18px; width:100%; padding:13px; border-radius:30px;
-    background:#f0f0f0; border:none; font-family:'Inter',sans-serif;
-    font-size:14px; font-weight:700; color:#111; cursor:pointer;
-  }
+    /* ══ MODALE HORAIRES / INFOS ══ */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
+      align-items:flex-end; justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-sheet {
+      background:#fff; border-radius:24px 24px 0 0;
+      width:100%; max-width:480px; padding:24px 20px 40px;
+      max-height:80vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      animation:slide-up .3s cubic-bezier(.25,1,.5,1);
+    }
+    @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 20px; }
+    .modal-title { font-size:19px; font-weight:800; color:#0012ff; margin-bottom:18px; text-align:center; }
+    .horaire-liste { display:flex; flex-direction:column; gap:6px; }
+    .horaire-ligne {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-radius:12px; background:#f5f6fa; font-size:14px;
+    }
+    .horaire-ligne.today { background:#e8eaff; }
+    .horaire-ligne .jour { font-weight:700; color:#111; min-width:90px; }
+    .horaire-ligne .heure { color:#0012ff; font-weight:600; }
+    .horaire-ligne .heure.ferme { color:#aaa; font-weight:500; }
+    .modal-close {
+      margin-top:18px; width:100%; padding:13px; border-radius:30px;
+      background:#f0f0f0; border:none; font-family:'Inter',sans-serif;
+      font-size:14px; font-weight:700; color:#111; cursor:pointer;
+    }
 
-    /* ══ CADRE DESKTOP (ombre légère, n'impacte que l'affichage large écran) ══ */
+    /* ══ POPUP INFOS (STYLES ÉTENDUS) ══ */
+    .infos-section-title {
+      font-size:15px; font-weight:800; color:#111; margin:28px 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .infos-section-title:first-child { margin-top: 0; }
+    .infos-intro {
+      font-size:13px; color:#666; margin-bottom:14px; line-height:1.5;
+    }
+    .urgence-ligne {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px; border-radius:12px; background:#f5f6fa;
+      margin-bottom:8px;
+    }
+    .urgence-numero {
+      font-size:18px; font-weight:800; color:#0012ff;
+      min-width:44px; text-align:center;
+    }
+    .urgence-texte { display:flex; flex-direction:column; gap:1px; }
+    .urgence-nom { font-size:14px; font-weight:700; color:#111; }
+    .urgence-desc { font-size:12px; color:#777; line-height:1.4; }
+    
+    .infos-garde-box {
+      background:#e8eaff; border-radius:14px; padding:14px 16px;
+      margin:20px 0; font-size:13px; color:#333; line-height:1.5; text-align:center;
+    }
+    .infos-garde-box a {
+      color:#0012ff; font-weight:700; text-decoration:none;
+    }
+    
+    /* Nouvelles boîtes d'informations (Santé, Recyclage, Ordonnance) */
+    .info-box-styled {
+      background: #f8f9fc;
+      border: 1px solid #eaeff5;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .info-box-styled h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0012ff;
+      margin-bottom: 4px;
+    }
+    .info-box-styled p {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .info-box-styled p:last-child {
+      margin-bottom: 0;
+    }
+
+    .docteur-box {
+      display:flex; align-items:center; gap:12px;
+      background:#f5f6fa; border-radius:14px; padding:14px 16px; margin-top:6px;
+    }
+    .docteur-avatar {
+      width:44px; height:44px; border-radius:50%;
+      background:#0012ff; color:#fff; display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:16px; flex-shrink:0;
+    }
+    .docteur-info { display:flex; flex-direction:column; gap:1px; }
+    .docteur-nom { font-size:14px; font-weight:800; color:#111; }
+    .docteur-titre { font-size:12px; color:#666; }
+
+    /* ══ CADRE DESKTOP ══ */
     @media (min-width: 769px) {
-      html {
-        background: #d2d2d2;
-      }
+      html { background: #d2d2d2; }
       body {
         max-width: 580px;
         margin: 24px auto;
@@ -367,31 +451,29 @@
 
   <!-- ══ BANNIÈRE ══ -->
   <div class="banniere">
-    <!-- ⚠️ IMPORTER : banniere_test.png -->
-    <img src="banniere_test.png" alt="Bannière pharmacie">
+    <img src="banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
   </div>
 
-  <!-- ══ HEADER PROFIL ══ -->
+  <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <!-- ⚠️ IMPORTER : logo pharmacie general.jpg -->
-    <img class="profile-avatar" src="logo pharmacie general.jpg" alt="Logo pharmacie">
-    <div class="profile-name">Pharmacie NHEAN</div>
-    <div class="profile-sub">Votre pharmacie de confiance à Paris</div>
+    <img class="profile-avatar" id="profile-avatar-img" src="logo pharmacie general.jpg" alt="Logo pharmacie">
+    <div class="profile-name" id="profile-name-display">Pharmacie NHEAN</div>
+    <div class="profile-sub" id="profile-sub-display">Votre pharmacie de confiance à Paris</div>
 
     <!-- 4 icônes de contact -->
     <div class="contact-icons">
       <div style="display:flex; flex-direction:column; align-items:center;">
-        <a class="contact-icon-btn" href="tel:+33781298075">
+        <a class="contact-icon-btn" id="link-phone" href="tel:+33781298075">
           <img src="phone.svg" alt="Téléphone">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
-        <a class="contact-icon-btn" href="https://maps.app.goo.gl/sVoh48TPr2kfwsWB7" target="_blank">
+        <a class="contact-icon-btn" id="link-maps" href="https://maps.app.goo.gl/sVoh48TPr2kfwsWB7" target="_blank">
           <img src="map-pin.svg" alt="Adresse">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
-        <a class="contact-icon-btn" href="#">
+        <a class="contact-icon-btn" id="link-infos" href="#">
           <img src="infos.svg" alt="Infos">
         </a>
       </div>
@@ -403,44 +485,28 @@
     </div>
   </div>
 
- <!-- ══ LIENS SOCIAUX ══ -->
-<div style="display:flex; gap:32px; justify-content:center; align-items:flex-start; width:100%; max-width:480px; padding:0 16px; margin-bottom:20px;">
-
-  <!-- Google Avis -->
-  <a href="avis.html" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
-    <!-- ⚠️ IMPORTER : google-avis-icon.png -->
-    <img src="google-avis-icon.png" alt="Google Avis" style="width:100px; height:100px; object-fit:contain; border-radius:20px;">
-
-    <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
-      Notez nous sur <br>Google !
-    </div>
-  </a>
-
-  <!-- Instagram -->
-  <a href="https://www.instagram.com/swiftup_fr" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none;">
-    <!-- ⚠️ IMPORTER : instagram-icon.png -->
-    <img src="instagram-icon.png" alt="Instagram" style="width:100px; height:100px; object-fit:contain; border-radius:22px;">
-    
-    <div style="text-align:center; font-size:13px; font-weight:500; color:#111; line-height:1.4;">
-      Suivez nous sur<br>Instagram !
-    </div>
-  </a>
-
-</div>
-
-
+  <!-- ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ -->
+  <div class="dynamic-social-container" id="dynamic-social-links">
+    <!-- Rempli automatiquement par JavaScript (Supabase) -->
+    <a href="https://reviewthis.biz/PHA-NHEAN" class="social-card-item">
+      <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img">
+      <div class="social-card-txt">Notez nous sur <br>Google !</div>
+    </a>
+    <a href="https://www.instagram.com/swiftup_fr" target="_blank" class="social-card-item">
+      <img src="instagram-icon.png" alt="Instagram" class="social-card-img">
+      <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
+    </a>
   </div>
 
   <!-- ══ BENTO ══ -->
   <div class="bento">
 
-    <!-- Promo du mois — pleine largeur -->
-    <!-- ⚠️ IMPORTER : promo-du-mois.png — dimensions idéales : 960 × 400 px -->
+    <!-- Promo du mois -->
     <a class="card card-promo" href="promos.html" style="display:block;text-decoration:none;">
-      <img class="card-full-img" src="promo-du-mois2.png" alt="Promo du mois">
+      <img class="card-full-img" src="promo-du-mois.png" alt="Promo du mois">
     </a>
 
-    <!-- Formulaire ordonnance — pleine largeur -->
+    <!-- Formulaire ordonnance -->
     <div class="card card-ordonnance">
       <div id="form-content">
         <div style="color:#111; font-weight:800; font-size:18px; margin-bottom:24px; text-align:center;">Envoyer votre ordonnance</div>
@@ -491,29 +557,19 @@
       </div>
 
       <div class="success-overlay" id="success-overlay">
-        <!-- ⚠️ IMPORTER : confirm_icon.png -->
         <img class="success-icon" src="confirm_icon.png" alt="Succès">
         <div class="success-title">Ordonnance envoyée !</div>
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
           <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
-          <a href="avis.html" class="btn-google-review">⭐ Vous satisfait ? Laissez-nous un avis !</a>
+          <a href="https://reviewthis.biz/PHA-NHEAN" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
         </div>
       </div>
+      <img src="down-upload.png" alt="" style="width:100%; display:block; margin-top:10px;">
     </div>
-
   </div>
 
-  <!-- ══ LOADER ══ -->
-  <div class="loader-section">
-    <div class="loader">
-      <div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div>
-      <!-- ⚠️ IMPORTER : Logo-test-swiftlink.png -->
-      <div class="logo"><img src="Logo-test-swiftlink.png" alt="Swift'Link"></div>
-    </div>
-    <span class="loader-label">Propulsé par Swift'Link</span>
-  </div>
-
+  <!-- ══ SCRIPTS FORMULAIRE ORDONNANCE ══ -->
   <script>
   const fileInput      = document.getElementById('fileInput');
   const Title          = document.getElementById('Title');
@@ -538,7 +594,6 @@
   const MAX_SIZE_MB = 5;
   let selectedFile  = null;
 
-  // ── SONS ──
   function playSound(type) {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
@@ -560,7 +615,6 @@
     }
   }
 
-  // ── VALIDATION NOM ──
   nameInput.addEventListener('blur', validateName);
   nameInput.addEventListener('input', validateName);
   function validateName() {
@@ -576,7 +630,6 @@
     updateSendBtn();
   }
 
-  // ── VALIDATION TÉLÉPHONE ──
   let phoneValidateTimer = null;
   if (phoneInput) {
     phoneInput.addEventListener('input', function(e) {
@@ -619,7 +672,6 @@
     btnSend.disabled = !(selectedFile && nameInput.value.trim().length >= 2);
   }
 
-  // ── DRAG & DROP ──
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', (e) => {
@@ -655,7 +707,6 @@
     startSatisfyingLoading();
   }
 
-  // ── SUPPRESSION FICHIER ──
   removeFileBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     selectedFile = null; fileInput.value = '';
@@ -672,7 +723,6 @@
     updateSendBtn();
   });
 
-  // ── BARRE DE PROGRESSION ──
   function startSatisfyingLoading() {
     const bar = progressBarFill;
     bar.style.transition = "none"; bar.style.width = "0%";
@@ -702,7 +752,6 @@
     }, 3000);
   }
 
-  // ── ENVOI ──
   function sendWithAttachment() {
     const senderName  = nameInput ? nameInput.value.trim() : "";
     const senderPhone = phoneInput ? phoneInput.value.trim().replace(/\s+/g, '') : "";
@@ -728,7 +777,7 @@
         my_file:      reader.result,
         sent_at:      new Date().toLocaleString('fr-FR')
       };
-      emailjs.send('service_3svkyii', 'template_hlj4f0g', templateParams)
+      emailjs.send('service_ehw7pcv', 'template_0ydv3ac', templateParams)
         .then(function() {
           trackSend();
           playSound('success');
@@ -751,7 +800,6 @@
     };
   }
 
-  // ── BOUTON RETOUR ──
   document.getElementById('btn-back-home').addEventListener('click', function() {
     successOverlay.style.display = 'none';
     formContent.style.display = 'block';
@@ -777,14 +825,102 @@
   <div class="modal-overlay" id="modal-horaires" onclick="if(event.target===this)closeHoraires()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">🕐 Nos horaires</div>
+      <div class="modal-title">Nos horaires</div>
       <div class="horaire-liste" id="horaire-liste"></div>
       <button class="modal-close" onclick="closeHoraires()">Fermer</button>
     </div>
   </div>
 
- <script>
-  // ── MODALE HORAIRES (Cloud Supabase) ──
+  <!-- ══ MODALE INFOS (AVEC LES 3 NOUVEAUX ÉLÉMENTS) ══ -->
+  <div class="modal-overlay" id="modal-infos" onclick="if(event.target===this)closeInfos()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Informations utiles</div>
+
+      <!-- 1. URGENCES -->
+      <div class="infos-section-title">🚨 En cas d'urgence</div>
+      <div class="infos-intro">Voici les numéros principaux à contacter pour vos urgences rapides.</div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">15</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Samu</div>
+          <div class="urgence-desc">En cas d'urgences vitales</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">18</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Pompiers</div>
+          <div class="urgence-desc">Situation de péril ou accident</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">114</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Sourds / Malentendants</div>
+          <div class="urgence-desc">Numéro unique, national et gratuit, accessible par visiophonie, tchat, SMS ou fax, 24h/24, 7j/7.</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">17</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Police secours</div>
+          <div class="urgence-desc">Signaler une infraction</div>
+        </div>
+      </div>
+
+      <div class="infos-garde-box">
+        Pour connaître la pharmacie de garde près de chez vous, rendez-vous sur<br>
+        <a href="https://www.3237.fr" target="_blank">www.3237.fr</a>
+      </div>
+
+      <!-- 2. NOUVEAU : SERVICES DE SANTÉ EN OFFICINE -->
+      <div class="infos-section-title">💉 Services de santé en officine</div>
+      <div class="info-box-styled">
+        <h4>Vaccination & Rappels</h4>
+        <p>Nous réalisons vos vaccins (Grippe, Covid-19, rappels obligatoires adultes : Tétanos, Diphtérie, Polio...) directement à la pharmacie, avec ou sans rendez-vous.</p>
+        <h4>Dépistages rapides (TROD)</h4>
+        <p>Angine, Grippe, Covid-19 ou infection urinaire (Cystite) : nous réalisons des tests rapides en quelques minutes au comptoir, permettant la délivrance d'un traitement adapté sous certaines conditions.</p>
+      </div>
+
+      <!-- 3. NOUVEAU : RECYCLAGE ÉCO-RESPONSABLE -->
+      <div class="infos-section-title">♻️ Recyclage : Médicaments & Aiguilles</div>
+      <div class="info-box-styled">
+        <h4>Médicaments non utilisés (Cyclamed)</h4>
+        <p>Ne jetez pas vos médicaments à la poubelle ou dans l'évier ! Rapportez-nous vos médicaments périmés ou non utilisés (en séparant les boîtes en carton et les notices pour le tri sélectif).</p>
+        <h4>Aiguilles et seringues (DASTRI)</h4>
+        <p>Vous êtes en auto-traitement ? Des boîtes jaunes sécurisées sont à votre disposition gratuitement à l'officine pour éliminer vos déchets piquants ou coupants en toute sécurité.</p>
+      </div>
+
+      <!-- 4. NOUVEAU : ORDONNANCES & CARTE VITALE -->
+      <div class="infos-section-title">💳 Ordonnances & Carte Vitale</div>
+      <div class="info-box-styled">
+        <h4>Validité de votre ordonnance</h4>
+        <p>Vous avez <strong>3 mois</strong> maximum après la date de prescription du médecin pour venir chercher votre traitement pour la première fois à la pharmacie.</p>
+        <h4>Mise à jour de la Carte Vitale</h4>
+        <p>Pensez à mettre à jour votre carte au moins <strong>1 fois par an</strong> et après chaque changement de situation (déménagement, maternité, affection de longue durée). Une borne libre-service est à votre disposition.</p>
+      </div>
+
+      <!-- 5. DOCTEUR EN PHARMACIE -->
+      <div class="infos-section-title">👨‍⚕️ Votre docteur en pharmacie</div>
+      <div class="docteur-box">
+        <div class="docteur-avatar" id="docteur-initiales">DR</div>
+        <div class="docteur-info">
+          <div class="docteur-nom" id="docteur-nom">Dr. Daracoena NHEAN</div>
+          <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
+        </div>
+      </div>
+
+      <button class="modal-close" onclick="closeInfos()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- ══ SCRIPTS HORAIRES / INFOS / SUPABASE DYNAMIQUE ══ -->
+  <script>
   const JOURS_FR = [
     {id:'lun',label:'Lundi'},{id:'mar',label:'Mardi'},{id:'mer',label:'Mercredi'},
     {id:'jeu',label:'Jeudi'},{id:'ven',label:'Vendredi'},
@@ -801,14 +937,12 @@
     const liste   = document.getElementById('horaire-liste');
     const todayId = JOUR_INDEX[new Date().getDay()];
 
-    // 1. Affichage de l'état de chargement
     liste.innerHTML = '<div style="color:#555;font-size:14px;text-align:center;padding:16px 0">Chargement des horaires...</div>';
     document.getElementById('modal-horaires').classList.add('open');
     document.body.style.overflow = 'hidden';
 
     let semaine = {};
 
-    // 2. Requête en temps réel vers Supabase
     try {
       const { data, error } = await supabaseClient
         .from('pharmacies')
@@ -816,7 +950,7 @@
         .eq('slug', 'pharmacie-nhean')
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // On ignore l'erreur si aucune ligne n'existe encore
+      if (error && error.code !== 'PGRST116') throw error;
       if (data && data.horaires) {
         semaine = typeof data.horaires === 'string' ? JSON.parse(data.horaires) : data.horaires;
       }
@@ -824,7 +958,6 @@
       console.error("Erreur de récupération des horaires :", e);
     }
 
-    // 3. Rendu de l'affichage
     if (!Object.keys(semaine).length) {
       liste.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0">Horaires non renseignés.<br>Contactez-nous par téléphone.</div>';
     } else {
@@ -844,6 +977,108 @@
     document.getElementById('modal-horaires').classList.remove('open');
     document.body.style.overflow = '';
   }
+
+  document.getElementById('link-infos').addEventListener('click', function(e) {
+    e.preventDefault();
+    openInfos();
+  });
+
+  function openInfos() {
+    const nomEl = document.getElementById('docteur-nom');
+    const avatarEl = document.getElementById('docteur-initiales');
+    const nomComplet = nomEl.textContent.replace(/^Dr\.?\s*/i, '').trim();
+    const parts = nomComplet.split(' ').filter(Boolean);
+    const initiales = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : nomComplet.substring(0, 2).toUpperCase();
+    avatarEl.textContent = initiales;
+
+    document.getElementById('modal-infos').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeInfos() {
+    document.getElementById('modal-infos').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // SYNCHRONISATION DU PROFIL & DES MID ICONS AVEC SUPABASE
+  // ═════════════════════════════════════════════════════════════
+  async function initPharmacyProfile() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('pharmacies')
+        .select('*')
+        .eq('slug', 'pharmacie-nhean')
+        .single();
+
+      if (error || !data) return;
+
+      // 1. Textes et Logo du Profil
+      if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
+      if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
+      if (data.logo_base64) document.getElementById('profile-avatar-img').src = data.logo_base64;
+
+      // 2. Génération dynamique des Mid Icons UNIQUEMENT s'ils sont cochés en BO
+      const soc = data.reseaux_sociaux || {};
+      const container = document.getElementById('dynamic-social-links');
+      container.innerHTML = ''; // On réinitialise pour n'afficher que la sélection du BO
+
+      // Google Avis
+      if (soc.avis && soc.avis.active) {
+        let url = 'https://reviewthis.biz/PHA-NHEAN';
+        if (soc.avis.val && soc.avis.val.trim() !== '') {
+          url = `https://www.google.com/search?q=${encodeURIComponent(soc.avis.val + ' avis google')}&tbm=lcl`;
+        }
+        container.innerHTML += `
+          <a href="${url}" target="_blank" class="social-card-item">
+            <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
+            <div class="social-card-txt">Notez nous sur <br>Google !</div>
+          </a>`;
+      }
+
+      // Instagram
+      if (soc.insta && soc.insta.active) {
+        let instaUrl = 'https://www.instagram.com/swiftup_fr';
+        if (soc.insta.val && soc.insta.val.trim() !== '') {
+          const clean = soc.insta.val.replace(/.*instagram\.com\//, '').replace(/\//g, '');
+          instaUrl = `https://instagram.com/${clean}`;
+        }
+        container.innerHTML += `
+          <a href="${instaUrl}" target="_blank" class="social-card-item">
+            <img src="instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
+            <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
+          </a>`;
+      }
+
+      // Facebook
+      if (soc.fb && soc.fb.active && soc.fb.val) {
+        let fbUrl = soc.fb.val.startsWith('http') ? soc.fb.val : `https://facebook.com/${soc.fb.val}`;
+        container.innerHTML += `
+          <a href="${fbUrl}" target="_blank" class="social-card-item">
+            <div class="social-card-fallback" style="background:#1877f2;">📘</div>
+            <div class="social-card-txt">Retrouvez nous<br>sur Facebook !</div>
+          </a>`;
+      }
+
+      // Site Web
+      if (soc.web && soc.web.active && soc.web.val) {
+        let webUrl = soc.web.val.startsWith('http') ? soc.web.val : `https://${soc.web.val}`;
+        container.innerHTML += `
+          <a href="${webUrl}" target="_blank" class="social-card-item">
+            <div class="social-card-fallback" style="background:#0012ff;">🌐</div>
+            <div class="social-card-txt">Visitez notre<br>Site Web !</div>
+          </a>`;
+      }
+
+    } catch (err) {
+      console.error("Erreur lors de la synchronisation Supabase du profil :", err);
+    }
+  }
+
+  // Chargement des données au démarrage de la page
+  document.addEventListener("DOMContentLoaded", initPharmacyProfile);
   </script>
 </body>
 </html>
