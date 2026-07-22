@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftyPharm — Créer mon espace</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --blue: #0012ff;
+    --blue-light: #e8eaff;
+    --text: #111;
+    --muted: #666;
+    --border: #d0d0d0;
+    --bg: #f5f6fa;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Inter',sans-serif; background:var(--bg);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:24px 16px;
+  }
+
+  .logo-wrap { margin-bottom:32px; text-align:center; }
+  .logo-wrap .brand { font-size:26px; font-weight:800; color:var(--blue); letter-spacing:-1px; }
+  .logo-wrap .brand span { color:#111; }
+  .logo-wrap p { font-size:13px; color:var(--muted); margin-top:4px; }
+
+  .box {
+    background:#fff; border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:36px 32px; width:100%; max-width:440px;
+  }
+  .box h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+  .box .sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+
+  /* Steps */
+  .steps { display:flex; gap:8px; margin-bottom:28px; }
+  .step {
+    flex:1; height:4px; border-radius:2px; background:#e0e0e0;
+    transition:background .3s;
+  }
+  .step.done { background:var(--blue); }
+  .step.active { background:var(--blue); opacity:.4; }
+
+  .step-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:18px; }
+
+  /* Fields */
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:5px; letter-spacing:.3px; text-transform:uppercase; }
+  .field input, .field select {
+    width:100%; padding:11px 14px; border:1.5px solid var(--border);
+    border-radius:10px; font-family:inherit; font-size:14px;
+    color:var(--text); background:#fff; outline:none; transition:border-color .2s;
+  }
+  .field input:focus, .field select:focus { border-color:var(--blue); }
+  .field input.error { border-color:#dc2626; }
+  .field .hint { font-size:11px; color:var(--muted); margin-top:4px; }
+  .field .err-msg { font-size:11px; color:#dc2626; margin-top:4px; display:none; }
+
+  /* Slug preview */
+  .slug-preview {
+    background:var(--blue-light); border-radius:8px; padding:10px 14px;
+    font-size:12px; color:var(--blue); margin-top:8px; font-weight:600;
+    word-break:break-all;
+  }
+  .slug-preview span { opacity:.6; }
+
+  /* Password strength */
+  .pw-strength { display:flex; gap:4px; margin-top:8px; }
+  .pw-bar { flex:1; height:3px; border-radius:2px; background:#e0e0e0; transition:background .2s; }
+
+  /* Buttons */
+  .btn {
+    width:100%; padding:13px; border-radius:30px; font-family:inherit;
+    font-size:15px; font-weight:700; cursor:pointer; border:none;
+    transition:all .2s; margin-top:8px;
+  }
+  .btn-primary { background:var(--blue); color:#fff; }
+  .btn-primary:hover { background:#0010cc; }
+  .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-secondary { background:#f0f0f0; color:#111; }
+  .btn-secondary:hover { background:#e0e0e0; }
+
+  .divider { text-align:center; font-size:12px; color:var(--muted); margin:16px 0; }
+  .login-link { text-align:center; font-size:13px; color:var(--muted); margin-top:20px; }
+  .login-link a { color:var(--blue); font-weight:600; text-decoration:none; }
+
+  /* Alert */
+  .alert {
+    padding:12px 14px; border-radius:10px; font-size:13px; font-weight:500;
+    margin-bottom:16px; display:none;
+  }
+  .alert.err { background:#fee2e2; color:#dc2626; display:block; }
+  .alert.ok  { background:#dcfce7; color:#16a34a; display:block; }
+
+  /* Success screen */
+  #screen-success { display:none; text-align:center; }
+  .success-icon { font-size:56px; margin-bottom:16px; }
+  #screen-success h2 { font-size:22px; font-weight:800; margin-bottom:8px; }
+  #screen-success p { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+  .folder-path {
+    background:var(--blue-light); border-radius:10px; padding:12px 16px;
+    font-size:13px; font-weight:700; color:var(--blue); margin-bottom:20px;
+    word-break:break-all; line-height:1.6;
+  }
+
+  /* Screens */
+  .screen { display:none; }
+  .screen.active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="brand">Swifty<span>Pharm</span></div>
+  <p>La vitrine digitale pour votre pharmacie</p>
+</div>
+
+<div class="box">
+  <div class="alert" id="global-alert"></div>
+
+  <!-- ══ ÉTAPE 1 — Compte ══ -->
+  <div class="screen active" id="screen-1">
+    <h2>Créer mon espace</h2>
+    <p class="sub">Étape 1 sur 2 — Vos identifiants de connexion</p>
+    <div class="steps">
+      <div class="step done"></div>
+      <div class="step"></div>
+    </div>
+
+    <div class="field">
+      <label>Adresse email</label>
+      <input type="email" id="s1-email" placeholder="contact@mapharmacie.fr" autocomplete="email">
+      <div class="err-msg" id="err-email"></div>
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="s1-pw" placeholder="8 caractères minimum" oninput="checkPw(this.value)">
+      <div class="pw-strength">
+        <div class="pw-bar" id="pw-b1"></div>
+        <div class="pw-bar" id="pw-b2"></div>
+        <div class="pw-bar" id="pw-b3"></div>
+        <div class="pw-bar" id="pw-b4"></div>
+      </div>
+      <div class="err-msg" id="err-pw"></div>
+    </div>
+    <div class="field">
+      <label>Confirmer le mot de passe</label>
+      <input type="password" id="s1-pw2" placeholder="Répétez le mot de passe">
+      <div class="err-msg" id="err-pw2"></div>
+    </div>
+    <button class="btn btn-primary" onclick="goStep2()">Continuer →</button>
+    <div class="login-link">Déjà inscrit ? <a href="login.html">Se connecter</a></div>
+  </div>
+
+  <!-- ══ ÉTAPE 2 — Pharmacie ══ -->
+  <div class="screen" id="screen-2">
+    <h2>Votre pharmacie</h2>
+    <p class="sub">Étape 2 sur 2 — Informations de base</p>
+    <div class="steps">
+      <div class="step done"></div>
+      <div class="step done"></div>
+    </div>
+
+    <div class="field">
+      <label>Nom de la pharmacie</label>
+      <input type="text" id="s2-name" placeholder="Pharmacie NHEAN" oninput="updateSlug()" autocomplete="organization">
+      <div class="err-msg" id="err-name"></div>
+    </div>
+    <div class="field">
+      <label>Ville</label>
+      <input type="text" id="s2-city" placeholder="Paris" oninput="updateSlug()">
+    </div>
+    <div class="field">
+      <label>Votre URL publique</label>
+      <div class="slug-preview" id="slug-preview">
+        <span>swiftypharm.fr/</span><span id="slug-val">votre-pharmacie</span>
+      </div>
+      <div class="hint">Généré automatiquement · modifiable plus tard</div>
+    </div>
+    <div class="field">
+      <label>Téléphone (optionnel)</label>
+      <input type="tel" id="s2-tel" placeholder="+33 1 23 45 67 89">
+    </div>
+
+    <button class="btn btn-primary" id="btn-submit" onclick="submitSignup()">Créer mon espace 🚀</button>
+    <button class="btn btn-secondary" onclick="goScreen('screen-1')" style="margin-top:8px">← Retour</button>
+  </div>
+
+  <!-- ══ SUCCÈS ══ -->
+  <div class="screen" id="screen-success">
+    <div class="success-icon">🎉</div>
+    <h2>Votre espace est prêt !</h2>
+    <p>Votre pharmacie est maintenant en ligne.<br>Vérifiez votre email pour confirmer votre compte.</p>
+    <div class="folder-path" id="success-info"></div>
+    <button class="btn btn-primary" onclick="goToDashboard()">Accéder à mon back office →</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL_BASE = 'https://twewgozdynowoieyqrcf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+const sb = supabase.createClient(SUPABASE_URL_BASE, SUPABASE_ANON_KEY);
+
+const BASE_NETLIFY = 'swiftypharm.fr';
+
+// ── Génération du slug ──
+function toSlug(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // accents
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim().replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function updateSlug() {
+  const name = document.getElementById('s2-name').value.trim();
+  const city = document.getElementById('s2-city').value.trim();
+  const parts = [name, city].filter(Boolean).map(toSlug).join('-');
+  const slug = parts || 'votre-pharmacie';
+  document.getElementById('slug-val').textContent = slug;
+  return slug;
+}
+
+// ── Force du mot de passe ──
+function checkPw(val) {
+  const bars = [
+    document.getElementById('pw-b1'),
+    document.getElementById('pw-b2'),
+    document.getElementById('pw-b3'),
+    document.getElementById('pw-b4'),
+  ];
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const colors = ['#dc2626','#f97316','#eab308','#16a34a'];
+  bars.forEach((b, i) => b.style.background = i < score ? colors[score-1] : '#e0e0e0');
+}
+
+// ── Navigation entre screens ──
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  clearAlert();
+}
+
+function showAlert(msg, type='err') {
+  const el = document.getElementById('global-alert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+}
+function clearAlert() {
+  const el = document.getElementById('global-alert');
+  el.className = 'alert';
+  el.textContent = '';
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+}
+
+// ── Étape 1 : validation ──
+function goStep2() {
+  clearAlert();
+  const email = document.getElementById('s1-email').value.trim();
+  const pw    = document.getElementById('s1-pw').value;
+  const pw2   = document.getElementById('s1-pw2').value;
+  let ok = true;
+
+  showErr('err-email',''); showErr('err-pw',''); showErr('err-pw2','');
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showErr('err-email', 'Email invalide.'); ok = false;
+  }
+  if (pw.length < 8) {
+    showErr('err-pw', 'Au moins 8 caractères.'); ok = false;
+  }
+  if (pw !== pw2) {
+    showErr('err-pw2', 'Les mots de passe ne correspondent pas.'); ok = false;
+  }
+  if (!ok) return;
+  goScreen('screen-2');
+}
+
+// ── Étape 2 : soumission ──
+async function submitSignup() {
+  clearAlert();
+  const name  = document.getElementById('s2-name').value.trim();
+  const city  = document.getElementById('s2-city').value.trim();
+  const tel   = document.getElementById('s2-tel').value.trim();
+  const email = document.getElementById('s1-email').value.trim();
+  const pw    = document.getElementById('s1-pw').value;
+  const slug  = updateSlug();
+
+  showErr('err-name','');
+  if (!name) { showErr('err-name', 'Veuillez renseigner le nom de la pharmacie.'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Création en cours…';
+
+  try {
+    // 1. Créer le compte Supabase Auth
+    const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pw });
+    if (authErr) throw new Error(authErr.message);
+
+    const userId = authData.user?.id;
+    if (!userId) throw new Error('Utilisateur non créé.');
+
+    // 2. Créer la ligne dans la table pharmacies
+    const { error: dbErr } = await sb.from('pharmacies').insert({
+      slug,
+      user_id:   userId,
+      nom:       name,
+      soustitre: city ? 'Votre pharmacie de confiance à ' + city : 'Votre pharmacie de confiance',
+      telephone: tel || '',
+      horaires:  {},
+      reseaux:   {}
+    });
+    if (dbErr) throw new Error(dbErr.message);
+
+    // 3. Sauvegarder en localStorage pour le BO
+    localStorage.setItem('swiftlink_slug', slug);
+    localStorage.setItem('swiftlink_user_email', email);
+
+    // 4. Afficher l'écran succès
+      document.getElementById('success-info').innerHTML =
+    `📁 Dossier GitHub à créer :<br><strong>SwiftyPharm/${slug}</strong><br><br>` +
+    `🌐 URL publique :<br><strong>https://${BASE_NETLIFY}/${slug}/</strong><br><br>` +
+    `📧 Email de confirmation envoyé à <strong>${email}</strong>`;
+
+    goScreen('screen-success');
+
+  } catch(err) {
+    showAlert('Erreur : ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Créer mon espace 🚀';
+  }
+}
+
+function goToDashboard() {
+  window.location.href = 'backoffice.html';
+}
+</script>
+</body>
+</html>

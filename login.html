@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftyPharm — Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --blue: #0012ff;
+    --blue-light: #e8eaff;
+    --text: #111;
+    --muted: #666;
+    --border: #d0d0d0;
+    --bg: #f5f6fa;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Inter',sans-serif; background:var(--bg);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:24px 16px;
+  }
+
+  .logo-wrap { margin-bottom:32px; text-align:center; }
+  .logo-wrap .brand { font-size:26px; font-weight:800; color:var(--blue); letter-spacing:-1px; }
+  .logo-wrap .brand span { color:#111; }
+  .logo-wrap p { font-size:13px; color:var(--muted); margin-top:4px; }
+
+  .box {
+    background:#fff; border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:36px 32px; width:100%; max-width:400px;
+  }
+  .box h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+  .box .sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+
+  .field { margin-bottom:16px; }
+  .field label {
+    display:block; font-size:12px; font-weight:600; color:var(--muted);
+    margin-bottom:5px; letter-spacing:.3px; text-transform:uppercase;
+  }
+  .field input {
+    width:100%; padding:11px 14px; border:1.5px solid var(--border);
+    border-radius:10px; font-family:inherit; font-size:14px;
+    color:var(--text); background:#fff; outline:none; transition:border-color .2s;
+  }
+  .field input:focus { border-color:var(--blue); }
+  .field input.error { border-color:#dc2626; }
+
+  .pw-wrap { position:relative; }
+  .pw-toggle {
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:16px; color:var(--muted);
+    padding:4px; line-height:1;
+  }
+  .pw-wrap input { padding-right:42px; }
+
+  .btn {
+    width:100%; padding:13px; border-radius:30px; font-family:inherit;
+    font-size:15px; font-weight:700; cursor:pointer; border:none;
+    transition:all .2s; margin-top:4px;
+  }
+  .btn-primary { background:var(--blue); color:#fff; }
+  .btn-primary:hover:not(:disabled) { background:#0010cc; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,18,255,0.25); }
+  .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+
+  .alert {
+    padding:12px 14px; border-radius:10px; font-size:13px; font-weight:500;
+    margin-bottom:16px; display:none; line-height:1.5;
+  }
+  .alert.err { background:#fee2e2; color:#dc2626; display:block; }
+  .alert.ok  { background:#dcfce7; color:#16a34a; display:block; }
+  .alert.info { background:var(--blue-light); color:var(--blue); display:block; }
+
+  .forgot-link {
+    display:block; text-align:right; font-size:12px; color:var(--blue);
+    font-weight:600; text-decoration:none; margin-top:6px; margin-bottom:16px;
+  }
+  .forgot-link:hover { text-decoration:underline; }
+
+  .divider {
+    display:flex; align-items:center; gap:12px;
+    font-size:12px; color:var(--muted); margin:20px 0;
+  }
+  .divider::before, .divider::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+
+  .signup-link { text-align:center; font-size:13px; color:var(--muted); margin-top:20px; }
+  .signup-link a { color:var(--blue); font-weight:600; text-decoration:none; }
+  .signup-link a:hover { text-decoration:underline; }
+
+  /* Loader overlay */
+  #loader {
+    display:none; position:fixed; inset:0; background:rgba(255,255,255,0.85);
+    z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  }
+  #loader.active { display:flex; }
+  .spinner-ring {
+    width:48px; height:48px; border:4px solid var(--blue-light);
+    border-top-color:var(--blue); border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #loader p { font-size:14px; font-weight:600; color:var(--blue); }
+
+  /* Reset password screen */
+  #screen-reset { display:none; }
+  #screen-login { display:block; }
+
+  @media(max-width:480px) {
+    .box { padding:28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="spinner-ring"></div>
+  <p>Connexion en cours…</p>
+</div>
+
+<div class="logo-wrap">
+  <div class="brand">Swifty<span>Pharm</span></div>
+  <p>Espace pharmacien</p>
+</div>
+
+<div class="box">
+  <div class="alert" id="global-alert"></div>
+
+  <!-- ══ LOGIN ══ -->
+  <div id="screen-login">
+    <h2>Bon retour 👋</h2>
+    <p class="sub">Connectez-vous à votre back office</p>
+
+    <div class="field">
+      <label>Adresse email</label>
+      <input type="email" id="email" placeholder="contact@mapharmacie.fr"
+        autocomplete="email" onkeydown="if(event.key==='Enter')login()">
+    </div>
+
+    <div class="field">
+      <label>Mot de passe</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="••••••••"
+          autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+        <button class="pw-toggle" onclick="togglePw()" type="button" id="pw-eye">👁</button>
+      </div>
+    </div>
+
+    <a href="#" class="forgot-link" onclick="showReset();return false;">Mot de passe oublié ?</a>
+
+    <button class="btn btn-primary" id="btn-login" onclick="login()">Se connecter</button>
+
+    <div class="divider">ou</div>
+
+    <div class="signup-link">
+      Pas encore de compte ?<br>
+      <a href="signup.html">Créer mon espace pharmacie →</a>
+    </div>
+  </div>
+
+  <!-- ══ RESET MDP ══ -->
+  <div id="screen-reset">
+    <h2>Mot de passe oublié</h2>
+    <p class="sub">Entrez votre email, nous vous enverrons un lien de réinitialisation.</p>
+
+    <div class="field">
+      <label>Adresse email</label>
+      <input type="email" id="reset-email" placeholder="contact@mapharmacie.fr"
+        onkeydown="if(event.key==='Enter')sendReset()">
+    </div>
+
+    <button class="btn btn-primary" onclick="sendReset()">Envoyer le lien</button>
+    <button class="btn" style="background:#f0f0f0;color:#111;margin-top:8px"
+      onclick="showLogin()">← Retour à la connexion</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://twewgozdynowoieyqrcf.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Vérifier si déjà connecté ──
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) redirectToDashboard(session.user.id);
+})();
+
+// ── Connexion ──
+async function login() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  clearAlert();
+
+  if (!email || !password) {
+    showAlert('Veuillez remplir tous les champs.'); return;
+  }
+
+  showLoader(true);
+  document.getElementById('btn-login').disabled = true;
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    await redirectToDashboard(data.user.id);
+
+  } catch(err) {
+    showLoader(false);
+    document.getElementById('btn-login').disabled = false;
+
+    if (err.message.includes('Invalid login')) {
+      showAlert('Email ou mot de passe incorrect.');
+    } else if (err.message.includes('Email not confirmed')) {
+      showAlert('⚠️ Confirmez votre email avant de vous connecter. Vérifiez votre boîte mail.', 'info');
+    } else {
+      showAlert('Erreur : ' + err.message);
+    }
+  }
+}
+
+// ── Récupérer le slug et rediriger ──
+async function redirectToDashboard(userId) {
+  try {
+    const { data, error } = await sb
+      .from('pharmacies')
+      .select('slug')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !data) throw new Error('Pharmacie introuvable.');
+
+    const slug = data.slug;
+    // Sauvegarder le slug pour le backoffice
+    localStorage.setItem('swiftlink_slug', slug);
+    localStorage.setItem('swiftlink_user_id', userId);
+
+    // Rediriger vers le backoffice
+    window.location.href = 'https://swiftypharm.fr/backoffice.html?slug=' + slug;
+
+  } catch(err) {
+    showLoader(false);
+    document.getElementById('btn-login').disabled = false;
+    showAlert('Compte trouvé mais pharmacie introuvable. Contactez le support.');
+  }
+}
+
+// ── Réinitialisation mot de passe ──
+async function sendReset() {
+  const email = document.getElementById('reset-email').value.trim();
+  clearAlert();
+
+  if (!email) { showAlert('Entrez votre adresse email.'); return; }
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://swiftypharm.fr/reset-password.html'
+  });
+
+  if (error) {
+    showAlert('Erreur : ' + error.message);
+  } else {
+    showAlert('✓ Lien envoyé ! Vérifiez votre boîte mail.', 'ok');
+    setTimeout(showLogin, 3000);
+  }
+}
+
+// ── UI helpers ──
+function showLoader(state) {
+  document.getElementById('loader').classList.toggle('active', state);
+}
+
+function showAlert(msg, type='err') {
+  const el = document.getElementById('global-alert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+}
+
+function clearAlert() {
+  const el = document.getElementById('global-alert');
+  el.className = 'alert';
+  el.textContent = '';
+}
+
+function togglePw() {
+  const input = document.getElementById('password');
+  const eye   = document.getElementById('pw-eye');
+  if (input.type === 'password') {
+    input.type = 'text'; eye.textContent = '🙈';
+  } else {
+    input.type = 'password'; eye.textContent = '👁';
+  }
+}
+
+function showReset() {
+  clearAlert();
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-reset').style.display = 'block';
+  const email = document.getElementById('email').value;
+  if (email) document.getElementById('reset-email').value = email;
+}
+
+function showLogin() {
+  clearAlert();
+  document.getElementById('screen-reset').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'block';
+}
+</script>
+</body>
+</html>

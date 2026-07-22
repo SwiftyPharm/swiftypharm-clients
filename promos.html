@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Promos du mois</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: #d2d2d2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 64px;
+    }
+
+    /* ══ HEADER ══ */
+    .page-header {
+      width: 100%; max-width: 480px;
+      display: flex; align-items: center;
+      gap: 12px;
+      padding: 20px 16px 16px;
+    }
+    .btn-back {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.15s;
+      text-decoration: none; color: #111;
+    }
+    .btn-back:hover { background: #f0f0f0; }
+    .header-title {
+      font-size: 20px; font-weight: 800; color: #111;
+    }
+    .header-sub {
+      font-size: 13px; color: #666; font-weight: 400; margin-top: 1px;
+    }
+
+    /* ══ GRILLE PRODUITS ══ */
+    .promo-grid {
+      width: 100%; max-width: 480px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px;
+    }
+
+    /* ══ CARD PRODUIT ══ */
+    .product-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .product-img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+    .product-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .product-badge {
+      position: absolute; top: 8px; left: 8px;
+      background: #0012ff; color: #fff;
+      font-size: 10px; font-weight: 800;
+      padding: 3px 8px; border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .product-info {
+      padding: 10px 12px 14px;
+      display: flex; flex-direction: column; gap: 6px; flex: 1;
+    }
+    .product-name {
+      font-size: 13px; font-weight: 700; color: #111;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .product-prices {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .price-after {
+      font-size: 16px; font-weight: 800; color: #0012ff;
+    }
+    .price-before {
+      font-size: 12px; color: #aaa; text-decoration: line-through; font-weight: 500;
+    }
+    .discount-pct {
+      font-size: 11px; font-weight: 700; color: #fff;
+      background: #e03030; border-radius: 6px;
+      padding: 1px 6px; margin-left: auto;
+    }
+
+    /* ══ ÉTAT VIDE ══ */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 16px;
+      color: #888;
+    }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
+
+    /* ══ POPUP IMAGE PLEIN ÉCRAN ══ */
+    .img-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9500;
+      background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+    .img-modal-overlay.open { display: flex; }
+    .img-modal-overlay img {
+      max-width: 100%; max-height: 100%;
+      border-radius: 16px;
+      object-fit: contain;
+      animation: img-pop 0.25s cubic-bezier(0.25,1,0.5,1);
+    }
+    @keyframes img-pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+
+     /* ══ CADRE DESKTOP (ombre légère, n'impacte que l'affichage large écran) ══ */
+    @media (min-width: 769px) {
+      html {
+        background: #d2d2d2;
+      }
+      body {
+        max-width: 580px;
+        margin: 24px auto;
+        border-radius: 28px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+      }
+    }
+
+    
+  </style>
+</head>
+<body>
+
+  <!-- ══ HEADER ══ -->
+ <div class="page-header" style="justify-content:center;">
+    <a class="btn-back" href="index.html" style="position:absolute;left:16px;">←</a>
+    <span style="font-size:19px;font-weight:800;color:#0012ff;">Promotions &amp; Nouveautés</span>
+  </div>
+
+  
+  <!-- ══ GRILLE ══ -->
+  <div class="promo-grid" id="promo-grid">
+    <!-- Rempli par JS -->
+  </div>
+
+ <div class="img-modal-overlay" id="img-modal" onclick="closeImgModal()">
+<button onclick="closeImgModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:28px;color:rgba(255,255,255,0.7);line-height:1;padding:4px;">✕</button>  <div style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:480px;cursor:default" onclick="event.stopPropagation()">
+    <img id="img-modal-src" src="" alt="Produit"
+      style="width:100%;max-height:55vh;object-fit:contain;border-radius:20px;">
+    <div style="background:#fff;width:100%;border-radius:0 0 24px 24px;padding:20px 20px 32px;text-align:center;">
+      <div id="img-modal-name" style="font-size:15px;font-weight:700;color:#111;line-height:1.5;margin-bottom:12px;"></div>
+      <div id="img-modal-before" style="font-size:13px;color:#aaa;text-decoration:line-through;font-weight:500;margin-bottom:4px;"></div>
+      <div id="img-modal-after" style="font-size:24px;font-weight:800;color:#0012ff;"></div>
+    </div>
+  </div>
+</div>
+ 
+  <script>
+  const SLUG = 'pharmacie-nhean'; // ⚠️ Identifiant unique de cette pharmacie
+
+  function calcDiscount(avant, apres) {
+    if (!avant || !apres || avant <= apres) return null;
+    return '-' + Math.round((1 - apres / avant) * 100) + '%';
+  }
+
+  async function renderPromos() {
+    const grid = document.getElementById('promo-grid');
+    let promos = [];
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('promos')
+        .select('*')
+        .eq('pharmacie_slug', SLUG)
+        .order('position', { ascending: true });
+
+      if (error) throw error;
+
+      // On ne garde que les promos actives avec un nom renseigné
+      promos = (data || []).filter(p => p.actif === true && p.nom && p.nom.trim().length > 0);
+    } catch(e) {
+      console.error('Erreur de récupération des promos :', e);
+    }
+
+    if (promos.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="emoji">🏷️</div>
+          <p>Aucune promotion disponible<br>pour le moment.<br><br>Revenez bientôt !</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = promos.map(p => {
+      const nom       = p.nom || '';
+      const imgSrc    = p.image_url || 'placeholder-product.png';
+      const badge     = p.badge || '';
+      const prixAvant = parseFloat(p.prix_avant) || 0;
+      const prixApres = parseFloat(p.prix_apres) || 0;
+
+      const discount  = calcDiscount(prixAvant, prixApres);
+      const badgeHtml = badge     ? `<div class="product-badge">${badge}</div>` : '';
+      const avantHtml = prixAvant ? `<span class="price-before">${prixAvant.toFixed(2)} €</span>` : '';
+      const apresHtml = prixApres ? `<span class="price-after">${prixApres.toFixed(2)} €</span>`  : '';
+      const pctHtml   = discount  ? `<span class="discount-pct">${discount}</span>`               : '';
+
+      return `
+        <div class="product-card" onclick="openImgModal('${imgSrc.replace(/'/g,"\\'")}','${nom.replace(/'/g,"\\'")}',${prixAvant},${prixApres})">
+          <div class="product-img-wrap">
+            <img src="${imgSrc}" alt="${nom}" onerror="this.src='placeholder-product.png'">
+            ${badgeHtml}
+          </div>
+          <div class="product-info">
+            <div class="product-name">${nom}</div>
+            <div class="product-prices">
+              ${apresHtml}
+              ${avantHtml}
+              ${pctHtml}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function openImgModal(src, nom, avant, apres) {
+    document.getElementById('img-modal-src').src = src;
+    document.getElementById('img-modal-name').textContent = nom;
+    document.getElementById('img-modal-before').textContent = avant ? avant.toFixed(2) + ' €' : '';
+    document.getElementById('img-modal-after').textContent  = apres ? apres.toFixed(2) + ' €' : '';
+    document.getElementById('img-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+  function closeImgModal() {
+    document.getElementById('img-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  renderPromos();
+  </script>
+
+</body>
+</html>
