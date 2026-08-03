@@ -697,16 +697,20 @@ function flashSaved() {
 //  AUTH
 // ═══════════════════════════════════
 async function initAuth() {
-  // Vérifier session Supabase d'abord
+  // Vérifier session Supabase (clients)
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    sessionStorage.setItem(SESSION_KEY, 'ok');
+    const { data } = await sb.from('pharmacies')
+      .select('slug')
+      .eq('user_id', session.user.id)
+      .single();
+    if (data?.slug) localStorage.setItem('swiftlink_slug', data.slug);
     hideLogin();
     return;
   }
-  // Sinon fallback login local
-  const localSession = sessionStorage.getItem(SESSION_KEY);
-  if (localSession === 'ok') { hideLogin(); return; }
+  // Fallback login local (toi)
+  const local = sessionStorage.getItem(SESSION_KEY);
+  if (local === 'ok') { hideLogin(); return; }
   document.getElementById('login-overlay').style.display = 'flex';
   document.getElementById('login-id').focus();
 }
