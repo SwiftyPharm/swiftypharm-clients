@@ -304,14 +304,26 @@ function adminLogout() {
   location.reload();
 }
 
+// ── Expose globally FIRST ──
+window.adminLogin   = adminLogin;
+window.adminLogout  = adminLogout;
+window.saveTemplate = saveTemplate;
+window.savePlan     = savePlan;
+window.setFilter    = setFilter;
+window.filterTable  = filterTable;
+window.showDetail   = showDetail;
+window.closeDetail  = closeDetail;
+
 // Check session
-if (sessionStorage.getItem('swifty_admin') === 'ok') {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  loadPharmacies();
-} else {
-  setTimeout(() => document.getElementById('admin-pw').focus(), 100);
-}
+document.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('swifty_admin') === 'ok') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadPharmacies();
+  } else {
+    document.getElementById('admin-pw').focus();
+  }
+});
 
 // ── LOAD ──
 async function loadPharmacies() {
@@ -530,16 +542,6 @@ function closeDetail() {
 setInterval(() => {
   if (sessionStorage.getItem('swifty_admin') === 'ok') loadPharmacies();
 }, 60000);
-
-// ── Expose globally ──
-window.adminLogin   = adminLogin;
-window.adminLogout  = adminLogout;
-window.saveTemplate = saveTemplate;
-window.savePlan     = savePlan;
-window.setFilter    = setFilter;
-window.filterTable  = filterTable;
-window.showDetail   = showDetail;
-window.closeDetail  = closeDetail;
 </script>
 </body>
 </html>
