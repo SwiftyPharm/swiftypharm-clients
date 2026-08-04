@@ -254,6 +254,7 @@
           <th>Email</th>
           <th>Template ID EmailJS</th>
           <th>Statut</th>
+          <th>Plan</th>
           <th>Inscrite le</th>
           <th></th>
         </tr>
@@ -318,7 +319,7 @@ async function loadPharmacies() {
 
   const { data, error } = await sb
     .from('pharmacies')
-    .select('slug, nom, soustitre, telephone, email_contact, emailjs_template_id, created_at, horaires, reseaux')
+    .select('slug, nom, soustitre, telephone, email_contact, emailjs_template_id, plan, created_at, horaires, reseaux')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -363,7 +364,15 @@ function renderTable(list) {
     const badge = hasTemplate
       ? `<span class="badge badge-ok"><span class="dot dot-ok"></span>Configurée</span>`
       : `<span class="badge badge-warn"><span class="dot dot-warn"></span>En attente</span>`;
-
+    
+      <td>
+  <select onchange="savePlan('${p.slug}', this.value)"
+    style="padding:5px 10px;border-radius:8px;border:1.5px solid #d0d0d0;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;outline:none;">
+    <option value="starter" ${(p.plan||'starter')==='starter'?'selected':''}>Starter</option>
+    <option value="pro"     ${p.plan==='pro'?'selected':''}>Pro</option>
+  </select>
+</td>
+  
     const date = p.created_at
       ? new Date(p.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
       : '—';
@@ -412,6 +421,20 @@ function renderTable(list) {
         </td>
       </tr>`;
   }).join('');
+}
+
+  async function savePlan(slug, plan) {
+  const { error } = await sb
+    .from('pharmacies')
+    .update({ plan })
+    .eq('slug', slug);
+  if (!error) {
+    const p = allPharmacies.find(x => x.slug === slug);
+    if (p) p.plan = plan;
+    updateStats();
+  } else {
+    alert('Erreur : ' + error.message);
+  }
 }
 
 // ── SAVE TEMPLATE ──
