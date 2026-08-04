@@ -344,7 +344,7 @@ textarea{resize:vertical;min-height:72px}
       <p>Vous consultez le contenu mais les articles sont désactivés. Passez à l'offre Pro pour activer vos promotions.</p>
     </div>
   </div>
-  <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+  <div id="btn-view-promos-wrap" style="display:flex;justify-content:flex-end;margin-bottom:14px">
     <a id="btn-view-promos" href="#" target="_blank" class="btn btn-outline btn-sm">👁 Voir ma page promos</a>
   </div>
   <div class="promo-grid" id="promo-grid"></div>
@@ -523,6 +523,7 @@ async function loadFromSupabase(){
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
+        buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
       }
     }
   }catch(e){console.error('Load error:',e);}
@@ -538,9 +539,13 @@ function applyPlanRestrictions(){
   const notifContent=document.getElementById('notif-content');
   if(notifNotice) notifNotice.style.display=isPro?'none':'block';
   if(notifContent) notifContent.style.display=isPro?'block':'none';
+  // Bouton "voir ma page promos" — caché pour Starter
+  const promoBtnWrap=document.getElementById('btn-view-promos-wrap');
+  if(promoBtnWrap) promoBtnWrap.style.display=isPro?'flex':'none';
   // Disable promo toggles for starter
   if(!isPro){
     document.querySelectorAll('[id^="promo-active-"]').forEach(el=>{el.disabled=true;});
+  }
   }
 }
 
@@ -614,40 +619,58 @@ function showLogoPreview(src){
 }
 
 // ═══════════════════════════════
-//  ADDRESS AUTOCOMPLETE (Nominatim)
+//  ADDRESS AUTOCOMPLETE (api-adresse.data.gouv.fr — officielle FR, zéro CORS)
 // ═══════════════════════════════
 let _addrTimer;
 function onAdresseInput(){
   clearTimeout(_addrTimer);
   const q=document.getElementById('ph-adresse').value.trim();
-  if(q.length<4){document.getElementById('adresse-results').classList.remove('show');return;}
-  _addrTimer=setTimeout(()=>fetchAddresses(q,'adresse-results','ph-adresse','ph-adresse-selected'),400);
+  const results=document.getElementById('adresse-results');
+  if(q.length<3){results.classList.remove('show');return;}
+  _addrTimer=setTimeout(()=>fetchAddressGouv(q),250);
 }
 
-async function fetchAddresses(q,resultsId,inputId,selectedFlag){
+async function fetchAddressGouv(q){
+  const results=document.getElementById('adresse-results');
   try{
-    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=fr&addressdetails=1`,{headers:{'Accept-Language':'fr'}});
+    const res=await fetch('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(q)+'&limit=5&type=housenumber');
     const data=await res.json();
-    const container=document.getElementById(resultsId);
-    if(!data.length){container.classList.remove('show');return;}
-    container.innerHTML=data.map((item,i)=>{
-      const main=item.address?.road?`${item.address.house_number||''} ${item.address.road}`.trim():(item.display_name.split(',')[0]);
-      const sub=item.display_name.split(',').slice(1,3).join(',').trim();
-      return `<div class="autocomplete-item" onclick="selectAddress('${item.display_name.replace(/'/g,"\\'")}','${(item.lat)},${(item.lon)}','${resultsId}','${inputId}')">
-        <div class="addr-main">${main}</div>
-        <div class="addr-sub">${sub}</div>
-      </div>`;
-    }).join('');
-    container.classList.add('show');
-  }catch(e){console.warn('Nominatim error',e);}
+    const features=data.features||[];
+    if(!features.length){
+      // Fallback sans type restriction
+      const res2=await fetch('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(q)+'&limit=5');
+      const data2=await res2.json();
+      renderAddressResults(data2.features||[]);
+      return;
+    }
+    renderAddressResults(features);
+  }catch(e){console.warn('Address API error',e);}
+}
+
+function renderAddressResults(features){
+  const results=document.getElementById('adresse-results');
+  if(!features.length){results.classList.remove('show');return;}
+  results.innerHTML=features.map(f=>{
+    const label=f.properties.label||'';
+    const city=f.properties.city||'';
+    const postcode=f.properties.postcode||'';
+    const main=f.properties.name||label.split(',')[0];
+    const sub=postcode+(city?' '+city:'');
+    const lat=f.geometry.coordinates[1];
+    const lon=f.geometry.coordinates[0];
+    const escaped=label.replace(/'/g,"\\'");
+    return `<div class="autocomplete-item" onclick="selectAddress('${escaped}','${lat},${lon}','adresse-results','ph-adresse')">
+      <div class="addr-main">${main}</div>
+      <div class="addr-sub">${sub}</div>
+    </div>`;
+  }).join('');
+  results.classList.add('show');
 }
 
 function selectAddress(display,coords,resultsId,inputId){
   document.getElementById(inputId).value=display;
   document.getElementById(resultsId).classList.remove('show');
-  // Generate Maps URL
   const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(display);
-  // Store in config
   const cfg=getConfig();
   cfg.pharmacy.adresse=display;
   cfg.pharmacy.adresse_maps=mapsUrl;
@@ -664,31 +687,36 @@ document.addEventListener('click',e=>{
 });
 
 // ═══════════════════════════════
-//  GOOGLE AVIS AUTOCOMPLETE
+//  GOOGLE AVIS AUTOCOMPLETE (api-adresse.data.gouv.fr aussi)
 // ═══════════════════════════════
 let _avisTimer;
 function onAvisInput(){
   clearTimeout(_avisTimer);
   const q=document.getElementById('soc-avis-val').value.trim();
-  if(q.length<3){document.getElementById('avis-results').classList.remove('show');return;}
-  _avisTimer=setTimeout(()=>fetchAvisAddresses(q),400);
+  const results=document.getElementById('avis-results');
+  if(q.length<3){results.classList.remove('show');return;}
+  _avisTimer=setTimeout(()=>fetchAvisAddresses(q),250);
 }
 
 async function fetchAvisAddresses(q){
+  const results=document.getElementById('avis-results');
   try{
-    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+' pharmacie')}&format=json&limit=5&countrycodes=fr&addressdetails=1`,{headers:{'Accept-Language':'fr'}});
+    // Cherche avec "pharmacie" pour avoir des suggestions pertinentes
+    const res=await fetch('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(q)+'&limit=5');
     const data=await res.json();
-    const container=document.getElementById('avis-results');
-    if(!data.length){container.classList.remove('show');return;}
-    container.innerHTML=data.map(item=>{
-      const main=item.display_name.split(',')[0];
-      const sub=item.display_name.split(',').slice(1,3).join(',').trim();
-      return `<div class="autocomplete-item" onclick="selectAvis('${item.display_name.replace(/'/g,"\\'")}')">
+    const features=data.features||[];
+    if(!features.length){results.classList.remove('show');return;}
+    results.innerHTML=features.map(f=>{
+      const label=f.properties.label||'';
+      const main=f.properties.name||label.split(',')[0];
+      const city=(f.properties.postcode||'')+' '+(f.properties.city||'');
+      const escaped=label.replace(/'/g,"\\'");
+      return `<div class="autocomplete-item" onclick="selectAvis('${escaped}')">
         <div class="addr-main">${main}</div>
-        <div class="addr-sub">${sub}</div>
+        <div class="addr-sub">${city.trim()}</div>
       </div>`;
     }).join('');
-    container.classList.add('show');
+    results.classList.add('show');
   }catch(e){}
 }
 
