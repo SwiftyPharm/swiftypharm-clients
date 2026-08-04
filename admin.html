@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftyPharm — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --blue: #0012ff;
+    --blue-light: #e8eaff;
+    --text: #111;
+    --muted: #666;
+    --border: #d0d0d0;
+    --bg: #f5f6fa;
+    --card: #fff;
+    --radius: 16px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position:fixed; inset:0; background:#fff; z-index:999;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .login-box {
+    width:340px; padding:40px 32px; border-radius:var(--radius);
+    box-shadow:var(--shadow); text-align:center; border:1px solid var(--border);
+  }
+  .login-box h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+  .login-box p { color:var(--muted); font-size:13px; margin-bottom:24px; }
+  .login-err { color:var(--red); font-size:13px; margin-top:10px; display:none; }
+
+  /* ── NAV ── */
+  #nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:#fff; border-bottom:1px solid #e0e0e0;
+    display:flex; align-items:center; padding:0 24px; height:56px; gap:16px;
+  }
+  .nav-brand { font-size:16px; font-weight:800; color:var(--blue); }
+  .nav-brand span { color:#111; }
+  .nav-badge {
+    background:var(--blue-light); color:var(--blue);
+    font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;
+  }
+  .nav-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+  .nav-count { font-size:13px; color:var(--muted); }
+  #last-refresh { font-size:11px; color:var(--muted); }
+
+  /* ── LAYOUT ── */
+  #app { padding:80px 24px 40px; max-width:1100px; margin:0 auto; }
+
+  /* ── STATS ── */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  @media(max-width:700px) { .stats-row { grid-template-columns:1fr 1fr; } }
+  .stat-card {
+    background:#fff; border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px; text-align:center;
+  }
+  .stat-num { font-size:32px; font-weight:800; color:var(--blue); }
+  .stat-label { font-size:12px; color:var(--muted); margin-top:4px; font-weight:500; }
+
+  /* ── FILTERS ── */
+  .filters { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  .search-input {
+    padding:9px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-family:inherit; font-size:14px; outline:none; width:240px;
+    transition:border-color .2s;
+  }
+  .search-input:focus { border-color:var(--blue); }
+  .filter-btn {
+    padding:8px 16px; border-radius:20px; font-family:inherit; font-size:13px;
+    font-weight:600; cursor:pointer; border:1.5px solid var(--border);
+    background:#fff; color:var(--muted); transition:all .2s;
+  }
+  .filter-btn.active { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+  .btn-refresh {
+    margin-left:auto; padding:8px 16px; border-radius:20px; font-family:inherit;
+    font-size:13px; font-weight:600; cursor:pointer; border:none;
+    background:var(--blue); color:#fff; transition:all .2s;
+  }
+  .btn-refresh:hover { background:#0010cc; }
+
+  /* ── TABLE ── */
+  .table-wrap { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    padding:12px 16px; text-align:left; font-size:11px; font-weight:700;
+    color:var(--muted); letter-spacing:.5px; text-transform:uppercase;
+    background:#f8f8fc; border-bottom:1px solid var(--border);
+  }
+  tbody tr { border-bottom:1px solid #f0f0f0; transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:#fafafe; }
+  td { padding:14px 16px; font-size:13px; vertical-align:middle; }
+
+  /* ── STATUS BADGE ── */
+  .badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;
+  }
+  .badge-ok  { background:#dcfce7; color:#16a34a; }
+  .badge-warn{ background:#fef9c3; color:#a16207; }
+  .badge-err { background:#fee2e2; color:#dc2626; }
+  .dot { width:6px; height:6px; border-radius:50%; }
+  .dot-ok  { background:#16a34a; }
+  .dot-warn{ background:#a16207; }
+  .dot-err { background:#dc2626; }
+
+  /* ── TEMPLATE ID FIELD ── */
+  .template-wrap { display:flex; gap:6px; align-items:center; }
+  .template-input {
+    padding:6px 10px; border:1.5px solid var(--border); border-radius:8px;
+    font-family:monospace; font-size:12px; width:150px; outline:none;
+    transition:border-color .2s; color:var(--text);
+  }
+  .template-input:focus { border-color:var(--blue); }
+  .template-input.saved { border-color:var(--green); background:#f0fdf4; }
+  .btn-save-tpl {
+    padding:5px 12px; border-radius:8px; font-family:inherit; font-size:12px;
+    font-weight:700; cursor:pointer; border:none; background:var(--blue);
+    color:#fff; transition:all .2s; white-space:nowrap;
+  }
+  .btn-save-tpl:hover { background:#0010cc; }
+  .btn-save-tpl.saving { opacity:.5; cursor:not-allowed; }
+  .tpl-status { font-size:11px; color:var(--green); display:none; }
+
+  /* ── PAGE LINK ── */
+  .page-link {
+    color:var(--blue); font-size:12px; font-weight:600; text-decoration:none;
+    display:flex; align-items:center; gap:4px;
+  }
+  .page-link:hover { text-decoration:underline; }
+
+  /* ── EMAIL ── */
+  .email-cell { font-size:12px; color:var(--muted); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* ── SLUG ── */
+  .slug-cell { font-family:monospace; font-size:11px; color:var(--muted); }
+
+  /* ── DATE ── */
+  .date-cell { font-size:12px; color:var(--muted); white-space:nowrap; }
+
+  /* ── EMPTY ── */
+  .empty-row td { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
+
+  /* ── MODAL DÉTAIL ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.4); align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal-box {
+    background:#fff; border-radius:var(--radius); box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    padding:28px; width:100%; max-width:520px; max-height:80vh; overflow-y:auto;
+  }
+  .modal-box h3 { font-size:18px; font-weight:800; margin-bottom:16px; }
+  .detail-row { display:flex; gap:8px; margin-bottom:10px; font-size:13px; }
+  .detail-key { font-weight:600; min-width:140px; color:var(--muted); }
+  .detail-val { color:var(--text); word-break:break-all; }
+  .modal-close-btn {
+    margin-top:20px; width:100%; padding:11px; border-radius:30px;
+    background:#f0f0f0; border:none; font-family:inherit; font-size:14px;
+    font-weight:700; cursor:pointer;
+  }
+
+  /* ── FORM ── */
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; }
+  .field input {
+    width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px;
+    font-family:inherit; font-size:14px; outline:none; transition:border-color .2s;
+  }
+  .field input:focus { border-color:var(--blue); }
+
+  @media(max-width:900px) {
+    table { display:block; overflow-x:auto; }
+    #app { padding:72px 12px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>⚡ Admin SwiftyPharm</h2>
+    <p>Accès réservé</p>
+    <div class="field">
+      <label>Mot de passe admin</label>
+      <input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <button onclick="adminLogin()" style="width:100%;padding:11px;border-radius:30px;background:#0012ff;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Accéder</button>
+    <p class="login-err" id="login-err">Mot de passe incorrect.</p>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-brand">Swifty<span>Pharm</span></div>
+  <div class="nav-badge">ADMIN</div>
+  <div class="nav-right">
+    <span class="nav-count" id="nav-count"></span>
+    <span id="last-refresh"></span>
+    <button class="btn-refresh" onclick="loadPharmacies()">🔄 Actualiser</button>
+    <button onclick="adminLogout()" style="font-size:12px;color:#666;background:none;border:1px solid #d0d0d0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">Pharmacies inscrites</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-active" style="color:#16a34a">—</div>
+      <div class="stat-label">Avec template configuré</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-pending" style="color:#a16207">—</div>
+      <div class="stat-label">En attente de config</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-today" style="color:#7c3aed">—</div>
+      <div class="stat-label">Inscrites aujourd'hui</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input type="text" class="search-input" id="search" placeholder="🔍 Rechercher par nom, slug, email…" oninput="filterTable()">
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all',this)">Toutes</button>
+    <button class="filter-btn" id="filter-ok" onclick="setFilter('ok',this)">✓ Configurées</button>
+    <button class="filter-btn" id="filter-pending" onclick="setFilter('pending',this)">⏳ En attente</button>
+    <button class="btn-refresh" onclick="loadPharmacies()">🔄</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Pharmacie</th>
+          <th>Slug / URL</th>
+          <th>Email</th>
+          <th>Template ID EmailJS</th>
+          <th>Statut</th>
+          <th>Inscrite le</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pharmacies-tbody">
+        <tr class="empty-row"><td colspan="7">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div class="modal-overlay" id="modal-detail" onclick="if(event.target===this)closeDetail()">
+  <div class="modal-box">
+    <h3 id="modal-title">Détail pharmacie</h3>
+    <div id="modal-content"></div>
+    <button class="modal-close-btn" onclick="closeDetail()">Fermer</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+const EMAILJS_SERVICE_ID = 'service_ehw7pcv'; // ton service ID fixe
+const ADMIN_PW = 'swiftyadmin2024'; // ← change ce mot de passe
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allPharmacies = [];
+let currentFilter = 'all';
+
+// ── AUTH ──
+function adminLogin() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === ADMIN_PW) {
+    sessionStorage.setItem('swifty_admin', 'ok');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadPharmacies();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('admin-pw').value = '';
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('swifty_admin');
+  location.reload();
+}
+
+// Check session
+if (sessionStorage.getItem('swifty_admin') === 'ok') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadPharmacies();
+} else {
+  setTimeout(() => document.getElementById('admin-pw').focus(), 100);
+}
+
+// ── LOAD ──
+async function loadPharmacies() {
+  document.querySelector('#pharmacies-tbody').innerHTML = '<tr class="empty-row"><td colspan="7">Chargement…</td></tr>';
+
+  const { data, error } = await sb
+    .from('pharmacies')
+    .select('slug, nom, soustitre, telephone, email_contact, emailjs_template_id, created_at, horaires, reseaux')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    document.querySelector('#pharmacies-tbody').innerHTML = `<tr class="empty-row"><td colspan="7">Erreur : ${error.message}</td></tr>`;
+    return;
+  }
+
+  allPharmacies = data || [];
+  updateStats();
+  renderTable(allPharmacies);
+  document.getElementById('last-refresh').textContent = 'Mis à jour : ' + new Date().toLocaleTimeString('fr-FR');
+}
+
+// ── STATS ──
+function updateStats() {
+  const total   = allPharmacies.length;
+  const active  = allPharmacies.filter(p => p.emailjs_template_id).length;
+  const pending = total - active;
+  const today   = allPharmacies.filter(p => {
+    const d = new Date(p.created_at);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+  }).length;
+
+  document.getElementById('stat-total').textContent   = total;
+  document.getElementById('stat-active').textContent  = active;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-today').textContent   = today;
+  document.getElementById('nav-count').textContent    = total + ' pharmacie' + (total > 1 ? 's' : '');
+}
+
+// ── RENDER ──
+function renderTable(list) {
+  const tbody = document.getElementById('pharmacies-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Aucune pharmacie trouvée.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(p => {
+    const hasTemplate = !!p.emailjs_template_id;
+    const badge = hasTemplate
+      ? `<span class="badge badge-ok"><span class="dot dot-ok"></span>Configurée</span>`
+      : `<span class="badge badge-warn"><span class="dot dot-warn"></span>En attente</span>`;
+
+    const date = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+      : '—';
+
+    const nom = p.nom || p.slug || '—';
+    const email = p.email_contact || '—';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:700;color:#111">${nom}</div>
+          ${p.soustitre ? `<div style="font-size:11px;color:#888;margin-top:2px">${p.soustitre}</div>` : ''}
+        </td>
+        <td>
+          <div class="slug-cell">${p.slug}</div>
+          <a href="https://swiftypharm.fr/${p.slug}" target="_blank" class="page-link" style="margin-top:4px">
+            Voir la page →
+          </a>
+        </td>
+        <td>
+          <div class="email-cell" title="${email}">${email}</div>
+        </td>
+        <td>
+          <div class="template-wrap">
+            <input
+              type="text"
+              class="template-input ${hasTemplate ? 'saved' : ''}"
+              id="tpl-${p.slug}"
+              value="${p.emailjs_template_id || ''}"
+              placeholder="template_xxxxxx"
+              onkeydown="if(event.key==='Enter')saveTemplate('${p.slug}')"
+            >
+            <button class="btn-save-tpl" id="btn-${p.slug}" onclick="saveTemplate('${p.slug}')">
+              Sauver
+            </button>
+          </div>
+          <div class="tpl-status" id="status-${p.slug}">✓ Sauvegardé</div>
+        </td>
+        <td>${badge}</td>
+        <td class="date-cell">${date}</td>
+        <td>
+          <button onclick="showDetail('${p.slug}')"
+            style="padding:5px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #d0d0d0;background:#fff;color:#111;">
+            Détail
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ── SAVE TEMPLATE ──
+async function saveTemplate(slug) {
+  const input  = document.getElementById('tpl-' + slug);
+  const btn    = document.getElementById('btn-' + slug);
+  const status = document.getElementById('status-' + slug);
+  const value  = input.value.trim();
+
+  btn.textContent = '…';
+  btn.classList.add('saving');
+
+  const { error } = await sb
+    .from('pharmacies')
+    .update({ emailjs_template_id: value, emailjs_service_id: EMAILJS_SERVICE_ID })
+    .eq('slug', slug);
+
+  btn.textContent = 'Sauver';
+  btn.classList.remove('saving');
+
+  if (!error) {
+    input.classList.add('saved');
+    status.style.display = 'block';
+    setTimeout(() => status.style.display = 'none', 2500);
+    // Mettre à jour localement
+    const p = allPharmacies.find(x => x.slug === slug);
+    if (p) p.emailjs_template_id = value;
+    updateStats();
+  } else {
+    alert('Erreur : ' + error.message);
+  }
+}
+
+// ── FILTER ──
+function setFilter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterTable();
+}
+
+function filterTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let list = allPharmacies.filter(p => {
+    const match = (p.nom||'').toLowerCase().includes(q)
+      || (p.slug||'').toLowerCase().includes(q)
+      || (p.email_contact||'').toLowerCase().includes(q);
+    if (!match) return false;
+    if (currentFilter === 'ok')      return !!p.emailjs_template_id;
+    if (currentFilter === 'pending') return !p.emailjs_template_id;
+    return true;
+  });
+  renderTable(list);
+}
+
+// ── DETAIL ──
+function showDetail(slug) {
+  const p = allPharmacies.find(x => x.slug === slug);
+  if (!p) return;
+  document.getElementById('modal-title').textContent = p.nom || slug;
+
+  const soc = p.reseaux || {};
+  const rows = [
+    ['Slug',       p.slug],
+    ['Nom',        p.nom || '—'],
+    ['Sous-titre', p.soustitre || '—'],
+    ['Téléphone',  p.telephone || '—'],
+    ['Email',      p.email_contact || '—'],
+    ['Template ID',p.emailjs_template_id || '⏳ Non configuré'],
+    ['Service ID', p.emailjs_service_id || EMAILJS_SERVICE_ID],
+    ['Instagram',  soc.instagram?.url || '—'],
+    ['Google Avis',soc.google?.url || '—'],
+    ['Facebook',   soc.facebook?.url || '—'],
+    ['Site Web',   soc.website?.url || '—'],
+    ['Inscrite le',p.created_at ? new Date(p.created_at).toLocaleString('fr-FR') : '—'],
+    ['URL publique', `swiftypharm.fr/${p.slug}`],
+  ];
+
+  document.getElementById('modal-content').innerHTML = rows.map(([k,v]) => `
+    <div class="detail-row">
+      <span class="detail-key">${k}</span>
+      <span class="detail-val">${v}</span>
+    </div>`).join('');
+
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('modal-detail').classList.remove('open');
+}
+
+// Auto-refresh toutes les 60 secondes
+setInterval(() => {
+  if (sessionStorage.getItem('swifty_admin') === 'ok') loadPharmacies();
+}, 60000);
+</script>
+</body>
+</html>
