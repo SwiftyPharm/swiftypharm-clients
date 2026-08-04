@@ -363,6 +363,10 @@
           <label>URL Google Maps</label>
           <input type="url" id="ph-maps" placeholder="https://maps.google.com/…" oninput="autoSave()">
         </div>
+        <div class="field">
+  <label>Email de contact (pour recevoir les ordonnances)</label>
+  <input type="email" id="ph-email" placeholder="contact@mapharmacie.fr" oninput="autoSave()">
+</div>
       </div>
     </div>
 
@@ -519,8 +523,8 @@ const DEFAULT_PW  = 'swift2024';
 
 const DEFAULTS = {
   pharmacy: {
-    name:'Pharmacie NHEAN', sub:'Votre pharmacie de confiance',
-    tel:'', maps:'', 
+    name:'Pharmacie', sub:'Votre pharmacie de confiance',
+    tel:'', maps:'', email_contact: '',
     reseaux_sociaux: {
       insta: { active: true, val: '' },
       fb:    { active: false, val: '' },
@@ -574,6 +578,7 @@ async function syncToSupabase(cfg, indicator) {
   logo_base64:     cfg.pharmacy.logoData    || '',
   banniere_base64: cfg.pharmacy.bannerData  || '',
   docteur:         cfg.pharmacy.docteur     || '',
+  email_contact: cfg.pharmacy.email_contact || '',
   reseaux:         cfg.pharmacy.reseaux     || {}   // ← était reseaux_sociaux
 };
 
@@ -878,6 +883,7 @@ function fillInfo(cfg) {
   document.getElementById('ph-sub').value  = p.sub  || '';
   document.getElementById('ph-tel').value  = p.tel  || '';
   document.getElementById('ph-maps').value = p.maps || '';
+  document.getElementById('ph-email').value = p.email_contact || '';
   
 const soc = p.reseaux || {};
 
@@ -917,6 +923,7 @@ function collectInfo() {
     sub:       document.getElementById('ph-sub').value,
     tel:       document.getElementById('ph-tel').value,
     maps:      document.getElementById('ph-maps').value,
+    email_contact: document.getElementById('ph-email').value,
     
    reseaux: {
   instagram: {
