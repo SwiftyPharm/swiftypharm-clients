@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Swift'Link — Pharmacie NHEAN</title>
+  <title>SwiftyPharm</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
@@ -451,12 +451,12 @@
 
   <!-- ══ BANNIÈRE ══ -->
   <div class="banniere">
-    <img id="banniere-img" src="/banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
+    <img id="banniere-img" src="banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
   </div>
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <img class="profile-avatar" id="profile-avatar-img" src="/logo pharmacie general.jpg" alt="Logo pharmacie">
+    <img class="profile-avatar" id="profile-avatar-img" src="logo pharmacie general.jpg" alt="Logo pharmacie">
     <div class="profile-name" id="profile-name-display">Pharmacie NHEAN</div>
     <div class="profile-sub" id="profile-sub-display">Votre pharmacie de confiance à Paris</div>
 
@@ -464,22 +464,22 @@
     <div class="contact-icons">
       <div style="display:flex; flex-direction:column; align-items:center;">
         <a class="contact-icon-btn" id="link-phone" href="tel:+33781298075">
-          <img src="/phone.svg" alt="Téléphone">
+          <img src="phone.svg" alt="Téléphone">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
         <a class="contact-icon-btn" id="link-maps" href="https://maps.app.goo.gl/sVoh48TPr2kfwsWB7" target="_blank">
-          <img src="/map-pin.svg" alt="Adresse">
+          <img src="map-pin.svg" alt="Adresse">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
         <a class="contact-icon-btn" id="link-infos" href="#">
-          <img src="/infos.svg" alt="Infos">
+          <img src="infos.svg" alt="Infos">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
         <a class="contact-icon-btn" id="link-clock" href="#">
-          <img src="/clock.svg" alt="Horaires">
+          <img src="clock.svg" alt="Horaires">
         </a>
       </div>
     </div>
@@ -489,11 +489,11 @@
   <div class="dynamic-social-container" id="dynamic-social-links">
     <!-- Rempli automatiquement par JavaScript (Supabase) -->
     <a href="https://reviewthis.biz/PHA-NHEAN" class="social-card-item">
-      <img src="/google-avis-icon.png" alt="Google Avis" class="social-card-img">
+      <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img">
       <div class="social-card-txt">Notez nous sur <br>Google !</div>
     </a>
     <a href="https://www.instagram.com/swiftup_fr" target="_blank" class="social-card-item">
-      <img src="/instagram-icon.png" alt="Instagram" class="social-card-img">
+      <img src="instagram-icon.png" alt="Instagram" class="social-card-img">
       <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
     </a>
   </div>
@@ -503,7 +503,7 @@
 
     <!-- Promo du mois -->
     <a class="card card-promo" href="promos.html" style="display:block;text-decoration:none;">
-      <img class="card-full-img" src="/promo-du-mois.png" alt="Promo du mois">
+      <img class="card-full-img" src="promo-du-mois.png" alt="Promo du mois">
     </a>
 
     <!-- Formulaire ordonnance -->
@@ -557,7 +557,7 @@
       </div>
 
       <div class="success-overlay" id="success-overlay">
-        <img class="success-icon" src="/confirm_icon.png" alt="Succès">
+        <img class="success-icon" src="confirm_icon.png" alt="Succès">
         <div class="success-title">Ordonnance envoyée !</div>
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
@@ -565,7 +565,7 @@
           <a href="https://reviewthis.biz/PHA-NHEAN" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
         </div>
       </div>
-      <img src="/down-upload.png" alt="" style="width:100%; display:block; margin-top:10px;">
+      <img src="down-upload.png" alt="" style="width:100%; display:block; margin-top:10px;">
     </div>
   </div>
 
@@ -777,7 +777,7 @@
         my_file:      reader.result,
         sent_at:      new Date().toLocaleString('fr-FR')
       };
-      emailjs.send('service_ehw7pcv', 'template_0ydv3ac', templateParams)
+      emailjs.send(window.PHARMACY_EMAILJS_SERVICE||'service_ehw7pcv', window.PHARMACY_EMAILJS_TEMPLATE||'', {...templateParams, to_email: window.PHARMACY_EMAIL||''})
         .then(function() {
           trackSend();
           playSound('success');
@@ -1021,6 +1021,11 @@
       if (data.logo_base64) document.getElementById('profile-avatar-img').src = data.logo_base64;
       if (data.banniere_base64) document.getElementById('banniere-img').src = data.banniere_base64;
 
+      // EmailJS dynamique
+      window.PHARMACY_EMAILJS_SERVICE  = data.emailjs_service_id  || 'service_ehw7pcv';
+      window.PHARMACY_EMAILJS_TEMPLATE = data.emailjs_template_id || '';
+      window.PHARMACY_EMAIL            = data.email_contact        || '';
+
       // Téléphone & Maps dynamiques
       if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
       if (data.adresse_maps) document.getElementById('link-maps').href = data.adresse_maps;
@@ -1047,7 +1052,7 @@
         }
         container.innerHTML += `
           <a href="${url}" target="_blank" class="social-card-item">
-            <img src="/google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
+            <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
             <div class="social-card-txt">Notez nous sur <br>Google !</div>
           </a>`;
       }
@@ -1065,7 +1070,7 @@
         }
         container.innerHTML += `
           <a href="${instaUrl}" target="_blank" class="social-card-item">
-            <img src="/instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
+            <img src="instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
             <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
           </a>`;
       }
@@ -1079,7 +1084,7 @@
         let fbUrl = fbUrlVal.startsWith('http') ? fbUrlVal : `https://facebook.com/${fbUrlVal}`;
         container.innerHTML += `
           <a href="${fbUrl}" target="_blank" class="social-card-item">
-            <img src="/facebook-icon.png" alt="Facebook" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#1877f2;\\'>📘</div>'">
+            <img src="facebook-icon.png" alt="Facebook" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#1877f2;\\'>📘</div>'">
             <div class="social-card-txt">Retrouvez nous<br>sur Facebook !</div>
           </a>`;
       }
@@ -1093,7 +1098,7 @@
         let webUrl = webUrlVal.startsWith('http') ? webUrlVal : `https://${webUrlVal}`;
         container.innerHTML += `
           <a href="${webUrl}" target="_blank" class="social-card-item">
-            <img src="/website-icon.png" alt="Site Web" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0012ff;\\'>🌐</div>'">
+            <img src="website-icon.png" alt="Site Web" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0012ff;\\'>🌐</div>'">
             <div class="social-card-txt">Visitez notre<br>Site Web !</div>
           </a>`;
       }
