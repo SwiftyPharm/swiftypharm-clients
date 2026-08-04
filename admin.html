@@ -530,6 +530,15 @@ function closeDetail() {
 setInterval(() => {
   if (sessionStorage.getItem('swifty_admin') === 'ok') loadPharmacies();
 }, 60000);
+
+  window.adminLogin   = adminLogin;
+window.adminLogout  = adminLogout;
+window.saveTemplate = saveTemplate;
+window.savePlan     = savePlan;
+window.setFilter    = setFilter;
+window.filterTable  = filterTable;
+window.showDetail   = showDetail;
+window.closeDetail  = closeDetail;
 </script>
 </body>
 </html>
