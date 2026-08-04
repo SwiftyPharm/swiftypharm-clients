@@ -186,6 +186,15 @@
       <input type="tel" id="s2-tel" placeholder="+33 1 23 45 67 89">
     </div>
 
+    <div class="field">
+  <label>Offre choisie</label>
+  <select id="s2-plan"
+    style="width:100%;padding:11px 14px;border:1.5px solid #d0d0d0;border-radius:10px;font-family:inherit;font-size:14px;outline:none;background:#fff;cursor:pointer;">
+    <option value="starter">Starter — Page vitrine sans promos</option>
+    <option value="pro">Pro — Page vitrine + Promotions</option>
+  </select>
+</div>
+
     <button class="btn btn-primary" id="btn-submit" onclick="submitSignup()">Créer mon espace 🚀</button>
     <button class="btn btn-secondary" onclick="goScreen('screen-1')" style="margin-top:8px">← Retour</button>
   </div>
@@ -296,6 +305,7 @@ async function submitSignup() {
   const tel   = document.getElementById('s2-tel').value.trim();
   const email = document.getElementById('s1-email').value.trim();
   const pw    = document.getElementById('s1-pw').value;
+  
   const slug  = updateSlug();
 
   showErr('err-name','');
@@ -321,6 +331,7 @@ async function submitSignup() {
       soustitre: city ? 'Votre pharmacie de confiance à ' + city : 'Votre pharmacie de confiance',
       telephone: tel || '',
       horaires:  {},
+      plan: document.getElementById('s2-plan').value,
       reseaux:   {}
     });
     if (dbErr) throw new Error(dbErr.message);
