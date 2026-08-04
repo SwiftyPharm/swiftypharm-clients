@@ -3,274 +3,580 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Promos du mois</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <title>Promotions</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>(function(){ emailjs.init("Apzn8FzYNZlXAQTs-"); })();</script>
   <script>
     const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      background: #d2d2d2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0 0 64px;
+    :root {
+      --blue:#1753ff; --blue-l:#eef2ff; --blue-d:#1040d8;
+      --text:#0f172a; --muted:#64748b; --border:#e2e8f0;
+      --bg:#f1f5f9; --card:#fff;
+      --green:#16a34a; --amber:#d97706; --red:#dc2626;
+      --radius:18px; --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
     }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding-bottom:120px; }
 
-    /* ══ HEADER ══ */
+    /* ── HEADER ── */
     .page-header {
-      width: 100%; max-width: 480px;
-      display: flex; align-items: center;
-      gap: 12px;
-      padding: 20px 16px 16px;
+      width:100%; max-width:480px; position:sticky; top:0; z-index:50;
+      background:rgba(241,245,249,.92); backdrop-filter:blur(12px);
+      padding:16px 16px 12px; display:flex; align-items:center; justify-content:center;
+      border-bottom:1px solid var(--border);
     }
     .btn-back {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: #fff; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: background 0.15s;
-      text-decoration: none; color: #111;
+      position:absolute; left:16px; width:36px; height:36px; border-radius:10px;
+      background:var(--card); border:1px solid var(--border); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:16px;
+      color:var(--text); text-decoration:none; box-shadow:var(--shadow); transition:all .15s;
     }
-    .btn-back:hover { background: #f0f0f0; }
-    .header-title {
-      font-size: 20px; font-weight: 800; color: #111;
-    }
-    .header-sub {
-      font-size: 13px; color: #666; font-weight: 400; margin-top: 1px;
-    }
+    .btn-back:hover { background:var(--blue-l); border-color:var(--blue); color:var(--blue); }
+    .header-title { font-size:17px; font-weight:800; color:var(--blue); }
 
-    /* ══ GRILLE PRODUITS ══ */
+    /* ── PANIER FLOATING ── */
+    .cart-fab {
+      position:fixed; bottom:24px; right:50%; transform:translateX(50%);
+      max-width:440px; width:calc(100% - 32px);
+      background:var(--blue); color:#fff; border:none; cursor:pointer;
+      border-radius:16px; padding:14px 20px;
+      display:none; align-items:center; justify-content:space-between;
+      box-shadow:0 8px 24px rgba(23,83,255,.4); z-index:100; font-family:inherit;
+      transition:all .3s;
+    }
+    .cart-fab.visible { display:flex; }
+    .cart-fab-left { display:flex; align-items:center; gap:10px; }
+    .cart-fab-icon { font-size:20px; }
+    .cart-fab-label { font-size:14px; font-weight:700; }
+    .cart-fab-count { background:rgba(255,255,255,.25); padding:2px 8px; border-radius:20px; font-size:12px; font-weight:700; }
+    .cart-fab-total { font-size:16px; font-weight:800; }
+
+    /* ── GRILLE ── */
     .promo-grid {
-      width: 100%; max-width: 480px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding: 0 16px;
+      width:100%; max-width:480px; display:grid;
+      grid-template-columns:1fr 1fr; gap:12px; padding:16px 16px 0;
     }
 
-    /* ══ CARD PRODUIT ══ */
+    /* ── CARD PRODUIT ── */
     .product-card {
-      background: #fff;
-      border-radius: 18px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      background:var(--card); border-radius:var(--radius); overflow:hidden;
+      display:flex; flex-direction:column; border:1px solid var(--border);
+      box-shadow:var(--shadow); transition:transform .2s, box-shadow .2s;
     }
-    .product-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
+    .product-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
 
     .product-img-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1;
-      background: #f5f5f5;
-      overflow: hidden;
+      position:relative; width:100%; aspect-ratio:1; background:#f8fafc; overflow:hidden; cursor:pointer;
     }
-    .product-img-wrap img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
+    .product-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
     .product-badge {
-      position: absolute; top: 8px; left: 8px;
-      background: #0012ff; color: #fff;
-      font-size: 10px; font-weight: 800;
-      padding: 3px 8px; border-radius: 20px;
-      letter-spacing: 0.3px;
+      position:absolute; top:8px; left:8px; background:var(--blue); color:#fff;
+      font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; letter-spacing:.3px;
     }
+    .stock-indicator {
+      position:absolute; bottom:8px; left:8px; right:8px;
+      font-size:9px; font-weight:700; padding:3px 8px; border-radius:6px; text-align:center;
+    }
+    .stock-ok   { background:rgba(22,163,74,.9); color:#fff; }
+    .stock-low  { background:rgba(217,119,6,.9); color:#fff; }
+    .stock-out  { background:rgba(220,38,38,.9); color:#fff; }
 
-    .product-info {
-      padding: 10px 12px 14px;
-      display: flex; flex-direction: column; gap: 6px; flex: 1;
-    }
-    .product-name {
-      font-size: 13px; font-weight: 700; color: #111;
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .product-prices {
-      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    }
-    .price-after {
-      font-size: 16px; font-weight: 800; color: #0012ff;
-    }
-    .price-before {
-      font-size: 12px; color: #aaa; text-decoration: line-through; font-weight: 500;
-    }
-    .discount-pct {
-      font-size: 11px; font-weight: 700; color: #fff;
-      background: #e03030; border-radius: 6px;
-      padding: 1px 6px; margin-left: auto;
-    }
+    .product-info { padding:10px 12px 12px; display:flex; flex-direction:column; gap:5px; flex:1; }
+    .product-name { font-size:12px; font-weight:700; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .product-prices { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+    .price-after  { font-size:15px; font-weight:800; color:var(--blue); }
+    .price-before { font-size:11px; color:#94a3b8; text-decoration:line-through; font-weight:500; }
+    .discount-pct { font-size:10px; font-weight:700; color:#fff; background:var(--red); border-radius:5px; padding:1px 5px; margin-left:auto; }
 
-    /* ══ ÉTAT VIDE ══ */
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 48px 16px;
-      color: #888;
+    /* ── BOUTON AJOUTER ── */
+    .add-btn-wrap { padding:0 12px 12px; }
+    .add-btn {
+      width:100%; padding:9px; border-radius:10px; border:none; cursor:pointer;
+      font-family:inherit; font-size:12px; font-weight:700; transition:all .2s;
+      display:flex; align-items:center; justify-content:center; gap:6px;
     }
-    .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
-    .empty-state p { font-size: 15px; line-height: 1.6; }
+    .add-btn-available { background:var(--blue-l); color:var(--blue); }
+    .add-btn-available:hover { background:var(--blue); color:#fff; }
+    .add-btn-out { background:#f1f5f9; color:#94a3b8; cursor:not-allowed; }
+    .add-btn-counter {
+      display:none; width:100%; border-radius:10px; border:1px solid var(--border);
+      overflow:hidden; flex-direction:row;
+    }
+    .add-btn-counter.show { display:flex; }
+    .counter-btn { flex:0 0 36px; background:none; border:none; cursor:pointer; font-size:16px; font-weight:700; color:var(--blue); transition:background .15s; }
+    .counter-btn:hover { background:var(--blue-l); }
+    .counter-qty { flex:1; text-align:center; font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; justify-content:center; border-left:1px solid var(--border); border-right:1px solid var(--border); }
 
-    /* ══ POPUP IMAGE PLEIN ÉCRAN ══ */
+    /* ── ÉTAT VIDE ── */
+    .empty-state { grid-column:1/-1; text-align:center; padding:48px 16px; color:var(--muted); }
+    .empty-state .emoji { font-size:48px; margin-bottom:12px; }
+    .empty-state p { font-size:15px; line-height:1.6; }
+
+    /* ── MODAL IMAGE ── */
     .img-modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 9500;
-      background: rgba(0,0,0,0.85);
-      align-items: center; justify-content: center;
-      padding: 24px;
-      cursor: zoom-out;
+      display:none; position:fixed; inset:0; z-index:9500;
+      background:rgba(0,0,0,.88); align-items:flex-start; justify-content:center; padding:20px;
     }
-    .img-modal-overlay.open { display: flex; }
-    .img-modal-overlay img {
-      max-width: 100%; max-height: 100%;
-      border-radius: 16px;
-      object-fit: contain;
-      animation: img-pop 0.25s cubic-bezier(0.25,1,0.5,1);
-    }
-    @keyframes img-pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    
+    .img-modal-overlay.open { display:flex; }
+    .img-modal-inner { display:flex; flex-direction:column; align-items:center; width:100%; max-width:480px; margin-top:20px; cursor:default; }
+    .img-modal-img { width:100%; max-height:52vh; object-fit:contain; border-radius:16px; animation:img-pop .25s cubic-bezier(.25,1,.5,1); }
+    @keyframes img-pop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+    .img-modal-info { background:#fff; width:100%; border-radius:0 0 20px 20px; padding:18px 18px 24px; text-align:center; }
+    .img-modal-name { font-size:15px; font-weight:700; color:var(--text); line-height:1.4; margin-bottom:8px; }
+    .img-modal-prices { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px; }
+    .img-modal-after  { font-size:22px; font-weight:800; color:var(--blue); }
+    .img-modal-before { font-size:13px; color:#94a3b8; text-decoration:line-through; }
+    .img-modal-close-btn { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.15); border:none; cursor:pointer; font-size:22px; color:#fff; line-height:1; padding:6px 8px; border-radius:8px; }
 
-     /* ══ CADRE DESKTOP (ombre légère, n'impacte que l'affichage large écran) ══ */
-    @media (min-width: 769px) {
-      html {
-        background: #d2d2d2;
-      }
-      body {
-        max-width: 580px;
-        margin: 24px auto;
-        border-radius: 28px;
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
-      }
+    /* ── MODAL COMMANDE ── */
+    .order-modal-overlay {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,.5); backdrop-filter:blur(4px);
+      align-items:flex-end; justify-content:center;
     }
+    .order-modal-overlay.open { display:flex; }
+    .order-sheet {
+      background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px;
+      padding:0 0 40px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      animation:slide-up .3s cubic-bezier(.25,1,.5,1);
+    }
+    @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .order-handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:12px auto 0; }
+    .order-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); }
+    .order-header h3 { font-size:18px; font-weight:800; }
+    .order-header p { font-size:13px; color:var(--muted); margin-top:3px; }
 
-    
+    /* Cart items */
+    .cart-items { padding:12px 20px; }
+    .cart-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .cart-item:last-child { border-bottom:none; }
+    .cart-item-img { width:44px; height:44px; border-radius:8px; object-fit:cover; background:#f8fafc; flex-shrink:0; }
+    .cart-item-info { flex:1; min-width:0; }
+    .cart-item-name { font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cart-item-price { font-size:12px; color:var(--blue); font-weight:700; margin-top:2px; }
+    .cart-item-qty { font-size:12px; color:var(--muted); }
+    .cart-item-remove { background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; padding:4px; flex-shrink:0; }
+    .cart-item-remove:hover { color:var(--red); }
+    .cart-total-row { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-top:2px solid var(--border); font-weight:800; font-size:15px; }
+
+    /* Formulaire commande */
+    .order-form { padding:0 20px; }
+    .order-form .section-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 10px; }
+    .order-field { margin-bottom:12px; }
+    .order-field label { display:block; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; }
+    .order-field input { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:14px; color:var(--text); outline:none; transition:border-color .2s; }
+    .order-field input:focus { border-color:var(--blue); }
+    .time-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .order-submit {
+      width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
+      background:var(--blue); color:#fff; font-family:inherit; font-size:15px; font-weight:800;
+      margin-top:16px; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .order-submit:hover { background:var(--blue-d); transform:translateY(-1px); box-shadow:0 4px 16px rgba(23,83,255,.35); }
+    .order-submit:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+    .order-cancel { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); cursor:pointer; background:#fff; font-family:inherit; font-size:14px; font-weight:600; color:var(--muted); margin-top:8px; }
+
+    /* Succès commande */
+    .order-success { display:none; text-align:center; padding:32px 20px 20px; }
+    .order-success-icon { font-size:52px; margin-bottom:14px; }
+    .order-success h3 { font-size:20px; font-weight:800; margin-bottom:8px; }
+    .order-success p { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
+    .order-success-detail { background:var(--blue-l); border-radius:12px; padding:14px 16px; font-size:13px; color:var(--blue); font-weight:600; margin-bottom:20px; text-align:left; line-height:1.8; }
+
+    /* ── DESKTOP ── */
+    @media(min-width:769px){
+      html { background:var(--bg); }
+      body { max-width:580px; margin:24px auto; border-radius:28px; box-shadow:0 8px 40px rgba(0,0,0,.1); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- ══ HEADER ══ -->
- <div class="page-header" style="justify-content:center;">
-    <a class="btn-back" href="index.html" style="position:absolute;left:16px;">←</a>
-    <span style="font-size:19px;font-weight:800;color:#0012ff;">Promotions &amp; Nouveautés</span>
-  </div>
+<!-- HEADER -->
+<div class="page-header">
+  <a class="btn-back" id="btn-back-pharma" href="#">←</a>
+  <div class="header-title">Promotions &amp; Nouveautés</div>
+</div>
 
-  
-  <!-- ══ GRILLE ══ -->
-  <div class="promo-grid" id="promo-grid">
-    <!-- Rempli par JS -->
-  </div>
+<!-- GRILLE -->
+<div class="promo-grid" id="promo-grid"></div>
 
- <div class="img-modal-overlay" id="img-modal" onclick="closeImgModal()">
-<button onclick="closeImgModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:28px;color:rgba(255,255,255,0.7);line-height:1;padding:4px;">✕</button>  <div style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:480px;cursor:default" onclick="event.stopPropagation()">
-    <img id="img-modal-src" src="" alt="Produit"
-      style="width:100%;max-height:55vh;object-fit:contain;border-radius:20px;">
-    <div style="background:#fff;width:100%;border-radius:0 0 24px 24px;padding:20px 20px 32px;text-align:center;">
-      <div id="img-modal-name" style="font-size:15px;font-weight:700;color:#111;line-height:1.5;margin-bottom:12px;"></div>
-      <div id="img-modal-before" style="font-size:13px;color:#aaa;text-decoration:line-through;font-weight:500;margin-bottom:4px;"></div>
-      <div id="img-modal-after" style="font-size:24px;font-weight:800;color:#0012ff;"></div>
+<!-- PANIER FLOTTANT -->
+<button class="cart-fab" id="cart-fab" onclick="openOrderModal()">
+  <div class="cart-fab-left">
+    <span class="cart-fab-icon">🛒</span>
+    <span class="cart-fab-label">Voir mon panier</span>
+    <span class="cart-fab-count" id="cart-count">0</span>
+  </div>
+  <span class="cart-fab-total" id="cart-total">0,00 €</span>
+</button>
+
+<!-- MODAL IMAGE -->
+<div class="img-modal-overlay" id="img-modal" onclick="closeImgModal()">
+  <button class="img-modal-close-btn" onclick="closeImgModal()">✕</button>
+  <div class="img-modal-inner" onclick="event.stopPropagation()">
+    <img class="img-modal-img" id="img-modal-src" src="" alt="">
+    <div class="img-modal-info">
+      <div class="img-modal-name" id="img-modal-name"></div>
+      <div class="img-modal-prices">
+        <span class="img-modal-after" id="img-modal-after"></span>
+        <span class="img-modal-before" id="img-modal-before"></span>
+      </div>
     </div>
   </div>
 </div>
- 
-  <script>
-  const SLUG = 'pharmacie-nhean'; // ⚠️ Identifiant unique de cette pharmacie
 
-  function calcDiscount(avant, apres) {
-    if (!avant || !apres || avant <= apres) return null;
-    return '-' + Math.round((1 - apres / avant) * 100) + '%';
-  }
+<!-- MODAL COMMANDE -->
+<div class="order-modal-overlay" id="order-modal" onclick="if(event.target===this)closeOrderModal()">
+  <div class="order-sheet">
+    <div class="order-handle"></div>
 
-  async function renderPromos() {
-    const grid = document.getElementById('promo-grid');
-    let promos = [];
+    <!-- Contenu panier -->
+    <div id="order-content">
+      <div class="order-header">
+        <h3>🛒 Mon panier</h3>
+        <p id="order-pharmacy-name">Votre commande click &amp; collect</p>
+      </div>
 
-    try {
-      const { data, error } = await supabaseClient
-        .from('promos')
-        .select('*')
-        .eq('pharmacie_slug', SLUG)
-        .order('position', { ascending: true });
+      <div class="cart-items" id="cart-items-list"></div>
 
-      if (error) throw error;
+      <div class="cart-total-row">
+        <span>Total</span>
+        <span id="modal-cart-total">0,00 €</span>
+      </div>
 
-      // On ne garde que les promos actives avec un nom renseigné
-      promos = (data || []).filter(p => p.actif === true && p.nom && p.nom.trim().length > 0);
-    } catch(e) {
-      console.error('Erreur de récupération des promos :', e);
-    }
-
-    if (promos.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state">
-          <div class="emoji">🏷️</div>
-          <p>Aucune promotion disponible<br>pour le moment.<br><br>Revenez bientôt !</p>
-        </div>`;
-      return;
-    }
-
-    grid.innerHTML = promos.map(p => {
-      const nom       = p.nom || '';
-      const imgSrc    = p.image_url || 'placeholder-product.png';
-      const badge     = p.badge || '';
-      const prixAvant = parseFloat(p.prix_avant) || 0;
-      const prixApres = parseFloat(p.prix_apres) || 0;
-
-      const discount  = calcDiscount(prixAvant, prixApres);
-      const badgeHtml = badge     ? `<div class="product-badge">${badge}</div>` : '';
-      const avantHtml = prixAvant ? `<span class="price-before">${prixAvant.toFixed(2)} €</span>` : '';
-      const apresHtml = prixApres ? `<span class="price-after">${prixApres.toFixed(2)} €</span>`  : '';
-      const pctHtml   = discount  ? `<span class="discount-pct">${discount}</span>`               : '';
-
-      return `
-        <div class="product-card" onclick="openImgModal('${imgSrc.replace(/'/g,"\\'")}','${nom.replace(/'/g,"\\'")}',${prixAvant},${prixApres})">
-          <div class="product-img-wrap">
-            <img src="${imgSrc}" alt="${nom}" onerror="this.src='placeholder-product.png'">
-            ${badgeHtml}
+      <div class="order-form">
+        <div class="section-label">Vos coordonnées</div>
+        <div class="time-row">
+          <div class="order-field">
+            <label>Prénom</label>
+            <input type="text" id="order-prenom" placeholder="Jean" autocomplete="given-name">
           </div>
-          <div class="product-info">
-            <div class="product-name">${nom}</div>
-            <div class="product-prices">
-              ${apresHtml}
-              ${avantHtml}
-              ${pctHtml}
-            </div>
+          <div class="order-field">
+            <label>Nom</label>
+            <input type="text" id="order-nom" placeholder="DUPONT" autocomplete="family-name">
           </div>
-        </div>`;
-    }).join('');
-  }
+        </div>
+        <div class="order-field">
+          <label>Téléphone</label>
+          <input type="tel" id="order-tel" placeholder="06 12 34 56 78" autocomplete="tel">
+        </div>
 
-  function openImgModal(src, nom, avant, apres) {
-    document.getElementById('img-modal-src').src = src;
-    document.getElementById('img-modal-name').textContent = nom;
-    document.getElementById('img-modal-before').textContent = avant ? avant.toFixed(2) + ' €' : '';
-    document.getElementById('img-modal-after').textContent  = apres ? apres.toFixed(2) + ' €' : '';
-    document.getElementById('img-modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+        <div class="section-label">Heure de retrait souhaitée</div>
+        <div class="time-row">
+          <div class="order-field">
+            <label>À partir de</label>
+            <input type="time" id="order-heure-debut" value="12:00">
+          </div>
+          <div class="order-field">
+            <label>Avant</label>
+            <input type="time" id="order-heure-fin" value="13:00">
+          </div>
+        </div>
+
+        <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
+          ✓ Confirmer ma commande
+        </button>
+        <button class="order-cancel" onclick="closeOrderModal()">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Succès -->
+    <div class="order-success" id="order-success">
+      <div class="order-success-icon">✅</div>
+      <h3>Commande envoyée !</h3>
+      <p>La pharmacie a bien reçu votre commande.<br>Elle sera prête pour votre créneau.</p>
+      <div class="order-success-detail" id="order-success-detail"></div>
+      <button class="order-submit" onclick="closeOrderModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const urlParams = new URLSearchParams(window.location.search);
+const SLUG = urlParams.get('slug') || window.location.pathname.replace(/\//g,'').trim() || '';
+const EMAILJS_SERVICE = 'service_ehw7pcv';
+
+// Back link
+const backBtn = document.getElementById('btn-back-pharma');
+if (backBtn && SLUG) backBtn.href = '/' + SLUG;
+
+// ── ÉTAT PANIER ──
+let cart = {}; // { productId: { nom, prix, qty, stock, imgSrc } }
+let pharmacyData = {};
+let promosData = [];
+
+// ── LOAD ──
+async function init() {
+  await loadPharmacy();
+  await renderPromos();
 }
 
-  function closeImgModal() {
-    document.getElementById('img-modal').classList.remove('open');
-    document.body.style.overflow = '';
+async function loadPharmacy() {
+  try {
+    const { data } = await supabaseClient.from('pharmacies').select('nom,email_contact,emailjs_template_id,emailjs_service_id').eq('slug', SLUG).single();
+    if (data) {
+      pharmacyData = data;
+      document.getElementById('order-pharmacy-name').textContent = data.nom || 'Votre commande click & collect';
+    }
+  } catch(e) {}
+}
+
+function calcDiscount(avant, apres) {
+  if (!avant || !apres || avant <= apres) return null;
+  return '-' + Math.round((1 - apres / avant) * 100) + '%';
+}
+
+async function renderPromos() {
+  const grid = document.getElementById('promo-grid');
+  try {
+    const { data, error } = await supabaseClient.from('promos').select('*').eq('pharmacie_slug', SLUG).order('position', { ascending: true });
+    if (error) throw error;
+    promosData = (data || []).filter(p => p.actif === true && p.nom && p.nom.trim().length > 0);
+  } catch(e) {
+    console.error('Erreur promos:', e);
   }
 
-  renderPromos();
-  </script>
+  if (!promosData.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="emoji">🏷️</div><p>Aucune promotion disponible<br>pour le moment.<br><br>Revenez bientôt !</p></div>`;
+    return;
+  }
 
+  grid.innerHTML = promosData.map(p => {
+    const stock = parseInt(p.stock) || 0;
+    const isOut = stock === 0;
+    const isLow = stock > 0 && stock <= 5;
+    const stockClass = isOut ? 'stock-out' : isLow ? 'stock-low' : 'stock-ok';
+    const stockLabel = isOut ? 'Rupture de stock' : isLow ? `Peu de stock (${stock})` : 'En stock';
+
+    const nom       = p.nom || '';
+    const imgSrc    = p.image_url || '';
+    const badge     = p.badge || '';
+    const prixAvant = parseFloat(p.prix_avant) || 0;
+    const prixApres = parseFloat(p.prix_apres) || 0;
+    const discount  = calcDiscount(prixAvant, prixApres);
+
+    const badgeHtml = badge    ? `<div class="product-badge">${badge}</div>` : '';
+    const avantHtml = prixAvant ? `<span class="price-before">${prixAvant.toFixed(2)} €</span>` : '';
+    const apresHtml = prixApres ? `<span class="price-after">${prixApres.toFixed(2)} €</span>` : '';
+    const pctHtml   = discount  ? `<span class="discount-pct">${discount}</span>` : '';
+
+    const addBtnClass = isOut ? 'add-btn add-btn-out' : 'add-btn add-btn-available';
+    const addBtnContent = isOut ? '✕ Rupture de stock' : '＋ Ajouter';
+
+    return `
+      <div class="product-card" id="pcard-${p.id}">
+        <div class="product-img-wrap" onclick="openImgModal('${(imgSrc||'').replace(/'/g,"\\'")}','${nom.replace(/'/g,"\\'")}',${prixAvant},${prixApres})">
+          ${imgSrc ? `<img src="${imgSrc}" alt="${nom}" onerror="this.parentElement.style.background='#f8fafc'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px">🧴</div>'}
+          ${badgeHtml}
+          <div class="stock-indicator ${stockClass}">${stockLabel}</div>
+        </div>
+        <div class="product-info">
+          <div class="product-name">${nom}</div>
+          <div class="product-prices">${apresHtml}${avantHtml}${pctHtml}</div>
+        </div>
+        <div class="add-btn-wrap">
+          <button class="${addBtnClass}" id="addbtn-${p.id}" onclick="addToCart('${p.id}')" ${isOut?'disabled':''}>
+            ${addBtnContent}
+          </button>
+          <div class="add-btn-counter" id="counter-${p.id}">
+            <button class="counter-btn" onclick="changeQty('${p.id}',-1)">−</button>
+            <div class="counter-qty" id="qty-${p.id}">1</div>
+            <button class="counter-btn" onclick="changeQty('${p.id}',1)">＋</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── PANIER ──
+function addToCart(id) {
+  const p = promosData.find(x => String(x.id) === String(id));
+  if (!p || (parseInt(p.stock)||0) === 0) return;
+
+  if (!cart[id]) {
+    cart[id] = { nom:p.nom, prix:parseFloat(p.prix_apres)||0, qty:1, stock:parseInt(p.stock)||0, imgSrc:p.image_url||'' };
+  } else {
+    if (cart[id].qty >= cart[id].stock) return;
+    cart[id].qty++;
+  }
+
+  document.getElementById('addbtn-'+id).style.display = 'none';
+  const counter = document.getElementById('counter-'+id);
+  counter.classList.add('show');
+  document.getElementById('qty-'+id).textContent = cart[id].qty;
+  updateCartUI();
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) {
+    delete cart[id];
+    document.getElementById('counter-'+id).classList.remove('show');
+    document.getElementById('addbtn-'+id).style.display = 'flex';
+  } else {
+    if (cart[id].qty > cart[id].stock) cart[id].qty = cart[id].stock;
+    document.getElementById('qty-'+id).textContent = cart[id].qty;
+  }
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const items = Object.values(cart);
+  const totalQty = items.reduce((s,i) => s + i.qty, 0);
+  const totalPrice = items.reduce((s,i) => s + i.qty * i.prix, 0);
+
+  document.getElementById('cart-count').textContent = totalQty;
+  document.getElementById('cart-total').textContent = totalPrice.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('modal-cart-total').textContent = totalPrice.toFixed(2).replace('.',',') + ' €';
+
+  const fab = document.getElementById('cart-fab');
+  fab.classList.toggle('visible', totalQty > 0);
+}
+
+// ── MODAL IMAGE ──
+function openImgModal(src, nom, avant, apres) {
+  document.getElementById('img-modal-src').src = src;
+  document.getElementById('img-modal-name').textContent = nom;
+  document.getElementById('img-modal-before').textContent = avant ? avant.toFixed(2) + ' €' : '';
+  document.getElementById('img-modal-after').textContent  = apres ? apres.toFixed(2) + ' €' : '';
+  document.getElementById('img-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeImgModal() {
+  document.getElementById('img-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── MODAL COMMANDE ──
+function openOrderModal() {
+  renderCartItems();
+  document.getElementById('order-content').style.display = 'block';
+  document.getElementById('order-success').style.display = 'none';
+  document.getElementById('order-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeOrderModal() {
+  document.getElementById('order-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderCartItems() {
+  const list = document.getElementById('cart-items-list');
+  list.innerHTML = Object.entries(cart).map(([id, item]) => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${item.imgSrc}" alt="${item.nom}" onerror="this.style.display='none'">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.nom}</div>
+        <div class="cart-item-price">${(item.prix * item.qty).toFixed(2)} €</div>
+        <div class="cart-item-qty">Qté : ${item.qty}</div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart('${id}')">✕</button>
+    </div>`).join('');
+
+  const total = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
+  document.getElementById('modal-cart-total').textContent = total.toFixed(2).replace('.',',') + ' €';
+}
+
+function removeFromCart(id) {
+  const item = cart[id];
+  if (!item) return;
+  // Reset UI
+  const counter = document.getElementById('counter-'+id);
+  const addbtn  = document.getElementById('addbtn-'+id);
+  if (counter) counter.classList.remove('show');
+  if (addbtn)  addbtn.style.display = 'flex';
+  delete cart[id];
+  updateCartUI();
+  renderCartItems();
+  if (Object.keys(cart).length === 0) closeOrderModal();
+}
+
+// ── SOUMETTRE COMMANDE ──
+async function submitOrder() {
+  const prenom = document.getElementById('order-prenom').value.trim();
+  const nom    = document.getElementById('order-nom').value.trim();
+  const tel    = document.getElementById('order-tel').value.trim();
+  const debut  = document.getElementById('order-heure-debut').value;
+  const fin    = document.getElementById('order-heure-fin').value;
+
+  if (!prenom || !nom || !tel) { alert('Veuillez renseigner vos coordonnées.'); return; }
+  if (!debut || !fin)          { alert('Veuillez choisir un créneau de retrait.'); return; }
+
+  const btn = document.getElementById('btn-order-submit');
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+
+  const articles = Object.values(cart).map(i => `${i.nom} x${i.qty} (${(i.prix*i.qty).toFixed(2)}€)`).join('\n');
+  const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
+  const now      = new Date().toLocaleString('fr-FR');
+
+  try {
+    // 1. Sauvegarder dans Supabase
+    await supabaseClient.from('commandes').insert({
+      pharmacie_slug: SLUG,
+      client_nom: nom, client_prenom: prenom, client_tel: tel,
+      heure_debut: debut, heure_fin: fin,
+      articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
+    });
+
+    // 2. Décrémenter stocks
+    for (const [id, item] of Object.entries(cart)) {
+      const p = promosData.find(x => String(x.id) === String(id));
+      if (p) {
+        const newStock = Math.max(0, (parseInt(p.stock)||0) - item.qty);
+        await supabaseClient.from('promos').update({ stock: newStock }).eq('id', id);
+      }
+    }
+
+    // 3. Email pharmacien
+    const templateId = pharmacyData.emailjs_template_id;
+    const serviceId  = pharmacyData.emailjs_service_id || EMAILJS_SERVICE;
+    if (templateId && pharmacyData.email_contact) {
+      await emailjs.send(serviceId, templateId, {
+        to_email:      pharmacyData.email_contact,
+        pharmacy_name: pharmacyData.nom || SLUG,
+        client_nom:    `${prenom} ${nom}`,
+        client_tel:    tel,
+        heure_retrait: `entre ${debut} et ${fin}`,
+        articles:      articles,
+        total:         total.toFixed(2) + ' €',
+        commande_at:   now,
+      });
+    }
+
+    // 4. Succès
+    document.getElementById('order-success-detail').innerHTML =
+      `📋 <strong>${prenom} ${nom}</strong><br>` +
+      `📞 ${tel}<br>⏰ Retrait : entre <strong>${debut}</strong> et <strong>${fin}</strong><br><br>` +
+      `${articles.split('\n').join('<br>')}`;
+
+    document.getElementById('order-content').style.display = 'none';
+    document.getElementById('order-success').style.display = 'block';
+
+    // Reset panier
+    cart = {};
+    updateCartUI();
+    // Reload promos pour stocks mis à jour
+    await renderPromos();
+
+  } catch(e) {
+    alert('Erreur lors de l\'envoi. Réessayez.');
+    console.error(e);
+  }
+
+  btn.disabled = false; btn.textContent = '✓ Confirmer ma commande';
+}
+
+init();
+</script>
 </body>
 </html>
