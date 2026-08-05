@@ -182,6 +182,91 @@
     table { display:block; overflow-x:auto; }
     #app { padding:72px 12px 40px; }
   }
+
+  /* ── SHINY BUTTON ── */
+@property --gradient-angle { syntax:"<angle>"; initial-value:0deg; inherits:false; }
+@property --gradient-angle-offset { syntax:"<angle>"; initial-value:0deg; inherits:false; }
+@property --gradient-percent { syntax:"<percentage>"; initial-value:5%; inherits:false; }
+@property --gradient-shine { syntax:"<color>"; initial-value:white; inherits:false; }
+
+.shiny-btn {
+  --bg:#000; --bg-subtle:#1a1818; --fg:#fff;
+  --highlight:#1753ff; --highlight-subtle:#8484ff;
+  --animation:gradient-angle linear infinite;
+  --duration:3s; --shadow-size:2px;
+  --transition:800ms cubic-bezier(0.25,1,0.5,1);
+  isolation:isolate; position:relative; overflow:hidden;
+  cursor:pointer; outline-offset:4px;
+  padding:1rem 2.5rem;
+  font-family:'Inter',sans-serif; font-size:15px;
+  font-weight:700; line-height:1.2;
+  border:1px solid transparent; border-radius:360px;
+  color:var(--fg); width:100%; margin-top:4px;
+  background:linear-gradient(var(--bg),var(--bg)) padding-box,
+    conic-gradient(
+      from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+      transparent,
+      var(--highlight) var(--gradient-percent),
+      var(--gradient-shine) calc(var(--gradient-percent)*2),
+      var(--highlight) calc(var(--gradient-percent)*3),
+      transparent calc(var(--gradient-percent)*4)
+    ) border-box;
+  box-shadow:inset 0 0 0 1px var(--bg-subtle);
+  transition:var(--transition);
+  transition-property:--gradient-angle-offset,--gradient-percent,--gradient-shine;
+  animation:var(--animation) var(--duration),
+    var(--animation) calc(var(--duration)/0.4) reverse paused;
+  animation-composition:add;
+}
+.shiny-btn::before,.shiny-btn::after,.shiny-btn span::before {
+  content:""; pointer-events:none; position:absolute;
+  inset-inline-start:50%; inset-block-start:50%;
+  translate:-50% -50%; z-index:-1;
+}
+.shiny-btn:active { translate:0 1px; }
+.shiny-btn::before {
+  --size:calc(100% - var(--shadow-size)*3);
+  --position:2px; --space:calc(var(--position)*2);
+  width:var(--size); height:var(--size);
+  background:radial-gradient(circle at var(--position) var(--position),white calc(var(--position)/4),transparent 0) padding-box;
+  background-size:var(--space) var(--space); background-repeat:space;
+  mask-image:conic-gradient(from calc(var(--gradient-angle)+45deg),black,transparent 10% 90%,black);
+  border-radius:inherit; opacity:0.4; z-index:-1;
+  animation:var(--animation) var(--duration),
+    var(--animation) calc(var(--duration)/0.4) reverse paused;
+  animation-composition:add;
+}
+.shiny-btn::after {
+  --animation:shimmer linear infinite;
+  width:100%; aspect-ratio:1;
+  background:linear-gradient(-50deg,transparent,var(--highlight),transparent);
+  mask-image:radial-gradient(circle at bottom,transparent 40%,black);
+  opacity:0.6;
+  animation:shimmer linear infinite var(--duration),
+    shimmer linear infinite calc(var(--duration)/0.4) reverse paused;
+  animation-composition:add;
+}
+.shiny-btn span { z-index:1; position:relative; }
+.shiny-btn span::before {
+  --size:calc(100% + 1rem);
+  width:var(--size); height:var(--size);
+  box-shadow:inset 0 -1ex 2rem 4px var(--highlight);
+  opacity:0; transition:opacity var(--transition);
+  animation:calc(var(--duration)*1.5) breathe linear infinite;
+}
+.shiny-btn:is(:hover,:focus-visible) {
+  --gradient-percent:20%; --gradient-angle-offset:95deg;
+  --gradient-shine:var(--highlight-subtle);
+}
+.shiny-btn:is(:hover,:focus-visible),
+.shiny-btn:is(:hover,:focus-visible)::before,
+.shiny-btn:is(:hover,:focus-visible)::after {
+  animation-play-state:running;
+}
+.shiny-btn:is(:hover,:focus-visible) span::before { opacity:1; }
+@keyframes gradient-angle { to { --gradient-angle:360deg; } }
+@keyframes shimmer { to { rotate:360deg; } }
+@keyframes breathe { from,to{scale:1} 50%{scale:1.2} }
 </style>
 </head>
 <body>
@@ -191,12 +276,14 @@
   <div class="login-box">
     <h2>⚡ Admin SwiftyPharm</h2>
     <p>Accès réservé</p>
-    <div class="field">
-      <label>Mot de passe admin</label>
-      <input type="password" id="admin-pw" placeholder="••••••••" id="admin-pw-field">
-    </div>
-    <button id="btn-admin-login" style="width:100%;padding:11px;border-radius:30px;background:#0012ff;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Accéder</button>
-    <p class="login-err" id="login-err">Mot de passe incorrect.</p>
+   <div class="field">
+  <label>Mot de passe admin</label>
+  <div style="position:relative">
+    <input type="password" id="admin-pw" placeholder="••••••••" style="width:100%;padding-right:42px">
+    <button type="button" id="admin-pw-eye" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:4px;">👁</button>
+  </div>
+</div>
+<button id="btn-admin-login" class="shiny-btn"><span>Accéder</span></button>    <p class="login-err" id="login-err">Mot de passe incorrect.</p>
   </div>
 </div>
 
@@ -207,8 +294,8 @@
   <div class="nav-right">
     <span class="nav-count" id="nav-count"></span>
     <span id="last-refresh"></span>
-    <button class="btn-refresh" id="btn-refresh-pharma">🔄 Actualiser</button>
-    <button id="btn-admin-logout" style="font-size:12px;color:#666;background:none;border:1px solid #d0d0d0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;">Déconnexion</button>
+    <button class="btn-refresh" onclick="loadPharmacies()">🔄 Actualiser</button>
+    <button onclick="adminLogout()" style="font-size:12px;color:#666;background:none;border:1px solid #d0d0d0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;">Déconnexion</button>
   </div>
 </nav>
 
@@ -238,10 +325,10 @@
   <!-- Filters -->
   <div class="filters">
     <input type="text" class="search-input" id="search" placeholder="🔍 Rechercher par nom, slug, email…" oninput="filterTable()">
-    <button class="filter-btn active" id="filter-all">Toutes</button>
-    <button class="filter-btn" id="filter-ok">✓ Configurées</button>
-    <button class="filter-btn" id="filter-pending">⏳ En attente</button>
-    <button class="btn-refresh" id="btn-refresh-small">🔄</button>
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all',this)">Toutes</button>
+    <button class="filter-btn" id="filter-ok" onclick="setFilter('ok',this)">✓ Configurées</button>
+    <button class="filter-btn" id="filter-pending" onclick="setFilter('pending',this)">⏳ En attente</button>
+    <button class="btn-refresh" onclick="loadPharmacies()">🔄</button>
   </div>
 
   <!-- Table -->
@@ -267,11 +354,11 @@
 </div>
 
 <!-- MODAL DÉTAIL -->
-<div class="modal-overlay" id="modal-detail" id="modal-detail-overlay">
+<div class="modal-overlay" id="modal-detail" onclick="if(event.target===this)closeDetail()">
   <div class="modal-box">
     <h3 id="modal-title">Détail pharmacie</h3>
     <div id="modal-content"></div>
-    <button class="modal-close-btn" id="btn-close-detail">Fermer</button>
+    <button class="modal-close-btn" onclick="closeDetail()">Fermer</button>
   </div>
 </div>
 
@@ -279,7 +366,7 @@
 const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
 const EMAILJS_SERVICE_ID = 'service_ehw7pcv'; // ton service ID fixe
-const ADMIN_PW = 'swiftyadmin2024'; // ← change ce mot de passe
+const ADMIN_PW = '23543'; // ← change ce mot de passe
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allPharmacies = [];
@@ -305,50 +392,13 @@ function adminLogout() {
 }
 
 // Check session
-// Session check and event wiring — all in DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-  // Wire all buttons
-  const btnLogin    = document.getElementById('btn-admin-login');
-  const pwField     = document.getElementById('admin-pw-field');
-  const btnLogout   = document.getElementById('btn-admin-logout');
-  const btnRefresh  = document.getElementById('btn-refresh-pharma');
-  const btnRefreshS = document.getElementById('btn-refresh-small');
-  const filterAll   = document.getElementById('filter-all');
-  const filterOk    = document.getElementById('filter-ok');
-  const filterPend  = document.getElementById('filter-pending');
-  const modalOverlay= document.getElementById('modal-detail-overlay');
-  const btnCloseD   = document.getElementById('btn-close-detail');
-  const searchInput = document.getElementById('search');
-
-  if(btnLogin)   btnLogin.addEventListener('click', adminLogin);
-  if(pwField)    pwField.addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
-  if(btnLogout)  btnLogout.addEventListener('click', adminLogout);
-  if(btnRefresh) btnRefresh.addEventListener('click', loadPharmacies);
-  if(btnRefreshS)btnRefreshS.addEventListener('click', loadPharmacies);
-  if(filterAll)  filterAll.addEventListener('click',  function(){ setFilter('all', this); });
-  if(filterOk)   filterOk.addEventListener('click',   function(){ setFilter('ok', this); });
-  if(filterPend) filterPend.addEventListener('click',  function(){ setFilter('pending', this); });
-  if(modalOverlay) modalOverlay.addEventListener('click', function(e){ if(e.target===this) closeDetail(); });
-  if(btnCloseD)  btnCloseD.addEventListener('click', closeDetail);
-  if(searchInput)searchInput.addEventListener('input', filterTable);
-
-  // Check session
-  if(sessionStorage.getItem('swifty_admin') === 'ok'){
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    loadPharmacies();
-  } else {
-    document.getElementById('admin-pw').focus();
-  }
-});
-
-// Keep window exports for dynamically generated onclick in renderTable
-window.saveTemplate = saveTemplate;
-window.savePlan     = savePlan;
-window.showDetail   = showDetail;
-window.closeDetail  = closeDetail;
-window.setFilter    = setFilter;
-window.filterTable  = filterTable;
+if (sessionStorage.getItem('swifty_admin') === 'ok') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadPharmacies();
+} else {
+  setTimeout(() => document.getElementById('admin-pw').focus(), 100);
+}
 
 // ── LOAD ──
 async function loadPharmacies() {
@@ -399,17 +449,14 @@ function renderTable(list) {
   tbody.innerHTML = list.map(p => {
     const hasTemplate = !!p.emailjs_template_id;
     const badge = hasTemplate
-      ? `<span class="badge badge-ok"><span class="dot dot-ok"></span>Configurée</span>`
-      : `<span class="badge badge-warn"><span class="dot dot-warn"></span>En attente</span>`;
-    
-      <td>
-  <select onchange="savePlan('${p.slug}', this.value)"
-    style="padding:5px 10px;border-radius:8px;border:1.5px solid #d0d0d0;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;outline:none;">
-    <option value="starter" ${(p.plan||'starter')==='starter'?'selected':''}>Starter</option>
-    <option value="pro"     ${p.plan==='pro'?'selected':''}>Pro</option>
-  </select>
-</td>
-  
+      ? '<span class="badge badge-ok"><span class="dot dot-ok"></span>Configurée</span>'
+      : '<span class="badge badge-warn"><span class="dot dot-warn"></span>En attente</span>';
+    const planVal = p.plan || 'starter';
+    const planSelect = '<select onchange="savePlan(\'' + p.slug + '\', this.value)" style="padding:5px 10px;border-radius:8px;border:1.5px solid #d0d0d0;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;outline:none;">'
+      + '<option value="starter"' + (planVal==='starter'?' selected':'') + '>Starter</option>'
+      + '<option value="pro"' + (planVal==='pro'?' selected':'') + '>Pro ⭐</option>'
+      + '</select>';
+
     const date = p.created_at
       ? new Date(p.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
       : '—';
@@ -449,6 +496,7 @@ function renderTable(list) {
           <div class="tpl-status" id="status-${p.slug}">✓ Sauvegardé</div>
         </td>
         <td>${badge}</td>
+        <td>${planSelect}</td>
         <td class="date-cell">${date}</td>
         <td>
           <button onclick="showDetail('${p.slug}')"
@@ -460,7 +508,7 @@ function renderTable(list) {
   }).join('');
 }
 
-  async function savePlan(slug, plan) {
+async function savePlan(slug, plan) {
   const { error } = await sb
     .from('pharmacies')
     .update({ plan })
@@ -567,6 +615,27 @@ function closeDetail() {
 setInterval(() => {
   if (sessionStorage.getItem('swifty_admin') === 'ok') loadPharmacies();
 }, 60000);
+
+// ── Expose globally ──
+window.adminLogin   = adminLogin;
+window.adminLogout  = adminLogout;
+window.saveTemplate = saveTemplate;
+window.savePlan     = savePlan;
+window.setFilter    = setFilter;
+window.filterTable  = filterTable;
+window.showDetail   = showDetail;
+window.closeDetail  = closeDetail;
+</script>
+<script>
+  document.getElementById('admin-pw-eye').addEventListener('click', function() {
+    const input = document.getElementById('admin-pw');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    this.textContent = input.type === 'password' ? '👁' : '🙈';
+  });
+
+  document.getElementById('admin-pw').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') adminLogin();
+  });
 </script>
 </body>
 </html>
