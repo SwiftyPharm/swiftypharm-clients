@@ -222,6 +222,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="card-title">Logo</div>
     <div class="logo-upload-row">
       <div class="logo-preview-box" id="logo-preview-box">
+        <button type="button" id="btn-clear-logo" style="margin-top:8px;padding:5px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#dc2626;display:none;" onclick="clearLogo()">✕ Supprimer le logo</button>
         <span class="img-placeholder">🏥</span>
         <img id="logo-preview-img" src="" alt="">
       </div>
@@ -626,11 +627,39 @@ async function handleLogoUpload(e) {
   autoSave();
 }
 function onLogoUrlChange(){showLogoPreview(document.getElementById('ph-logo').value);autoSave();}
-function showLogoPreview(src){
-  const img=document.getElementById('logo-preview-img');
-  const ph=document.querySelector('#logo-preview-box .img-placeholder');
-  if(src){img.src=src;img.style.display='block';if(ph)ph.style.display='none';}
-  else{img.style.display='none';if(ph)ph.style.display='block';}
+function showLogoPreview(src) {
+  const img = document.getElementById('logo-preview-img');
+  const ph  = document.querySelector('#logo-preview-box .img-placeholder');
+  const btn = document.getElementById('btn-clear-logo');
+  if (src) {
+    img.src = src; img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+    if (btn) btn.style.display = 'inline-block';
+  } else {
+    img.style.display = 'none';
+    if (ph) ph.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+  function clearLogo() {
+  // Vide le preview
+  const img = document.getElementById('logo-preview-img');
+  const ph  = document.querySelector('#logo-preview-box .img-placeholder');
+  img.src = ''; img.style.display = 'none';
+  if (ph) ph.style.display = 'block';
+  document.getElementById('ph-logo').value = '';
+  document.getElementById('btn-clear-logo').style.display = 'none';
+
+  // Efface dans la config locale
+  const cfg = getConfig();
+  cfg.pharmacy.logoData = '';
+  cfg.pharmacy.logo     = '';
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+
+  // Efface dans Supabase
+  sb.from('pharmacies').update({ logo_base64: '', logo_url: '' }).eq('slug', SLUG);
+  flashSaved();
 }
 
 // ═══════════════════════════════
