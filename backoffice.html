@@ -219,24 +219,29 @@ textarea{resize:vertical;min-height:72px}
 
   <!-- Logo -->
   <div class="card">
-    <div class="card-title">Logo</div>
-    <div class="logo-upload-row">
+  <div class="card-title">Logo</div>
+  <div class="logo-upload-row">
+    <div>
       <div class="logo-preview-box" id="logo-preview-box">
-        <button type="button" id="btn-clear-logo" style="margin-top:8px;padding:5px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#dc2626;display:none;" onclick="clearLogo()">✕ Supprimer le logo</button>
         <span class="img-placeholder">🏥</span>
         <img id="logo-preview-img" src="" alt="">
       </div>
-      <div>
-        <label class="img-file-btn">
-          ＋ Choisir un logo
-          <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
-        </label>
-        <p class="img-hint">PNG recommandé · fond transparent · max 1 Mo</p>
-        <p class="img-hint" style="margin-top:3px">Ou coller une URL :</p>
-        <input type="url" id="ph-logo" placeholder="https://…/logo.png" oninput="onLogoUrlChange()" style="margin-top:5px">
-      </div>
+      <button type="button" id="btn-clear-logo" onclick="clearLogo()"
+        style="margin-top:6px;padding:4px 10px;border-radius:7px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#dc2626;display:none;width:100%">
+        ✕ Supprimer
+      </button>
+    </div>
+    <div>
+      <label class="img-file-btn">
+        ＋ Choisir un logo
+        <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
+      </label>
+      <p class="img-hint">PNG recommandé · fond transparent · max 1 Mo</p>
+      <p class="img-hint" style="margin-top:4px">Ou coller une URL :</p>
+      <input type="url" id="ph-logo" placeholder="https://…/logo.png" oninput="onLogoUrlChange()" style="margin-top:6px">
     </div>
   </div>
+</div>
 
   <!-- Infos générales -->
   <div class="card">
