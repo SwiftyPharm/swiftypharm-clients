@@ -193,9 +193,9 @@
     <p>Accès réservé</p>
     <div class="field">
       <label>Mot de passe admin</label>
-      <input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+      <input type="password" id="admin-pw" placeholder="••••••••" id="admin-pw-field">
     </div>
-    <button onclick="adminLogin()" style="width:100%;padding:11px;border-radius:30px;background:#0012ff;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Accéder</button>
+    <button id="btn-admin-login" style="width:100%;padding:11px;border-radius:30px;background:#0012ff;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Accéder</button>
     <p class="login-err" id="login-err">Mot de passe incorrect.</p>
   </div>
 </div>
@@ -207,8 +207,8 @@
   <div class="nav-right">
     <span class="nav-count" id="nav-count"></span>
     <span id="last-refresh"></span>
-    <button class="btn-refresh" onclick="loadPharmacies()">🔄 Actualiser</button>
-    <button onclick="adminLogout()" style="font-size:12px;color:#666;background:none;border:1px solid #d0d0d0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;">Déconnexion</button>
+    <button class="btn-refresh" id="btn-refresh-pharma">🔄 Actualiser</button>
+    <button id="btn-admin-logout" style="font-size:12px;color:#666;background:none;border:1px solid #d0d0d0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;">Déconnexion</button>
   </div>
 </nav>
 
@@ -238,10 +238,10 @@
   <!-- Filters -->
   <div class="filters">
     <input type="text" class="search-input" id="search" placeholder="🔍 Rechercher par nom, slug, email…" oninput="filterTable()">
-    <button class="filter-btn active" id="filter-all" onclick="setFilter('all',this)">Toutes</button>
-    <button class="filter-btn" id="filter-ok" onclick="setFilter('ok',this)">✓ Configurées</button>
-    <button class="filter-btn" id="filter-pending" onclick="setFilter('pending',this)">⏳ En attente</button>
-    <button class="btn-refresh" onclick="loadPharmacies()">🔄</button>
+    <button class="filter-btn active" id="filter-all">Toutes</button>
+    <button class="filter-btn" id="filter-ok">✓ Configurées</button>
+    <button class="filter-btn" id="filter-pending">⏳ En attente</button>
+    <button class="btn-refresh" id="btn-refresh-small">🔄</button>
   </div>
 
   <!-- Table -->
@@ -267,11 +267,11 @@
 </div>
 
 <!-- MODAL DÉTAIL -->
-<div class="modal-overlay" id="modal-detail" onclick="if(event.target===this)closeDetail()">
+<div class="modal-overlay" id="modal-detail" id="modal-detail-overlay">
   <div class="modal-box">
     <h3 id="modal-title">Détail pharmacie</h3>
     <div id="modal-content"></div>
-    <button class="modal-close-btn" onclick="closeDetail()">Fermer</button>
+    <button class="modal-close-btn" id="btn-close-detail">Fermer</button>
   </div>
 </div>
 
@@ -304,19 +304,36 @@ function adminLogout() {
   location.reload();
 }
 
-// ── Expose globally FIRST ──
-window.adminLogin   = adminLogin;
-window.adminLogout  = adminLogout;
-window.saveTemplate = saveTemplate;
-window.savePlan     = savePlan;
-window.setFilter    = setFilter;
-window.filterTable  = filterTable;
-window.showDetail   = showDetail;
-window.closeDetail  = closeDetail;
-
 // Check session
+// Session check and event wiring — all in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-  if (sessionStorage.getItem('swifty_admin') === 'ok') {
+  // Wire all buttons
+  const btnLogin    = document.getElementById('btn-admin-login');
+  const pwField     = document.getElementById('admin-pw-field');
+  const btnLogout   = document.getElementById('btn-admin-logout');
+  const btnRefresh  = document.getElementById('btn-refresh-pharma');
+  const btnRefreshS = document.getElementById('btn-refresh-small');
+  const filterAll   = document.getElementById('filter-all');
+  const filterOk    = document.getElementById('filter-ok');
+  const filterPend  = document.getElementById('filter-pending');
+  const modalOverlay= document.getElementById('modal-detail-overlay');
+  const btnCloseD   = document.getElementById('btn-close-detail');
+  const searchInput = document.getElementById('search');
+
+  if(btnLogin)   btnLogin.addEventListener('click', adminLogin);
+  if(pwField)    pwField.addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+  if(btnLogout)  btnLogout.addEventListener('click', adminLogout);
+  if(btnRefresh) btnRefresh.addEventListener('click', loadPharmacies);
+  if(btnRefreshS)btnRefreshS.addEventListener('click', loadPharmacies);
+  if(filterAll)  filterAll.addEventListener('click',  function(){ setFilter('all', this); });
+  if(filterOk)   filterOk.addEventListener('click',   function(){ setFilter('ok', this); });
+  if(filterPend) filterPend.addEventListener('click',  function(){ setFilter('pending', this); });
+  if(modalOverlay) modalOverlay.addEventListener('click', function(e){ if(e.target===this) closeDetail(); });
+  if(btnCloseD)  btnCloseD.addEventListener('click', closeDetail);
+  if(searchInput)searchInput.addEventListener('input', filterTable);
+
+  // Check session
+  if(sessionStorage.getItem('swifty_admin') === 'ok'){
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     loadPharmacies();
@@ -324,6 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('admin-pw').focus();
   }
 });
+
+// Keep window exports for dynamically generated onclick in renderTable
+window.saveTemplate = saveTemplate;
+window.savePlan     = savePlan;
+window.showDetail   = showDetail;
+window.closeDetail  = closeDetail;
+window.setFilter    = setFilter;
+window.filterTable  = filterTable;
 
 // ── LOAD ──
 async function loadPharmacies() {
