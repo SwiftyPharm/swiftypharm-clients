@@ -475,7 +475,7 @@ async function syncToSupabase(cfg){
       adresse_maps:cfg.pharmacy.adresse_maps||'',
       docteur:cfg.pharmacy.docteur||'',
       horaires:cfg.pharmacy.horairesSemaine||{},
-      logo_base64:cfg.pharmacy.logoData||'',
+      logo_url: cfg.pharmacy.logo || '',
       reseaux:cfg.pharmacy.reseaux||{}
     };
     await fetch(SUPABASE_REST+'pharmacies?on_conflict=slug',{
