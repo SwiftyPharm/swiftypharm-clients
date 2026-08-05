@@ -599,11 +599,31 @@ function showTab(name,btn){
 // ═══════════════════════════════
 //  LOGO
 // ═══════════════════════════════
-function handleLogoUpload(e){
-  const file=e.target.files[0];if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{document.getElementById('ph-logo').value='';showLogoPreview(ev.target.result);autoSave();};
-  reader.readAsDataURL(file);
+async function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Nom unique : slug + extension
+  const ext = file.name.split('.').pop();
+  const fileName = SLUG + '-logo.' + ext;
+
+  const { data, error } = await sb.storage
+    .from('pharmacies')
+    .upload(fileName, file, { upsert: true });
+
+  if (error) { console.error('Upload error:', error); return; }
+
+  // URL publique
+  const { data: urlData } = sb.storage
+    .from('pharmacies')
+    .getPublicUrl(fileName);
+
+  const publicUrl = urlData.publicUrl;
+
+  // Stocker l'URL dans Supabase (colonne logo_url)
+  document.getElementById('ph-logo').value = publicUrl;
+  showLogoPreview(publicUrl);
+  autoSave();
 }
 function onLogoUrlChange(){showLogoPreview(document.getElementById('ph-logo').value);autoSave();}
 function showLogoPreview(src){
