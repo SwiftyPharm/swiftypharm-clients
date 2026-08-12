@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SwiftyPharm — La vitrine digitale pour les pharmaciens</title>
-<link rel="icon" type="image/png" href="/assets/favicon.png">
-<link rel="apple-touch-icon" href="/assets/favicon.png">
 <meta name="description" content="SwiftyPharm permet aux pharmaciens de créer leur vitrine digitale en 3 minutes. Page personnalisée, envoi d'ordonnances, promotions click & collect.">
 <link rel="canonical" href="https://swiftypharm.fr">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -26,7 +24,7 @@ nav{
   background:rgba(5,8,26,.8);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
 }
-.nav-logo img{height:28px;object-fit:contain;filter:brightness(0) invert(1);}
+.nav-logo img{height:28px;object-fit:contain;}
 .nav-links{display:flex;gap:32px;margin-left:48px;}
 .nav-links a{font-size:13px;font-weight:500;color:var(--grey);text-decoration:none;transition:color .2s;}
 .nav-links a:hover{color:var(--white);}
@@ -174,9 +172,31 @@ nav{
 .cta-title{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-1px;margin-bottom:14px;}
 .cta-sub{font-size:16px;color:var(--grey);margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;}
 
+/* ══ PRICING IMAGE CLICKABLE ══ */
+.pricing-img-link{display:block;text-decoration:none;}
+.pricing-img-link:hover .pricing-img{transform:translateY(-6px);border-color:rgba(255,255,255,.2);}
+.pricing-img-glow{
+  box-shadow:0 0 40px rgba(255,255,255,.12),0 0 80px rgba(28,181,224,.1);
+  border-color:rgba(255,255,255,.15) !important;
+}
+.pricing-col-featured{position:relative;}
+.pricing-offert{
+  text-align:center;font-size:12px;font-weight:700;
+  color:var(--cyan);background:rgba(28,181,224,.12);
+  border:1px solid rgba(28,181,224,.25);border-radius:20px;
+  padding:4px 14px;margin-top:-4px;
+}
+.pricing-img{transition:transform .3s,box-shadow .3s,border-color .3s;}
+
+/* ══ BILLING TOGGLE LANDING ══ */
+.billing-switch{display:inline-flex;align-items:center;gap:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:4px;}
+.billing-opt{padding:8px 22px;border-radius:26px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);transition:all .25s;}
+.billing-opt.active{background:var(--cyan);color:#000046;box-shadow:0 2px 12px rgba(28,181,224,.4);}
+.billing-save{font-size:9px;font-weight:700;background:rgba(255,255,255,.25);padding:1px 6px;border-radius:10px;margin-left:5px;}
+
 /* ══ FOOTER ══ */
 footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-.footer-logo img{height:24px;object-fit:contain;filter:brightness(0) invert(1);}
+.footer-logo img{height:24px;object-fit:contain;}
 .footer-links{display:flex;gap:24px;}
 .footer-links a{font-size:12px;color:var(--grey);text-decoration:none;transition:color .2s;}
 .footer-links a:hover{color:var(--white);}
@@ -341,28 +361,49 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
     <h2 class="section-title">Simple, transparent, sans engagement.</h2>
     <p class="section-sub">Commencez gratuitement. Évoluez quand vous en avez besoin.</p>
   </div>
+  <!-- Toggle billing -->
+  <div class="billing-switch" style="margin-bottom:32px;">
+    <button class="billing-opt active" id="lp-monthly" onclick="lpSetBilling('monthly')">Mensuel</button>
+    <button class="billing-opt" id="lp-yearly" onclick="lpSetBilling('yearly')">Annuel<span class="billing-save">-15%</span></button>
+  </div>
+
   <div class="pricing-grid">
+
+    <!-- BASIC -->
     <div class="pricing-col">
-      <div class="pricing-img">
-        <img src="/assets/basic-plan.png" alt="Offre Basic SwiftyPharm — gratuit — page vitrine pharmacien">
-      </div>
-      <a href="signup.html" class="pricing-cta">Commencer gratuitement</a>
-      <a href="/nhean" class="pricing-link">Voir une page Basic →</a>
+      <a href="signup.html?plan=basic" class="pricing-img-link">
+        <div class="pricing-img">
+          <img id="lp-img-basic" src="/assets/basic-plan.png" alt="Offre Basic SwiftyPharm — gratuit — page vitrine pharmacien">
+        </div>
+      </a>
+      <a href="signup.html?plan=basic" class="pricing-cta" id="lp-cta-basic">Commencer gratuitement</a>
+      <a href="/nhean" class="pricing-link" target="_blank">Voir une page Basic →</a>
     </div>
+
+    <!-- PRO — avec lueur blanche -->
+    <div class="pricing-col pricing-col-featured">
+      <a href="signup.html?plan=pro" class="pricing-img-link" id="lp-link-pro">
+        <div class="pricing-img pricing-img-glow">
+          <img id="lp-img-pro" src="/assets/pro-plan.png" alt="Offre Pro SwiftyPharm — 4,90€/mois — ordonnances en ligne">
+        </div>
+      </a>
+      <a href="signup.html?plan=pro" class="pricing-cta featured" id="lp-cta-pro">Choisir Pro — 4,90€/mois</a>
+      <div class="pricing-offert" id="lp-offert-pro" style="display:none">🎁 2 mois offerts</div>
+      <a href="/nhean" class="pricing-link" target="_blank">Voir une page Pro →</a>
+    </div>
+
+    <!-- MAX -->
     <div class="pricing-col">
-      <div class="pricing-img">
-        <img src="/assets/pro-plan.png" alt="Offre Pro SwiftyPharm — 4,90€/mois — ordonnances en ligne">
-      </div>
-      <a href="signup.html" class="pricing-cta featured">Choisir Pro</a>
-      <a href="/nhean" class="pricing-link">Voir une page Pro →</a>
+      <a href="signup.html?plan=max" class="pricing-img-link" id="lp-link-max">
+        <div class="pricing-img">
+          <img id="lp-img-max" src="/assets/max-plan.png" alt="Offre Max SwiftyPharm — 12,90€/mois — promotions click and collect">
+        </div>
+      </a>
+      <a href="signup.html?plan=max" class="pricing-cta" id="lp-cta-max">Choisir Max — 12,90€/mois</a>
+      <div class="pricing-offert" id="lp-offert-max" style="display:none">🎁 2 mois offerts</div>
+      <a href="/nhean" class="pricing-link" target="_blank">Voir une page Max →</a>
     </div>
-    <div class="pricing-col">
-      <div class="pricing-img">
-        <img src="/assets/max-plan.png" alt="Offre Max SwiftyPharm — 12,90€/mois — promotions click and collect">
-      </div>
-      <a href="signup.html" class="pricing-cta">Choisir Max</a>
-      <a href="/nhean" class="pricing-link">Voir une page Max →</a>
-    </div>
+
   </div>
 </section>
 
@@ -408,7 +449,49 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
 </footer>
 
 <script>
-// Scroll reveal léger
+// ── Billing toggle landing page pricing ──
+const LP_STRIPE = {
+  pro_monthly:  'https://buy.stripe.com/REMPLACE_PRO_MENSUEL',
+  pro_yearly:   'https://buy.stripe.com/REMPLACE_PRO_ANNUEL',
+  max_monthly:  'https://buy.stripe.com/REMPLACE_MAX_MENSUEL',
+  max_yearly:   'https://buy.stripe.com/REMPLACE_MAX_ANNUEL',
+};
+
+function lpSetBilling(mode) {
+  document.getElementById('lp-monthly').classList.toggle('active', mode==='monthly');
+  document.getElementById('lp-yearly').classList.toggle('active',  mode==='yearly');
+
+  const isYearly = mode === 'yearly';
+  const s = isYearly ? '-an' : '';
+
+  // Bascule les images mensuel/annuel
+  document.getElementById('lp-img-basic').src = '/assets/basic-plan'+s+'.png';
+  document.getElementById('lp-img-pro').src   = '/assets/pro-plan'+s+'.png';
+  document.getElementById('lp-img-max').src   = '/assets/max-plan'+s+'.png';
+
+  // Liens vers signup avec paramètres
+  const billing = isYearly ? 'yearly' : 'monthly';
+  document.getElementById('lp-link-pro').href = 'signup.html?plan=pro&billing='+billing;
+  document.getElementById('lp-link-max').href = 'signup.html?plan=max&billing='+billing;
+  document.getElementById('lp-cta-pro').href  = 'signup.html?plan=pro&billing='+billing;
+  document.getElementById('lp-cta-max').href  = 'signup.html?plan=max&billing='+billing;
+
+  // Textes des CTA
+  const ctaPro = document.getElementById('lp-cta-pro');
+  const ctaMax = document.getElementById('lp-cta-max');
+  if (isYearly) {
+    ctaPro.textContent = 'Choisir Pro — 4,16€/mois';
+    ctaMax.textContent = 'Choisir Max — 10,75€/mois';
+  } else {
+    ctaPro.textContent = 'Choisir Pro — 4,90€/mois';
+    ctaMax.textContent = 'Choisir Max — 12,90€/mois';
+  }
+
+  // Badge "2 mois offerts"
+  document.getElementById('lp-offert-pro').style.display = isYearly ? 'block' : 'none';
+  document.getElementById('lp-offert-max').style.display = isYearly ? 'block' : 'none';
+}
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
