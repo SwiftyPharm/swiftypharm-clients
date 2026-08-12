@@ -484,11 +484,13 @@ async function submitSignup(){
     if(!userId)throw new Error('Erreur création compte.');
 
     const{error:dbErr}=await sb.from('pharmacies').insert({
-      slug,user_id:userId,nom:name,
-      soustitre:city?'Votre pharmacie de confiance à '+city:'Votre pharmacie de confiance',
-      telephone:tel||'',horaires:{},plan:selectedPlan,reseaux:{}
-    });
-    if(dbErr)throw new Error(dbErr.message);
+  slug,user_id:userId,nom:name,
+  soustitre:city?'Votre pharmacie de confiance à '+city:'Votre pharmacie de confiance',
+  telephone:tel||'',horaires:{},reseaux:{},
+  plan:'basic',
+  subscription_status: selectedPlan==='basic' ? 'none' : 'pending'
+});
+if(dbErr)throw new Error(dbErr.message);
 
     localStorage.setItem('swiftlink_slug',slug);
 
