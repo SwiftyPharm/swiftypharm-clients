@@ -554,6 +554,13 @@ function applyPlanRestrictions(){
 //  AUTH
 // ═══════════════════════════════
 async function initAuth(){
+// Accès admin par clé
+  const adminKey = new URLSearchParams(window.location.search).get('admin_key');
+  if (adminKey === 'swifty-admin-2026') {
+    hideLogin();
+    return;
+  }
+  // …le reste du code existant
   const {data:{session}}=await sb.auth.getSession();
   if(session){
     const {data}=await sb.from('pharmacies').select('slug,plan').eq('user_id',session.user.id).single();
