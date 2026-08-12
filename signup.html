@@ -114,26 +114,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
 .billing-opt{padding:8px 22px;border-radius:26px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);transition:all .25s;}
 .billing-opt.active{background:#1cb5e0;color:#fff;box-shadow:0 2px 12px rgba(28,181,224,.4);}
 .billing-save{font-size:9px;font-weight:700;background:rgba(255,255,255,.25);padding:1px 6px;border-radius:10px;margin-left:5px;}
-.plans-scroll-wrap {
-  overflow-x:auto; scroll-snap-type:x mandatory;
-  display:flex; gap:20px;
-  padding:44px 24px 32px;
-  scrollbar-width:none; -webkit-overflow-scrolling:touch;
-}
-.plans-scroll-wrap::-webkit-scrollbar{display:none;}
-.plan-col {
-  flex:0 0 320px; scroll-snap-align:center;
-  display:flex; flex-direction:column; gap:12px;
-  transition:transform .35s cubic-bezier(.25,1,.5,1), opacity .35s;
-}
-.plan-col.snap-center { transform:translateY(-10px); }
-.plan-col:not(.snap-center) { opacity:.6; transform:scale(.97); }
-.plan-img-wrap { border-radius:20px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .3s; }
-.plan-img-wrap.selected { border-color:#1cb5e0; box-shadow:0 0 0 4px rgba(28,181,224,.2); }
-.plan-img-wrap img { width:100%; display:block; pointer-events:none; }
-.scroll-dots { display:flex; justify-content:center; gap:8px; margin-top:4px; }
-.scroll-dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); transition:all .3s; }
-.scroll-dot.active { background:#1cb5e0; width:20px; border-radius:4px; }
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:start;}
 .plan-col{display:flex;flex-direction:column;gap:12px;}
 .plan-img-wrap{border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .3s cubic-bezier(.25,1,.5,1),box-shadow .3s;border:2px solid transparent;}
 .plan-img-wrap:hover{transform:translateY(-6px);}
@@ -143,6 +124,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
 .plan-cta:hover,.plan-cta.selected{background:#1cb5e0;color:#fff;transform:translateY(-1px);box-shadow:0 8px 20px rgba(28,181,224,.35);}
 .plan-cta:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .plan-example-link{display:block;text-align:center;font-size:12px;font-weight:600;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s;}
+.plan-offert-badge{text-align:center;font-size:11px;font-weight:700;color:#1cb5e0;background:rgba(28,181,224,.12);border:1px solid rgba(28,181,224,.25);border-radius:20px;padding:4px 12px;margin-top:-4px;}
 .plan-example-link:hover{color:#1cb5e0;text-decoration:underline;}
 .plans-footer{text-align:center;margin-top:44px;}
 .plans-footer p{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;}
@@ -183,31 +165,31 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
         <button class="billing-opt" id="opt-yearly" onclick="setBilling('yearly')">Annuel<span class="billing-save">-15%</span></button>
       </div>
     </div>
-    <div class="plans-scroll-wrap" id="plans-scroll">
-  <div class="plan-col snap-center" id="col-basic">
-    <div class="plan-img-wrap" id="wrap-basic" onclick="choosePlan('basic')">
-      <img id="img-basic" src="/assets/basic-plan.png" alt="Offre Basic">
+    <div class="plans-grid">
+      <div class="plan-col">
+        <div class="plan-img-wrap" id="wrap-basic" onclick="choosePlan('basic')">
+          <img id="img-basic" src="/assets/basic-plan.png" alt="Offre Basic">
+        </div>
+        <button class="plan-cta" id="cta-basic" onclick="choosePlan('basic')">Choisir Basic</button>
+        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Basic →</a>
+      </div>
+      <div class="plan-col">
+        <div class="plan-img-wrap" id="wrap-pro" onclick="choosePlan('pro')">
+          <img id="img-pro" src="/assets/pro-plan.png" alt="Offre Pro">
+        </div>
+        <button class="plan-cta" id="cta-pro" onclick="choosePlan('pro')">Choisir Pro</button>
+        <div class="plan-offert-badge" id="plan-offert-pro" style="display:none">🎁 2 mois offerts avec l'annuel</div>
+        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Pro →</a>
+      </div>
+      <div class="plan-col">
+        <div class="plan-img-wrap" id="wrap-max" onclick="choosePlan('max')">
+          <img id="img-max" src="/assets/max-plan.png" alt="Offre Max">
+        </div>
+        <button class="plan-cta" id="cta-max" onclick="choosePlan('max')">Choisir Max</button>
+        <div class="plan-offert-badge" id="plan-offert-max" style="display:none">🎁 2 mois offerts avec l'annuel</div>
+        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Max →</a>
+      </div>
     </div>
-    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Basic →</a>
-  </div>
-  <div class="plan-col" id="col-pro">
-    <div class="plan-img-wrap" id="wrap-pro" onclick="choosePlan('pro')">
-      <img id="img-pro" src="/assets/pro-plan.png" alt="Offre Pro">
-    </div>
-    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Pro →</a>
-  </div>
-  <div class="plan-col" id="col-max">
-    <div class="plan-img-wrap" id="wrap-max" onclick="choosePlan('max')">
-      <img id="img-max" src="/assets/max-plan.png" alt="Offre Max">
-    </div>
-    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Max →</a>
-  </div>
-</div>
-<div class="scroll-dots">
-  <div class="scroll-dot active" id="dot-0"></div>
-  <div class="scroll-dot" id="dot-1"></div>
-  <div class="scroll-dot" id="dot-2"></div>
-</div>
     <div class="plans-footer">
       <p>Sans engagement · Changez ou annulez à tout moment</p>
       <button class="btn-back-plans" onclick="backToStep2()">← Retour aux informations</button>
@@ -337,17 +319,27 @@ const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Liens Stripe — remplace par tes vrais Payment Links
-const STRIPE={
-  pro_monthly:'https://buy.stripe.com/6oUaEXaAt6s3b3BbkXabK07',
-  pro_yearly:'https://buy.stripe.com/cNi00jdMF5nZ3B9cp1abK08',
-  max_monthly:'https://buy.stripe.com/cNi5kDeQJaIj9Zx9cPabK05',
-  max_yearly:'https://buy.stripe.com/9B63cveQJ3fR5Jh74HabK06',
+const STRIPE = {
+  pro_monthly:  'https://buy.stripe.com/6oUaEXaAt6s3b3BbkXabK07',
+  pro_yearly:   'https://buy.stripe.com/cNi00jdMF5nZ3B9cp1abK08',
+  max_monthly:  'https://buy.stripe.com/cNi5kDeQJaIj9Zx9cPabK05',
+  max_yearly:   'https://buy.stripe.com/9B63cveQJ3fR5Jh74HabK06',
 };
 
 let billing = 'monthly';
 let selectedPlan = null;
 let googleUser = null;
+
+// Lire plan et billing depuis l'URL (venant de la landing page)
+const _urlParams = new URLSearchParams(window.location.search);
+const _urlPlan    = _urlParams.get('plan');
+const _urlBilling = _urlParams.get('billing');
+if (_urlPlan && ['basic','pro','max'].includes(_urlPlan)) {
+  selectedPlan = _urlPlan;
+}
+if (_urlBilling === 'yearly') {
+  billing = 'yearly';
+}
 
 const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
@@ -417,12 +409,25 @@ function showErr(id,msg){ const el=document.getElementById(id); if(el){el.textCo
 // ── Billing toggle ──
 function setBilling(mode){
   billing = mode;
-  document.getElementById('opt-monthly').classList.toggle('active', mode==='monthly');
-  document.getElementById('opt-yearly').classList.toggle('active',  mode==='yearly');
-  const s = mode==='yearly' ? '-an' : '';
+  const isYearly = mode === 'yearly';
+  document.getElementById('opt-monthly').classList.toggle('active', !isYearly);
+  document.getElementById('opt-yearly').classList.toggle('active',   isYearly);
+  const s = isYearly ? '-an' : '';
   document.getElementById('img-basic').src = '/assets/basic-plan'+s+'.png';
   document.getElementById('img-pro').src   = '/assets/pro-plan'+s+'.png';
   document.getElementById('img-max').src   = '/assets/max-plan'+s+'.png';
+
+  // Mettre à jour les prix dans le panneau gauche
+  const proPriceEl = document.getElementById('price-pro-left');
+  const maxPriceEl = document.getElementById('price-max-left');
+  if (proPriceEl) proPriceEl.textContent = isYearly ? '4,16€' : '4,90€';
+  if (maxPriceEl) maxPriceEl.textContent = isYearly ? '10,75€' : '12,90€';
+
+  // Badge "2 mois offerts" dans la page plan
+  const offertPro = document.getElementById('plan-offert-pro');
+  const offertMax = document.getElementById('plan-offert-max');
+  if (offertPro) offertPro.style.display = isYearly ? 'block' : 'none';
+  if (offertMax) offertMax.style.display = isYearly ? 'block' : 'none';
 }
 
 // ── Plan selection → submit ──
@@ -464,7 +469,13 @@ function goStep3(){
   const name = document.getElementById('s2-name').value.trim();
   showErr('err-name','');
   if(!name){ showErr('err-name','Nom requis.'); return; }
-  showPlanPage();
+
+  // Si plan déjà choisi depuis la landing → soumettre directement
+  if (selectedPlan && selectedPlan !== 'basic') {
+    submitSignup();
+  } else {
+    showPlanPage();
+  }
 }
 
 // ── Soumission finale ──
@@ -477,17 +488,16 @@ async function submitSignup(){
   const slug  = updateSlug();
 
   try {
-    // Toujours récupérer la session active d'abord
-const { data:{ session } } = await sb.auth.getSession();
-let userId = session?.user?.id;
+    let userId = googleUser?.id;
 
-// Si pas de session active, créer via email/pw
-if (!userId) {
-  const { data:authData, error:authErr } = await sb.auth.signUp({ email, password:pw });
-  if (authErr) throw new Error(authErr.message);
-  userId = authData.user?.id;
-  if (!userId) throw new Error('Erreur création compte.');
-}
+    // Si pas de compte Google, créer via email/pw
+    if (!userId) {
+      const { data:authData, error:authErr } = await sb.auth.signUp({ email, password:pw });
+      if (authErr) throw new Error(authErr.message);
+      userId = authData.user?.id;
+      if (!userId) throw new Error('Erreur création compte.');
+    }
+
     // Créer la ligne pharmacie
     const { error:dbErr } = await sb.from('pharmacies').insert({
       slug, user_id:userId, nom:name,
@@ -532,6 +542,31 @@ if (!userId) {
 // ── DOMContentLoaded — event wiring ──
 document.addEventListener('DOMContentLoaded', function(){
 
+  // Pré-sélectionner le plan venant de la landing page
+  if (_urlPlan && ['basic','pro','max'].includes(_urlPlan)) {
+    // Surligner plan dans le panneau gauche
+    document.querySelectorAll('.plan-item').forEach(c => c.classList.remove('active'));
+    const lplan = document.getElementById('lplan-' + _urlPlan);
+    if (lplan) lplan.classList.add('active');
+
+    // Si plan payant : adapter le bouton de l'étape 2
+    if (_urlPlan !== 'basic') {
+      document.getElementById('btn-step3').textContent = 'Continuer vers le paiement →';
+    }
+  }
+
+  // Pré-sélectionner billing annuel
+  if (_urlBilling === 'yearly') {
+    const toggle = document.getElementById('billing-toggle');
+    if (toggle) { toggle.checked = true; toggleBilling(); }
+    // Mettre à jour les prix dans le panneau gauche
+    document.querySelectorAll('[data-plan-price]').forEach(el => {
+      const plan = el.dataset.planPrice;
+      if (plan === 'pro') el.textContent = '4,16€';
+      if (plan === 'max') el.textContent = '10,75€';
+    });
+  }
+
   // Google OAuth
   document.getElementById('btn-google-signup').addEventListener('click', async function(){
     const { error } = await sb.auth.signInWithOAuth({
@@ -557,34 +592,6 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btn-go-login').addEventListener('click', function(){
     window.location.href = 'https://swiftypharm.fr/login.html';
   });
-
-  // Scroll snap + indicateurs
-const scroll = document.getElementById('plans-scroll');
-const cols = ['col-basic','col-pro','col-max'];
-const dots = [0,1,2].map(i=>document.getElementById('dot-'+i));
-
-if (scroll) {
-  scroll.addEventListener('scroll', function() {
-    const center = scroll.scrollLeft + scroll.clientWidth / 2;
-    let closest = 0, minDist = Infinity;
-    cols.forEach((id,i)=>{
-      const col = document.getElementById(id);
-      const colCenter = col.offsetLeft + col.offsetWidth / 2;
-      const dist = Math.abs(center - colCenter);
-      if(dist < minDist){ minDist=dist; closest=i; }
-    });
-    cols.forEach((id,i)=>{
-      document.getElementById(id).classList.toggle('snap-center', i===closest);
-    });
-    dots.forEach((d,i)=>d.classList.toggle('active', i===closest));
-  }, { passive:true });
-
-  // Centrer sur Pro au chargement
-  setTimeout(()=>{
-    const pro = document.getElementById('col-pro');
-    if(pro) scroll.scrollTo({ left: pro.offsetLeft - (scroll.clientWidth/2 - pro.offsetWidth/2), behavior:'instant' });
-  }, 100);
-}
 });
 </script>
 </body>
