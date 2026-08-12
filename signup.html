@@ -295,7 +295,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
           <label class="field-label">Téléphone</label>
           <input class="field-input" type="tel" id="s2-tel" placeholder="+33 1 23 45 67 89">
         </div>
-        <button class="btn-primary" id="btn-step3">Voir les offres →</button>
+        <button class="btn-primary" id="btn-step3">Continuer →</button>
         <button class="btn-ghost" id="btn-back-1">← Retour</button>
       </div>
 
@@ -315,6 +315,17 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
 </div>
 
 <script>
+// Adapter le bouton immédiatement selon le plan de l'URL
+(function(){
+  const p = new URLSearchParams(window.location.search).get('plan');
+  if (p === 'pro' || p === 'max') {
+    document.addEventListener('DOMContentLoaded', function(){
+      const b = document.getElementById('btn-step3');
+      if (b) b.textContent = 'Continuer vers le paiement →';
+    });
+  }
+})();
+  
 const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
