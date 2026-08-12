@@ -320,7 +320,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const STRIPE = {
-  pro_monthly:  'https://buy.stripe.com/6oUaEXaAt6s3b3BbkXabK07',
+  pro_monthly:  'https://buy.stripe.com/6oUaEXaAt6s3b3BbkXabK07L',
   pro_yearly:   'https://buy.stripe.com/cNi00jdMF5nZ3B9cp1abK08',
   max_monthly:  'https://buy.stripe.com/cNi5kDeQJaIj9Zx9cPabK05',
   max_yearly:   'https://buy.stripe.com/9B63cveQJ3fR5Jh74HabK06',
@@ -544,14 +544,15 @@ document.addEventListener('DOMContentLoaded', function(){
 
   // Pré-sélectionner le plan venant de la landing page
   if (_urlPlan && ['basic','pro','max'].includes(_urlPlan)) {
-    // Surligner plan dans le panneau gauche
-    document.querySelectorAll('.plan-item').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('active'));
     const lplan = document.getElementById('lplan-' + _urlPlan);
     if (lplan) lplan.classList.add('active');
 
-    // Si plan payant : adapter le bouton de l'étape 2
-    if (_urlPlan !== 'basic') {
-      document.getElementById('btn-step3').textContent = 'Continuer vers le paiement →';
+    const btn3 = document.getElementById('btn-step3');
+    if (btn3) {
+      btn3.textContent = _urlPlan === 'basic'
+        ? 'Créer mon espace gratuit →'
+        : 'Continuer vers le paiement →';
     }
   }
 
