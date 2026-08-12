@@ -24,7 +24,7 @@ nav{
   background:rgba(5,8,26,.8);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
 }
-.nav-logo img{height:28px;object-fit:contain;}
+.nav-logo img{height:28px;object-fit:contain;filter:brightness(0) invert(1);}
 .nav-links{display:flex;gap:32px;margin-left:48px;}
 .nav-links a{font-size:13px;font-weight:500;color:var(--grey);text-decoration:none;transition:color .2s;}
 .nav-links a:hover{color:var(--white);}
@@ -172,6 +172,38 @@ nav{
 .cta-title{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-1px;margin-bottom:14px;}
 .cta-sub{font-size:16px;color:var(--grey);margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;}
 
+/* ══ ACCORDION FEATURES ══ */
+.features-accordion{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+.acc-item{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;cursor:pointer;transition:border-color .25s,background .25s;
+}
+.acc-item:hover{border-color:rgba(28,181,224,.3);}
+.acc-item.open{border-color:rgba(28,181,224,.45);background:rgba(28,181,224,.05);}
+.acc-head{display:flex;align-items:center;gap:14px;padding:18px 20px;}
+.acc-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(0,0,70,.9),rgba(28,181,224,.25));
+  border:1px solid rgba(28,181,224,.2);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.acc-title{flex:1;font-size:15px;font-weight:700;color:#fff;text-align:left;}
+.acc-tag{
+  font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;
+  background:rgba(255,255,255,.08);color:var(--grey);border:1px solid var(--border);
+}
+.acc-tag-pro{background:rgba(28,181,224,.15);color:var(--cyan);border-color:rgba(28,181,224,.3);}
+.acc-tag-max{background:rgba(28,181,224,.22);color:var(--cyan);border-color:rgba(28,181,224,.4);}
+.acc-chevron{font-size:12px;color:var(--grey);transition:transform .3s;flex-shrink:0;}
+.acc-item.open .acc-chevron{transform:rotate(180deg);color:var(--cyan);}
+.acc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s cubic-bezier(.25,1,.5,1),padding .3s;
+  padding:0 20px;
+}
+.acc-item.open .acc-body{max-height:220px;padding:0 20px 20px;}
+.acc-body p{font-size:13px;color:var(--grey);line-height:1.75;padding-left:52px;}
+
 /* ══ PRICING IMAGE CLICKABLE ══ */
 .pricing-img-link{display:block;text-decoration:none;}
 .pricing-img-link:hover .pricing-img{transform:translateY(-6px);border-color:rgba(255,255,255,.2);}
@@ -196,28 +228,86 @@ nav{
 
 /* ══ FOOTER ══ */
 footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-.footer-logo img{height:24px;object-fit:contain;}
+.footer-logo img{height:24px;object-fit:contain;filter:brightness(0) invert(1) opacity(.6);}
 .footer-links{display:flex;gap:24px;}
 .footer-links a{font-size:12px;color:var(--grey);text-decoration:none;transition:color .2s;}
 .footer-links a:hover{color:var(--white);}
 .footer-copy{font-size:12px;color:rgba(255,255,255,.25);}
 
 /* ══ MOBILE ══ */
-@media(max-width:768px){
-  nav{padding:0 20px;}
-  .nav-links{display:none;}
-  .hero{padding:100px 20px 64px;}
-  .stats{flex-direction:column;gap:0;}
-  .stat-item{border-right:none;border-bottom:1px solid var(--border);padding:28px 24px;}
-  .stat-item:last-child{border-bottom:none;}
-  .features-grid,.pricing-grid{grid-template-columns:1fr;}
-  .steps-row{flex-direction:column;gap:32px;}
-  .steps-row::before{display:none;}
-  footer{flex-direction:column;align-items:center;text-align:center;padding:32px 20px;}
-  .footer-links{flex-wrap:wrap;justify-content:center;}
-}
 @media(max-width:900px){
-  .features-grid{grid-template-columns:1fr 1fr;}
+  .features-accordion{max-width:100%;}
+}
+
+@media(max-width:768px){
+  nav{padding:0 16px;height:58px;}
+  .nav-links{display:none;}
+  .nav-logo img{height:24px;}
+  .btn-nav-ghost{padding:7px 13px;font-size:12px;}
+  .btn-nav-primary{padding:7px 13px;font-size:12px;}
+
+  .hero{padding:92px 18px 56px;}
+  .hero-title{font-size:clamp(32px,9vw,44px);letter-spacing:-1.2px;}
+  .hero-sub{font-size:15px;padding:0 8px;}
+  .hero-btns{flex-direction:column;width:100%;max-width:320px;margin-left:auto;margin-right:auto;}
+  .btn-hero-primary,.btn-hero-ghost{width:100%;text-align:center;padding:14px 20px;font-size:15px;}
+
+  /* Stats centrés en 2x2 */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .stat-item{max-width:none;padding:26px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .stat-item:nth-child(2n){border-right:none;}
+  .stat-item:nth-child(n+3){border-bottom:none;}
+  .stat-num{font-size:32px;}
+  .stat-label{font-size:12px;}
+
+  .section{padding:64px 18px;}
+  .section-title{font-size:26px;}
+  .section-sub{font-size:14px;margin-bottom:36px;}
+
+  /* Accordion mobile */
+  .acc-head{padding:15px 16px;gap:11px;}
+  .acc-icon{width:34px;height:34px;font-size:15px;}
+  .acc-title{font-size:13.5px;}
+  .acc-tag{font-size:9px;padding:2px 8px;}
+  .acc-body p{padding-left:0;font-size:12.5px;}
+  .acc-item.open .acc-body{padding:0 16px 16px;max-height:280px;}
+
+  /* Steps */
+  .steps-row{flex-direction:column;gap:28px;}
+  .steps-row::before{display:none;}
+  .step-item{padding:0;}
+
+  /* Pricing scroll horizontal */
+  .pricing-grid{
+    display:flex;overflow-x:auto;gap:16px;
+    scroll-snap-type:x mandatory;
+    padding:4px 0 20px;margin:0 -18px;
+    padding-left:18px;padding-right:18px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .pricing-grid::-webkit-scrollbar{display:none;}
+  .pricing-col{flex:0 0 78vw;max-width:300px;scroll-snap-align:center;}
+
+  /* Billing toggle */
+  .billing-opt{padding:8px 16px;font-size:12px;}
+  .billing-save{font-size:8px;padding:1px 5px;}
+
+  /* Testimonial */
+  .testimonial-quote{font-size:17px;}
+
+  /* CTA */
+  .cta-section{padding:64px 18px;}
+  .cta-title{font-size:28px;}
+  .cta-sub{font-size:14px;}
+
+  footer{flex-direction:column;align-items:center;text-align:center;padding:32px 18px;gap:20px;}
+  .footer-links{flex-wrap:wrap;justify-content:center;gap:16px;}
+}
+
+@media(max-width:420px){
+  .hero-title{font-size:30px;}
+  .stat-num{font-size:28px;}
+  .pricing-col{flex:0 0 84vw;}
 }
 </style>
 </head>
@@ -288,45 +378,70 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
     <h2 class="section-title">Tout ce dont votre pharmacie a besoin, rien de plus.</h2>
     <p class="section-sub">SwiftyPharm a été conçu pour les pharmaciens, pas pour les développeurs. Aucune compétence technique requise.</p>
   </div>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🏥</div>
-      <div class="feature-title">Vitrine personnalisée</div>
-      <div class="feature-desc">Logo, bannière, horaires, coordonnées, liens réseaux sociaux — tout configuré depuis votre back office en quelques clics.</div>
-      <span class="feature-tag">Inclus dans Basic</span>
+  <div class="features-accordion">
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">🏥</div>
+        <div class="acc-title">Vitrine personnalisée</div>
+        <div class="acc-tag">Basic</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Logo, bannière, horaires, coordonnées, liens réseaux sociaux — tout se configure depuis votre back office en quelques clics. Aucune compétence technique requise.</p></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">📍</div>
-      <div class="feature-title">Boutons d'action rapide</div>
-      <div class="feature-desc">Téléphone, Google Maps, Instagram, Google Avis, Facebook — vos patients trouvent et contactent votre pharmacie en 1 tap.</div>
-      <span class="feature-tag">Inclus dans Basic</span>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">📍</div>
+        <div class="acc-title">Boutons d'action rapide</div>
+        <div class="acc-tag">Basic</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Téléphone, Google Maps, Instagram, Google Avis, Facebook, email — vos patients trouvent et contactent votre pharmacie en un seul tap depuis leur téléphone.</p></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🕐</div>
-      <div class="feature-title">Horaires en temps réel</div>
-      <div class="feature-desc">Renseignez vos horaires d'ouverture jour par jour. Vos patients voient si vous êtes ouvert en un coup d'œil.</div>
-      <span class="feature-tag">Inclus dans Basic</span>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">🕐</div>
+        <div class="acc-title">Horaires en temps réel</div>
+        <div class="acc-tag">Basic</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Renseignez vos horaires jour par jour, y compris les jours de fermeture. Vos patients voient immédiatement si vous êtes ouvert, avec le jour actuel mis en évidence.</p></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">📋</div>
-      <div class="feature-title">Envoi d'ordonnances</div>
-      <div class="feature-desc">Vos patients envoient leurs ordonnances directement depuis leur téléphone. Vous recevez un email instantané. Préparez avant qu'ils arrivent.</div>
-      <span class="feature-tag">Pro & Max</span>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">📋</div>
+        <div class="acc-title">Envoi d'ordonnances</div>
+        <div class="acc-tag acc-tag-pro">Pro</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Vos patients photographient leur ordonnance et l'envoient depuis votre page. Vous recevez un email instantané avec le document, leur nom et leur téléphone. Vous préparez pendant qu'ils se déplacent.</p></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🏷️</div>
-      <div class="feature-title">Promotions & Click & Collect</div>
-      <div class="feature-desc">Affichez vos articles en promotion avec gestion des stocks. Vos clients commandent en ligne et récupèrent en pharmacie.</div>
-      <span class="feature-tag">Max uniquement</span>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">🏷️</div>
+        <div class="acc-title">Promotions & Click and Collect</div>
+        <div class="acc-tag acc-tag-max">Max</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Affichez jusqu'à 8 articles en promotion avec photo, prix barré et badge. Gestion des stocks en temps réel : vos clients voient s'il reste des pièces, commandent en ligne et choisissent leur créneau de retrait.</p></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔔</div>
-      <div class="feature-title">Notifications push & SMS</div>
-      <div class="feature-desc">Informez vos clients d'une nouvelle promotion ou d'un changement d'horaires directement sur leur téléphone.</div>
-      <span class="feature-tag">Max uniquement</span>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-icon">🔔</div>
+        <div class="acc-title">Notifications push & SMS</div>
+        <div class="acc-tag acc-tag-max">Max</div>
+        <div class="acc-chevron">▾</div>
+      </div>
+      <div class="acc-body"><p>Informez vos clients d'une nouvelle promotion, d'un changement d'horaires ou d'une commande prête — directement sur leur téléphone, sans qu'ils aient à installer d'application.</p></div>
     </div>
+
   </div>
-</section>
+  </section>
 
 <!-- ══ HOW IT WORKS ══ -->
 <section class="section" id="how" style="background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);">
@@ -362,9 +477,11 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
     <p class="section-sub">Commencez gratuitement. Évoluez quand vous en avez besoin.</p>
   </div>
   <!-- Toggle billing -->
-  <div class="billing-switch" style="margin-bottom:32px;">
+  <div style="display:flex;justify-content:center;width:100%;margin-bottom:36px;">
+  <div class="billing-switch">
     <button class="billing-opt active" id="lp-monthly" onclick="lpSetBilling('monthly')">Mensuel</button>
-    <button class="billing-opt" id="lp-yearly" onclick="lpSetBilling('yearly')">Annuel<span class="billing-save">-15%</span></button>
+    <button class="billing-opt" id="lp-yearly" onclick="lpSetBilling('yearly')">Annuel<span class="billing-save">2 mois offerts</span></button>
+  </div>
   </div>
 
   <div class="pricing-grid">
@@ -492,6 +609,14 @@ function lpSetBilling(mode) {
   document.getElementById('lp-offert-max').style.display = isYearly ? 'block' : 'none';
 }
 
+// ── Accordion fonctionnalités ──
+function toggleAcc(el) {
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+// ── Scroll reveal ──
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -499,12 +624,12 @@ const observer = new IntersectionObserver((entries) => {
       e.target.style.transform = 'translateY(0)';
     }
   });
-}, { threshold: 0.1 });
+}, { threshold: 0.08 });
 
-document.querySelectorAll('.feature-card, .step-item, .pricing-col').forEach(el => {
+document.querySelectorAll('.acc-item, .step-item, .pricing-col').forEach((el, i) => {
   el.style.opacity = '0';
-  el.style.transform = 'translateY(24px)';
-  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = `opacity .45s ease ${i * 0.04}s, transform .45s ease ${i * 0.04}s`;
   observer.observe(el);
 });
 </script>
