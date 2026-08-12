@@ -1,0 +1,17 @@
+[build]
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Redirections — le webhook DOIT passer avant la règle catch-all
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/page.html"
+  status = 200
