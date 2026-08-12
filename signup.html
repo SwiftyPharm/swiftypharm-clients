@@ -314,7 +314,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;}
       <!-- BASIC -->
       <div class="plan-col">
         <div class="plan-img-wrap" id="wrap-basic" onclick="choosePlan('basic')">
-          <img id="img-basic" src="/basic-plan.png" alt="Offre Basic">
+          <img id="img-basic" src="/assets/basic-plan.png" alt="Offre Basic">
         </div>
         <button class="plan-cta" id="cta-basic" onclick="choosePlan('basic')">Choisir Basic</button>
         <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Basic →</a>
@@ -323,7 +323,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;}
       <!-- PRO -->
       <div class="plan-col">
         <div class="plan-img-wrap" id="wrap-pro" onclick="choosePlan('pro')">
-          <img id="img-pro" src="/pro-plan.png" alt="Offre Pro">
+          <img id="img-pro" src="/assets/pro-plan.png" alt="Offre Pro">
         </div>
         <button class="plan-cta" id="cta-pro" onclick="choosePlan('pro')">Choisir Pro</button>
         <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Pro →</a>
@@ -332,7 +332,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;}
       <!-- MAX -->
       <div class="plan-col">
         <div class="plan-img-wrap" id="wrap-max" onclick="choosePlan('max')">
-          <img id="img-max" src="/max-plan.png" alt="Offre Max">
+          <img id="img-max" src="/assets/max-plan.png" alt="Offre Max">
         </div>
         <button class="plan-cta" id="cta-max" onclick="choosePlan('max')">Choisir Max</button>
         <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Max →</a>
@@ -380,9 +380,9 @@ function setBilling(mode){
   document.getElementById('opt-monthly').classList.toggle('active',mode==='monthly');
   document.getElementById('opt-yearly').classList.toggle('active',mode==='yearly');
   const suffix = mode==='yearly' ? '-an' : '';
-  document.getElementById('img-basic').src='/basic-plan'+suffix+'.png';
-  document.getElementById('img-pro').src='/pro-plan'+suffix+'.png';
-  document.getElementById('img-max').src='/max-plan'+suffix+'.png';
+  document.getElementById('img-basic').src='/assets/basic-plan'+suffix+'.png';
+  document.getElementById('img-pro').src='/assets/pro-plan'+suffix+'.png';
+  document.getElementById('img-max').src='/assets/max-plan'+suffix+'.png';
 }
 
 // ── Choisir une offre → soumission ──
