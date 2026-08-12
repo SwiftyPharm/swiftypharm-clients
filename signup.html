@@ -114,7 +114,26 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
 .billing-opt{padding:8px 22px;border-radius:26px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);transition:all .25s;}
 .billing-opt.active{background:#1cb5e0;color:#fff;box-shadow:0 2px 12px rgba(28,181,224,.4);}
 .billing-save{font-size:9px;font-weight:700;background:rgba(255,255,255,.25);padding:1px 6px;border-radius:10px;margin-left:5px;}
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:start;}
+.plans-scroll-wrap {
+  overflow-x:auto; scroll-snap-type:x mandatory;
+  display:flex; gap:20px;
+  padding:44px 24px 32px;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.plans-scroll-wrap::-webkit-scrollbar{display:none;}
+.plan-col {
+  flex:0 0 320px; scroll-snap-align:center;
+  display:flex; flex-direction:column; gap:12px;
+  transition:transform .35s cubic-bezier(.25,1,.5,1), opacity .35s;
+}
+.plan-col.snap-center { transform:translateY(-10px); }
+.plan-col:not(.snap-center) { opacity:.6; transform:scale(.97); }
+.plan-img-wrap { border-radius:20px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .3s; }
+.plan-img-wrap.selected { border-color:#1cb5e0; box-shadow:0 0 0 4px rgba(28,181,224,.2); }
+.plan-img-wrap img { width:100%; display:block; pointer-events:none; }
+.scroll-dots { display:flex; justify-content:center; gap:8px; margin-top:4px; }
+.scroll-dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); transition:all .3s; }
+.scroll-dot.active { background:#1cb5e0; width:20px; border-radius:4px; }
 .plan-col{display:flex;flex-direction:column;gap:12px;}
 .plan-img-wrap{border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .3s cubic-bezier(.25,1,.5,1),box-shadow .3s;border:2px solid transparent;}
 .plan-img-wrap:hover{transform:translateY(-6px);}
@@ -164,29 +183,31 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;}
         <button class="billing-opt" id="opt-yearly" onclick="setBilling('yearly')">Annuel<span class="billing-save">-15%</span></button>
       </div>
     </div>
-    <div class="plans-grid">
-      <div class="plan-col">
-        <div class="plan-img-wrap" id="wrap-basic" onclick="choosePlan('basic')">
-          <img id="img-basic" src="/assets/basic-plan.png" alt="Offre Basic">
-        </div>
-        <button class="plan-cta" id="cta-basic" onclick="choosePlan('basic')">Choisir Basic</button>
-        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Basic →</a>
-      </div>
-      <div class="plan-col">
-        <div class="plan-img-wrap" id="wrap-pro" onclick="choosePlan('pro')">
-          <img id="img-pro" src="/assets/pro-plan.png" alt="Offre Pro">
-        </div>
-        <button class="plan-cta" id="cta-pro" onclick="choosePlan('pro')">Choisir Pro</button>
-        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Pro →</a>
-      </div>
-      <div class="plan-col">
-        <div class="plan-img-wrap" id="wrap-max" onclick="choosePlan('max')">
-          <img id="img-max" src="/assets/max-plan.png" alt="Offre Max">
-        </div>
-        <button class="plan-cta" id="cta-max" onclick="choosePlan('max')">Choisir Max</button>
-        <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Max →</a>
-      </div>
+    <div class="plans-scroll-wrap" id="plans-scroll">
+  <div class="plan-col snap-center" id="col-basic">
+    <div class="plan-img-wrap" id="wrap-basic" onclick="choosePlan('basic')">
+      <img id="img-basic" src="/assets/basic-plan.png" alt="Offre Basic">
     </div>
+    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Basic →</a>
+  </div>
+  <div class="plan-col" id="col-pro">
+    <div class="plan-img-wrap" id="wrap-pro" onclick="choosePlan('pro')">
+      <img id="img-pro" src="/assets/pro-plan.png" alt="Offre Pro">
+    </div>
+    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Pro →</a>
+  </div>
+  <div class="plan-col" id="col-max">
+    <div class="plan-img-wrap" id="wrap-max" onclick="choosePlan('max')">
+      <img id="img-max" src="/assets/max-plan.png" alt="Offre Max">
+    </div>
+    <a class="plan-example-link" href="https://swiftypharm.fr/nhean" target="_blank">Voir une page Max →</a>
+  </div>
+</div>
+<div class="scroll-dots">
+  <div class="scroll-dot active" id="dot-0"></div>
+  <div class="scroll-dot" id="dot-1"></div>
+  <div class="scroll-dot" id="dot-2"></div>
+</div>
     <div class="plans-footer">
       <p>Sans engagement · Changez ou annulez à tout moment</p>
       <button class="btn-back-plans" onclick="backToStep2()">← Retour aux informations</button>
@@ -456,16 +477,17 @@ async function submitSignup(){
   const slug  = updateSlug();
 
   try {
-    let userId = googleUser?.id;
+    // Toujours récupérer la session active d'abord
+const { data:{ session } } = await sb.auth.getSession();
+let userId = session?.user?.id;
 
-    // Si pas de compte Google, créer via email/pw
-    if (!userId) {
-      const { data:authData, error:authErr } = await sb.auth.signUp({ email, password:pw });
-      if (authErr) throw new Error(authErr.message);
-      userId = authData.user?.id;
-      if (!userId) throw new Error('Erreur création compte.');
-    }
-
+// Si pas de session active, créer via email/pw
+if (!userId) {
+  const { data:authData, error:authErr } = await sb.auth.signUp({ email, password:pw });
+  if (authErr) throw new Error(authErr.message);
+  userId = authData.user?.id;
+  if (!userId) throw new Error('Erreur création compte.');
+}
     // Créer la ligne pharmacie
     const { error:dbErr } = await sb.from('pharmacies').insert({
       slug, user_id:userId, nom:name,
@@ -535,6 +557,34 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btn-go-login').addEventListener('click', function(){
     window.location.href = 'https://swiftypharm.fr/login.html';
   });
+
+  // Scroll snap + indicateurs
+const scroll = document.getElementById('plans-scroll');
+const cols = ['col-basic','col-pro','col-max'];
+const dots = [0,1,2].map(i=>document.getElementById('dot-'+i));
+
+if (scroll) {
+  scroll.addEventListener('scroll', function() {
+    const center = scroll.scrollLeft + scroll.clientWidth / 2;
+    let closest = 0, minDist = Infinity;
+    cols.forEach((id,i)=>{
+      const col = document.getElementById(id);
+      const colCenter = col.offsetLeft + col.offsetWidth / 2;
+      const dist = Math.abs(center - colCenter);
+      if(dist < minDist){ minDist=dist; closest=i; }
+    });
+    cols.forEach((id,i)=>{
+      document.getElementById(id).classList.toggle('snap-center', i===closest);
+    });
+    dots.forEach((d,i)=>d.classList.toggle('active', i===closest));
+  }, { passive:true });
+
+  // Centrer sur Pro au chargement
+  setTimeout(()=>{
+    const pro = document.getElementById('col-pro');
+    if(pro) scroll.scrollTo({ left: pro.offsetLeft - (scroll.clientWidth/2 - pro.offsetWidth/2), behavior:'instant' });
+  }, 100);
+}
 });
 </script>
 </body>
