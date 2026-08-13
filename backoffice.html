@@ -205,7 +205,7 @@ textarea{resize:vertical;min-height:72px}
   </div>
   <div class="nav-right">
     <span id="save-indicator">Sauvegardé ✓</span>
-    <a id="btn-view-page" class="btn-view-page" href="#" target="_blank">👁 Ma page</a>
+    <a id="btn-view-page" class="btn-view-page" href="#" target="_blank">Voir ma page</a>
     <button class="btn-logout" id="btn-do-logout">Déconnexion</button>
   </div>
 </nav>
@@ -237,8 +237,7 @@ textarea{resize:vertical;min-height:72px}
         <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
       </label>
       <p class="img-hint">PNG recommandé · fond transparent · max 1 Mo</p>
-      <p class="img-hint" style="margin-top:4px">Ou coller une URL :</p>
-      <input type="url" id="ph-logo" placeholder="https://…/logo.png" oninput="onLogoUrlChange()" style="margin-top:6px">
+      <input type="url" id="ph-logo" style="display:none">
     </div>
   </div>
 </div>
@@ -249,11 +248,11 @@ textarea{resize:vertical;min-height:72px}
     <div class="field-row">
       <div class="field">
         <label>Nom de la pharmacie</label>
-        <input type="text" id="ph-name" placeholder="Pharmacie NHEAN" oninput="autoSave()">
+        <input type="text" id="ph-name" placeholder="Nom de votre pharmacie" oninput="autoSave()">
       </div>
       <div class="field">
         <label>Sous-titre</label>
-        <input type="text" id="ph-sub" placeholder="Votre pharmacie de confiance à Paris" oninput="autoSave()">
+        <input type="text" id="ph-sub" placeholder="Votre accroche" oninput="autoSave()">
       </div>
     </div>
     <div class="field-row">
@@ -305,7 +304,7 @@ textarea{resize:vertical;min-height:72px}
       </label>
       <div class="input-prefix-wrap" style="flex:1">
         <span class="input-prefix">facebook.com/</span>
-        <input type="text" id="soc-fb-val" placeholder="NomDeLaPage" oninput="autoSave()">
+        <input type="text" id="soc-fb-val" placeholder="pseudo-sans_arobase" oninput="autoSave()">
       </div>
     </div>
 
@@ -317,7 +316,7 @@ textarea{resize:vertical;min-height:72px}
       </label>
       <div style="flex:1">
         <div class="autocomplete-wrap">
-          <input type="text" id="soc-avis-val" placeholder="Nom exact sur Google Maps" oninput="autoSave();onAvisInput()" style="width:100%">
+          <input type="text" id="soc-avis-val" placeholder="Votre lien google avis" oninput="autoSave();onAvisInput()" style="width:100%">
           <div class="autocomplete-results" id="avis-results"></div>
         </div>
       </div>
@@ -351,9 +350,13 @@ textarea{resize:vertical;min-height:72px}
     </div>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-    <a id="btn-view-promos" href="#" target="_blank" class="btn btn-outline btn-sm">👁 Voir ma page promos</a>
+    <a id="btn-view-promos" href="#" target="_blank" class="btn btn-outline btn-sm">Voir ma page promos</a>
   </div>
   <div class="promo-grid" id="promo-grid"></div>
+  <div id="add-promo-wrap" style="display:none;justify-content:center;margin-top:18px">
+    <button class="btn btn-outline" id="btn-add-promo">＋ Ajouter un article</button>
+  </div>
+  <p id="promo-count-hint" style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px"></p>
 </div>
 
 <!-- SECTION 3 — Notifs -->
@@ -373,7 +376,7 @@ textarea{resize:vertical;min-height:72px}
         <div class="subscribers-sub" id="sub-updated">—</div>
       </div>
       <div style="margin-left:auto">
-        <button class="btn btn-secondary btn-sm" id="btn-fetch-subs">🔄 Actualiser</button>
+        <button class="btn btn-secondary btn-sm" id="btn-fetch-subs">Actualiser</button>
       </div>
     </div>
     <div class="card">
@@ -415,7 +418,9 @@ textarea{resize:vertical;min-height:72px}
 // ═══════════════════════════════
 //  CONFIG
 // ═══════════════════════════════
-const STORAGE_KEY = 'swiftlink_config';
+// Clé de stockage propre à chaque pharmacie (évite le mélange des données)
+let STORAGE_KEY = 'swiftlink_config';
+function setStorageKey(slug){ STORAGE_KEY = slug ? 'swiftlink_cfg_' + slug : 'swiftlink_config'; }
 const SESSION_KEY = 'swiftlink_session';
 const DEFAULT_ID  = '000000';
 const DEFAULT_PW  = 'swift2024';
@@ -428,7 +433,8 @@ const sb = supabase.createClient(SUPABASE_URL_BASE, SUPABASE_KEY);
 
 const params = new URLSearchParams(window.location.search);
 let SLUG = params.get('slug') || localStorage.getItem('swiftlink_slug') || '';
-let currentPlan = 'starter';
+let currentPlan = 'basic';
+setStorageKey(SLUG);
 
 const DEFAULTS = {
   pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', docteur:'',
@@ -447,6 +453,7 @@ function loadConfig(){
     if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
     const cfg=JSON.parse(raw);
     while(cfg.promos.length<8) cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+    if(currentPlan!=='max' && cfg.promos.length>8) cfg.promos=cfg.promos.slice(0,8);
     if(!cfg.credentials) cfg.credentials={id:DEFAULT_ID,pw:DEFAULT_PW};
     return cfg;
   }catch(e){return JSON.parse(JSON.stringify(DEFAULTS));}
@@ -514,40 +521,67 @@ async function loadFromSupabase(){
       const rows=await res.json();
       if(rows&&rows.length>0){
         const d=rows[0];
-        currentPlan=d.plan||'starter';
-        applyPlanRestrictions();
-        const cfg=getConfig();
-        if(d.nom) cfg.pharmacy.name=d.nom;
-        if(d.soustitre) cfg.pharmacy.sub=d.soustitre;
-        if(d.telephone) cfg.pharmacy.tel=d.telephone;
-        if(d.email_contact) cfg.pharmacy.email_contact=d.email_contact;
-        if(d.adresse) cfg.pharmacy.adresse=d.adresse;
-        if(d.adresse_maps) cfg.pharmacy.adresse_maps=d.adresse_maps;
-        if(d.docteur) cfg.pharmacy.docteur=d.docteur;
-        if(d.logo_base64){cfg.pharmacy.logoData=d.logo_base64;cfg.pharmacy.logo='';}
-        if(d.reseaux) cfg.pharmacy.reseaux=d.reseaux;
+        currentPlan=d.plan||'basic';
+
+        // Supabase fait autorité — on repart des valeurs par défaut
+        const cfg=JSON.parse(JSON.stringify(DEFAULTS));
+
+        // Les 4 champs renseignés au signup
+        cfg.pharmacy.name          = d.nom || '';
+        cfg.pharmacy.sub           = d.soustitre || '';
+        cfg.pharmacy.tel           = d.telephone || '';
+        cfg.pharmacy.email_contact = d.email_contact || '';
+
+        // Le reste reste vide tant que non rempli
+        cfg.pharmacy.adresse      = d.adresse || '';
+        cfg.pharmacy.adresse_maps = d.adresse_maps || '';
+        cfg.pharmacy.docteur      = d.docteur || '';
+        if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
+        else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
+        if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
+
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
+        buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
+        applyPlanRestrictions();
+        buildPromoGrid(getConfig());
       }
     }
   }catch(e){console.error('Load error:',e);}
 }
 
 function applyPlanRestrictions(){
-  const isPro = currentPlan==='pro';
-  // Promo notice
+  const isPaid = currentPlan==='pro' || currentPlan==='max';
+  const isMax  = currentPlan==='max';
+
+  // Promotions : Pro et Max y ont droit
   const promoNotice=document.getElementById('promo-plan-notice');
-  if(promoNotice) promoNotice.style.display=isPro?'none':'block';
-  // Notif notice
+  if(promoNotice) promoNotice.style.display=isPaid?'none':'block';
+  const promoBtnWrap=document.getElementById('btn-view-promos-wrap');
+  if(promoBtnWrap) promoBtnWrap.style.display=isPaid?'flex':'none';
+
+  // Notifications : Max uniquement
   const notifNotice=document.getElementById('notif-plan-notice');
   const notifContent=document.getElementById('notif-content');
-  if(notifNotice) notifNotice.style.display=isPro?'none':'block';
-  if(notifContent) notifContent.style.display=isPro?'block':'none';
-  // Disable promo toggles for starter
-  if(!isPro){
+  if(notifNotice) notifNotice.style.display=isMax?'none':'block';
+  if(notifContent) notifContent.style.display=isMax?'block':'none';
+
+  // Toggles promos désactivés pour Basic
+  if(!isPaid){
     document.querySelectorAll('[id^="promo-active-"]').forEach(el=>{el.disabled=true;});
   }
+
+  // Bouton "ajouter un article" visible pour Max seulement
+  const addWrap=document.getElementById('add-promo-wrap');
+  if(addWrap) addWrap.style.display=isMax?'flex':'none';
+}
+
+// Nombre d'articles autorisés selon l'offre
+function maxPromoSlots(){
+  if(currentPlan==='max') return 999;   // illimité
+  if(currentPlan==='pro') return 8;
+  return 8;                              // Basic : visibles mais désactivés
 }
 
 // ═══════════════════════════════
@@ -564,7 +598,7 @@ async function initAuth(){
   const {data:{session}}=await sb.auth.getSession();
   if(session){
     const {data}=await sb.from('pharmacies').select('slug,plan').eq('user_id',session.user.id).single();
-    if(data){SLUG=data.slug;currentPlan=data.plan||'starter';localStorage.setItem('swiftlink_slug',SLUG);}
+    if(data){SLUG=data.slug;currentPlan=data.plan||'basic';localStorage.setItem('swiftlink_slug',SLUG);setStorageKey(SLUG);}
     hideLogin();return;
   }
   const local=sessionStorage.getItem(SESSION_KEY);
@@ -899,6 +933,14 @@ function collectHoraires(){
 function buildPromoGrid(cfg){
   const grid=document.getElementById('promo-grid');
   grid.innerHTML='';
+  const limit=maxPromoSlots();
+  if(cfg.promos.length>limit) cfg.promos=cfg.promos.slice(0,limit);
+  const hint=document.getElementById('promo-count-hint');
+  if(hint){
+    hint.textContent = currentPlan==='max'
+      ? cfg.promos.length+' article'+(cfg.promos.length>1?'s':'')+' · illimité avec l\'offre Max'
+      : cfg.promos.length+' / 8 articles';
+  }
   const isPro=currentPlan==='pro';
   cfg.promos.forEach((p,i)=>{
     const card=document.createElement('div');
@@ -908,7 +950,7 @@ function buildPromoGrid(cfg){
     const stockBadge=stock===0?'<span class="stock-badge stock-out">Rupture</span>':stock<=5?'<span class="stock-badge stock-low">Peu de stock</span>':'<span class="stock-badge stock-ok">En stock</span>';
     card.innerHTML=`
       <div class="promo-header">
-        <span class="promo-num">ARTICLE ${i+1}</span>
+        <span class="promo-num">ARTICLE ${i+1}${currentPlan==='max' && cfg.promos.length>1 ? ` <button onclick="removePromoSlot(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;padding:0 4px" title="Supprimer">✕</button>` : ''}</span>
         <div class="toggle-wrap">
           <span class="toggle-label-txt">Actif</span>
           <label class="toggle">
@@ -982,7 +1024,8 @@ function onPromoToggle(i){
   autoSave();
 }
 function collectPromos(){
-  return Array.from({length:8},(_,i)=>{
+  const total=document.querySelectorAll('[id^="promo-card-"]').length||8;
+  return Array.from({length:total},(_,i)=>{
     const thumbBox=document.getElementById('promo-thumb-'+i);
     const imgData=thumbBox?.dataset.imgdata&&thumbBox.dataset.imgdata.startsWith('data:')?thumbBox.dataset.imgdata:'';
     const imgUrl=document.getElementById('promo-img-'+i)?.value||'';
@@ -1074,6 +1117,32 @@ function collectAll(){
 // ═══════════════════════════════
 //  INIT
 // ═══════════════════════════════
+// ══ AJOUT / SUPPRESSION D'ARTICLES (offre Max) ══
+function addPromoSlot(){
+  const cfg=collectAll();
+  if(cfg.promos.length>=maxPromoSlots()){
+    alert('Limite atteinte pour votre offre.');
+    return;
+  }
+  cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
+  buildPromoGrid(cfg);
+  applyPlanRestrictions();
+  autoSave();
+}
+
+function removePromoSlot(i){
+  const cfg=collectAll();
+  if(cfg.promos.length<=1) return;
+  if(!confirm('Supprimer cet article ?')) return;
+  cfg.promos.splice(i,1);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
+  buildPromoGrid(cfg);
+  applyPlanRestrictions();
+  autoSave();
+}
+window.removePromoSlot=removePromoSlot;
+
 function initApp(){
   const cfg=loadConfig();
   fillInfo(cfg);
@@ -1112,6 +1181,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if(tabNotif)    tabNotif.addEventListener('click',  function(){ showTab('notif', this); });
   if(btnFetchSub) btnFetchSub.addEventListener('click', fetchSubscribers);
   if(btnSendNotif)btnSendNotif.addEventListener('click', sendNotification);
+  const btnAddPromo=document.getElementById('btn-add-promo');
+  if(btnAddPromo) btnAddPromo.addEventListener('click', addPromoSlot);
   if(loginPwField)loginPwField.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
 
   // Drag & drop banner
