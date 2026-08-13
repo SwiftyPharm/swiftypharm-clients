@@ -542,11 +542,8 @@ async function submitOrder() {
   const btn = document.getElementById('btn-order-submit');
   btn.disabled = true; btn.textContent = 'Envoi en cours…';
 
-  const articles = Object.values(cart)
-      .map(i => `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''} × ${i.qty} — ${(i.prix*i.qty).toFixed(2).replace('.', ',')} €`)
-      .join('\n');
-  const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
-  const now      = new Date().toLocaleString('fr-FR');
+ const total = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
+  const now   = new Date().toLocaleString('fr-FR');
 
   try {
     // 1. Sauvegarder dans Supabase
@@ -557,17 +554,29 @@ async function submitOrder() {
       articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
     });
 
-    // 2. Décrémenter stocks
+    // 2. Décrémenter stocks et mémoriser le restant
+    const stocksRestants = {};
     for (const [id, item] of Object.entries(cart)) {
       const p = promosData.find(x => String(x.id) === String(id));
       if (p) {
         const newStock = Math.max(0, (parseInt(p.stock)||0) - item.qty);
         await supabaseClient.from('promos').update({ stock: newStock }).eq('id', id);
+        stocksRestants[id] = newStock;
       }
     }
 
-    // 3. Email pharmacien — non bloquant : la commande reste valide même si l'email échoue
-    // Template global par défaut, surchargeable par pharmacie si besoin
+    // 3. Construire la liste des articles AVEC le stock restant
+    const articles = Object.entries(cart)
+      .map(([id, i]) => {
+        const reste  = stocksRestants[id] ?? '—';
+        const alerte = reste === 0 ? ' ⚠️ RUPTURE' : (reste <= 5 ? ' ⚠️ stock bas' : '');
+        return `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''}\n`
+             + `  Quantité : ${i.qty} — ${(i.prix*i.qty).toFixed(2).replace('.', ',')} €\n`
+             + `  Stock restant : ${reste}${alerte}`;
+      })
+      .join('\n\n');
+
+    // 4. Email pharmacien — non bloquant
     const templateId = pharmacyData.emailjs_template_commandes || EMAILJS_TEMPLATE;
     const serviceId  = pharmacyData.emailjs_service_id || EMAILJS_SERVICE;
     if (templateId && pharmacyData.email_contact) {
@@ -590,10 +599,14 @@ async function submitOrder() {
     }
 
     // 4. Succès
-    document.getElementById('order-success-detail').innerHTML =
-      `📋 <strong>${prenom} ${nom}</strong><br>` +
-      `📞 ${tel}<br>⏰ Retrait : entre <strong>${debut}</strong> et <strong>${fin}</strong><br><br>` +
-      `${articles.split('\n').join('<br>')}`;
+    const articlesClient = Object.values(cart)
+  .map(i => `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''} × ${i.qty}`)
+  .join('<br>');
+
+document.getElementById('order-success-detail').innerHTML =
+  `📋 <strong>${prenom} ${nom}</strong><br>` +
+  `📞 ${tel}<br>⏰ Retrait : entre <strong>${debut}</strong> et <strong>${fin}</strong><br><br>` +
+  articlesClient;
 
     document.getElementById('order-content').style.display = 'none';
     document.getElementById('order-success').style.display = 'block';
