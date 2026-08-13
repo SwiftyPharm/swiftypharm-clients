@@ -299,7 +299,7 @@ function toast(msg, isErr) {
 // ══ LOAD ══
 async function loadPharmacies() {
   const { data, error } = await sb.from('pharmacies')
-    .select('slug,nom,soustitre,telephone,email_contact,emailjs_template_id,plan,subscription_status,created_at,horaires,reseaux')
+   .select('slug,nom,soustitre,telephone,email_contact,emailjs_template_id,emailjs_template_commandes,plan,subscription_status,created_at,horaires,reseaux')
     .order('created_at', { ascending:false });
 
   if (error) {
@@ -367,6 +367,21 @@ function renderList(list) {
 
     const tplVal   = p.emailjs_template_id || '';
     const avisVal  = p.reseaux?.google?.url || '';
+    const cmdVal = p.emailjs_template_commandes || '';
+
+    async function saveCommandes(slug) {
+  const input = document.getElementById('cmd-'+slug);
+  const value = input.value.trim();
+  const { error } = await sb.from('pharmacies')
+    .update({ emailjs_template_commandes: value, emailjs_service_id: EMAILJS_SERVICE_ID })
+    .eq('slug', slug);
+  if (error) { toast('Erreur : '+error.message, true); return; }
+  input.classList.add('saved');
+  const p = allPharmacies.find(x => x.slug === slug);
+  if (p) p.emailjs_template_commandes = value;
+  updateStats();
+  toast('Template commandes enregistré');
+}
 
     return `
       <div class="pharma-card" id="card-${esc(p.slug)}">
@@ -383,26 +398,35 @@ function renderList(list) {
           </div>
         </div>
 
-        <div class="config-grid">
-          <div class="config-field">
-            <label>Template ID EmailJS</label>
-            <div class="config-row">
-              <input class="config-input ${tplVal?'saved':''}" id="tpl-${esc(p.slug)}"
-                value="${esc(tplVal)}" placeholder="template_xxxxxx"
-                data-slug="${esc(p.slug)}" data-action="tpl-input">
-              <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-tpl">Sauver</button>
-            </div>
-          </div>
-          <div class="config-field">
-            <label>Lien Google Avis</label>
-            <div class="config-row">
-              <input class="config-input ${avisVal?'saved':''}" id="avis-${esc(p.slug)}"
-                value="${esc(avisVal)}" placeholder="https://g.page/r/..."
-                data-slug="${esc(p.slug)}" data-action="avis-input">
-              <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-avis">Sauver</button>
-            </div>
-          </div>
-        </div>
+        <div class="config-grid" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="config-field">
+    <label>Template Ordonnances</label>
+    <div class="config-row">
+      <input class="config-input ${tplVal?'saved':''}" id="tpl-${esc(p.slug)}"
+        value="${esc(tplVal)}" placeholder="template_xxxxxx"
+        data-slug="${esc(p.slug)}" data-action="tpl-input">
+      <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-tpl">OK</button>
+    </div>
+  </div>
+  <div class="config-field">
+    <label>Template Commandes</label>
+    <div class="config-row">
+      <input class="config-input ${cmdVal?'saved':''}" id="cmd-${esc(p.slug)}"
+        value="${esc(cmdVal)}" placeholder="template_xxxxxx"
+        data-slug="${esc(p.slug)}" data-action="cmd-input">
+      <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-cmd">OK</button>
+    </div>
+  </div>
+  <div class="config-field">
+    <label>Lien Google Avis</label>
+    <div class="config-row">
+      <input class="config-input ${avisVal?'saved':''}" id="avis-${esc(p.slug)}"
+        value="${esc(avisVal)}" placeholder="https://g.page/r/..."
+        data-slug="${esc(p.slug)}" data-action="avis-input">
+      <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-avis">OK</button>
+    </div>
+  </div>
+</div>
 
         <div class="pharma-actions">
           <a class="act-btn" href="https://swiftypharm.fr/${esc(p.slug)}" target="_blank">🌐 Voir la page</a>
@@ -595,6 +619,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const slug = el.dataset.slug;
     switch(el.dataset.action) {
       case 'save-tpl':  saveTemplate(slug); break;
+      case 'save-cmd':  saveCommandes(slug); break;
       case 'save-avis': saveAvis(slug);     break;
       case 'detail':    showDetail(slug);   break;
       case 'delete':    askDelete(slug);    break;
@@ -608,6 +633,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const el = e.target.closest('[data-action]');
     if (!el || e.key!=='Enter') return;
     if (el.dataset.action==='tpl-input')  saveTemplate(el.dataset.slug);
+    if (el.dataset.action==='cmd-input')  saveCommandes(el.dataset.slug);
     if (el.dataset.action==='avis-input') saveAvis(el.dataset.slug);
   });
 
