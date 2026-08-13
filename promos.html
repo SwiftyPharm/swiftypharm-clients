@@ -309,7 +309,8 @@
 // ── CONFIG ──
 const urlParams = new URLSearchParams(window.location.search);
 const SLUG = urlParams.get('slug') || window.location.pathname.replace(/\//g,'').trim() || '';
-const EMAILJS_SERVICE = 'service_ehw7pcv';
+const EMAILJS_SERVICE   = 'service_ehw7pcv';
+const EMAILJS_TEMPLATE  = 'template_a15fvjn';  // Template Commandes (global)
 
 // Back link
 const backBtn = document.getElementById('btn-back-pharma');
@@ -328,7 +329,11 @@ async function init() {
 
 async function loadPharmacy() {
   try {
-    const { data } = await supabaseClient.from('pharmacies').select('nom,email_contact,emailjs_template_id,emailjs_service_id').eq('slug', SLUG).single();
+    const { data } = await supabaseClient
+      .from('pharmacies')
+      .select('nom,email_contact,emailjs_template_id,emailjs_template_commandes,emailjs_service_id')
+      .eq('slug', SLUG)
+      .single();
     if (data) {
       pharmacyData = data;
       document.getElementById('order-pharmacy-name').textContent = data.nom || 'Votre commande click & collect';
@@ -537,7 +542,9 @@ async function submitOrder() {
   const btn = document.getElementById('btn-order-submit');
   btn.disabled = true; btn.textContent = 'Envoi en cours…';
 
-  const articles = Object.values(cart).map(i => `${i.nom} x${i.qty} (${(i.prix*i.qty).toFixed(2)}€)`).join('\n');
+  const articles = Object.values(cart)
+      .map(i => `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''} × ${i.qty} — ${(i.prix*i.qty).toFixed(2).replace('.', ',')} €`)
+      .join('\n');
   const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
   const now      = new Date().toLocaleString('fr-FR');
 
@@ -559,20 +566,27 @@ async function submitOrder() {
       }
     }
 
-    // 3. Email pharmacien
-    const templateId = pharmacyData.emailjs_template_id;
+    // 3. Email pharmacien — non bloquant : la commande reste valide même si l'email échoue
+    // Template global par défaut, surchargeable par pharmacie si besoin
+    const templateId = pharmacyData.emailjs_template_commandes || EMAILJS_TEMPLATE;
     const serviceId  = pharmacyData.emailjs_service_id || EMAILJS_SERVICE;
     if (templateId && pharmacyData.email_contact) {
-      await emailjs.send(serviceId, templateId, {
-        to_email:      pharmacyData.email_contact,
-        pharmacy_name: pharmacyData.nom || SLUG,
-        client_nom:    `${prenom} ${nom}`,
-        client_tel:    tel,
-        heure_retrait: `entre ${debut} et ${fin}`,
-        articles:      articles,
-        total:         total.toFixed(2) + ' €',
-        commande_at:   now,
-      });
+      try {
+        await emailjs.send(serviceId, templateId, {
+          to_email:      pharmacyData.email_contact,
+          pharmacy_name: pharmacyData.nom || SLUG,
+          client_nom:    `${prenom} ${nom}`,
+          client_tel:    tel,
+          heure_retrait: `entre ${debut} et ${fin}`,
+          articles:      articles,
+          total:         total.toFixed(2).replace('.', ',') + ' €',
+          commande_at:   now,
+        });
+      } catch(mailErr) {
+        console.warn('Email non envoyé :', mailErr);
+      }
+    } else {
+      console.warn('Email de contact non renseigné pour', SLUG, '— aucun email envoyé.');
     }
 
     // 4. Succès
