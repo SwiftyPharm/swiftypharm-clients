@@ -1030,7 +1030,9 @@ function onPromoToggle(i){
   autoSave();
 }
 function collectPromos(){
-  const total=document.querySelectorAll('[id^="promo-card-"]').length||8;
+  const cards = document.querySelectorAll('[id^="promo-card-"]');
+  if (!cards.length) return getConfig().promos || [];
+  const total = cards.length;
   return Array.from({length:total},(_,i)=>{
     const thumbBox=document.getElementById('promo-thumb-'+i);
     const imgData=thumbBox?.dataset.imgdata&&thumbBox.dataset.imgdata.startsWith('data:')?thumbBox.dataset.imgdata:'';
