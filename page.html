@@ -70,8 +70,7 @@
     }
 
     /* ══ HEADER PROFIL ══ */
-    .profile-section { opacity:0; transition:opacity .3s ease; }
-    .profile-section.loaded {
+    .profile-section {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -81,6 +80,10 @@
       max-width: 480px;
       padding: 0 16px;
     }
+
+    .profile-section { opacity: 0; transition: opacity .3s ease; }
+    .profile-section.loaded { opacity: 1; }
+    
     .profile-avatar {
       width: 96px;
       height: 96px;
@@ -452,24 +455,24 @@
 
   <!-- ══ BANNIÈRE ══ -->
   <div class="banniere">
-    <img id="banniere-img" src="banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
+    <img id="banniere-img" src="/assets/banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
   </div>
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie">
+    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.src='/logo_pharmacie_general.jpg'">
     <div class="profile-name" id="profile-name-display"></div>
     <div class="profile-sub" id="profile-sub-display"></div>
 
     <!-- 4 icônes de contact -->
     <div class="contact-icons">
       <div style="display:flex; flex-direction:column; align-items:center;">
-        <a class="contact-icon-btn" id="link-phone" href="#">
+        <a class="contact-icon-btn" id="link-phone" href="tel:+33781298075">
           <img src="phone.svg" alt="Téléphone">
         </a>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center;">
-        <a class="contact-icon-btn" id="link-maps" href="#" target="_blank" id="link-maps-href">
+        <a class="contact-icon-btn" id="link-maps" href="https://maps.app.goo.gl/sVoh48TPr2kfwsWB7" target="_blank">
           <img src="map-pin.svg" alt="Adresse">
         </a>
       </div>
@@ -489,11 +492,11 @@
   <!-- ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ -->
   <div class="dynamic-social-container" id="dynamic-social-links">
     <!-- Rempli automatiquement par JavaScript (Supabase) -->
-    <a href="#" class="social-card-item">
+    <a href="https://reviewthis.biz/PHA-NHEAN" class="social-card-item">
       <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img">
       <div class="social-card-txt">Notez nous sur <br>Google !</div>
     </a>
-    <a href="#" target="_blank" class="social-card-item">
+    <a href="https://www.instagram.com/swiftup_fr" target="_blank" class="social-card-item">
       <img src="instagram-icon.png" alt="Instagram" class="social-card-img">
       <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
     </a>
@@ -563,7 +566,7 @@
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
           <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
-          <a id="btn-google-review-link" href="#" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
+          <a href="https://reviewthis.biz/PHA-NHEAN" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
         </div>
       </div>
       <img src="down-upload.png" alt="" style="width:100%; display:block; margin-top:10px;">
@@ -911,7 +914,7 @@
       <div class="docteur-box">
         <div class="docteur-avatar" id="docteur-initiales">DR</div>
         <div class="docteur-info">
-          <div class="docteur-nom" id="docteur-nom">Dr. Daracoena NHEAN</div>
+          <div class="docteur-nom" id="docteur-nom">Dr. Jean Dupont</div>
           <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
         </div>
       </div>
@@ -1015,10 +1018,7 @@
         .eq('slug', PAGE_SLUG)
         .single();
 
-      if (error || !data) {
-        document.querySelector('.profile-section')?.classList.add('loaded');
-        return;
-      }
+      if (error || !data) return;
 
       // 1. Textes et Logo du Profil
       if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
@@ -1043,31 +1043,17 @@
 
       // Téléphone & Maps dynamiques
       if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
-      // Maps : utilise adresse_maps si dispo, sinon génère depuis l'adresse
-      if (data.adresse_maps) {
-        document.getElementById('link-maps').href = data.adresse_maps;
-      } else if (data.adresse) {
-        document.getElementById('link-maps').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(data.adresse);
-      }
-
-      // Google Avis link dans overlay succès
-      const googleSoc = (data.reseaux||{}).google;
-      if (googleSoc?.url) {
-        const reviewBtn = document.getElementById('btn-google-review-link');
-        if (reviewBtn) reviewBtn.href = googleSoc.url.startsWith('http') ? googleSoc.url : 'https://www.google.com/search?q=' + encodeURIComponent(googleSoc.url + ' avis google') + '&tbm=lcl';
-      }
+      if (data.adresse_maps) document.getElementById('link-maps').href = data.adresse_maps;
 
       if (data.docteur) {
         const docEl = document.getElementById('docteur-nom');
         if (docEl) docEl.textContent = data.docteur;
       }
 
-      document.querySelector('.profile-section')?.classList.add('loaded');
-
-      // 2. On lit la colonne "reseaux"
+      // 2. On lit la colonne "reseaux" (ou "reseaux_sociaux" par sécurité)
       const soc = data.reseaux || data.reseaux_sociaux || {};
       const container = document.getElementById('dynamic-social-links');
-      container.innerHTML = '';
+      container.innerHTML = ''; // On vide pour n'afficher que la sélection du BO
 
       // ── GOOGLE AVIS ── (cherche 'google' ou 'avis')
       const googleObj = soc.google || soc.avis;
@@ -1135,6 +1121,7 @@
     } catch (err) {
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
     }
+    document.querySelector('.profile-section').classList.add('loaded');
   }
 
   // Chargement des données au démarrage de la page
