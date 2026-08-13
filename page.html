@@ -948,12 +948,13 @@
 
     try {
       const { data, error } = await supabaseClient
-        .from('pharmacies')
-        .select('horaires')
-        .eq('slug', PAGE_SLUG)
-      if (data && data.horaires) {
-        semaine = typeof data.horaires === 'string' ? JSON.parse(data.horaires) : data.horaires;
-      }
+  .from('pharmacies')
+  .select('horaires')
+  .eq('slug', PAGE_SLUG)
+  .single()
+if (data && data.horaires) {
+  semaine = typeof data.horaires === 'string' ? JSON.parse(data.horaires) : data.horaires;
+}
     } catch(e) {
       console.error("Erreur de récupération des horaires :", e);
     }
