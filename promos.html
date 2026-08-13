@@ -409,15 +409,13 @@ async function renderPromos() {
   }).join('');
 }
 
-}
-
 // ── PANIER ──
 function addToCart(id) {
   const p = promosData.find(x => String(x.id) === String(id));
   if (!p || (parseInt(p.stock)||0) === 0) return;
 
   if (!cart[id]) {
-    cart[id] = { nom:p.nom, prix:parseFloat(p.prix_apres)||0, qty:1, stock:parseInt(p.stock)||0, imgSrc:p.image_url||'' };
+    cart[id] = { nom:p.nom, marque:p.marque||'', prix:parseFloat(p.prix_apres)||0, qty:1, stock:parseInt(p.stock)||0, imgSrc:p.image_url||'' };
   } else {
     if (cart[id].qty >= cart[id].stock) return;
     cart[id].qty++;
@@ -468,8 +466,10 @@ function openImgModal(el) {
   if (!p) return;
   document.getElementById('img-modal-src').src = p.image_url || '';
   document.getElementById('img-modal-name').textContent = p.nom || '';
-  document.getElementById('img-modal-before').textContent = p.prix_avant ? p.prix_avant + ' €' : '';
-  document.getElementById('img-modal-after').textContent  = p.prix_apres ? p.prix_apres + ' €' : '';
+  const _av = parseFloat(p.prix_avant) || 0;
+  const _ap = parseFloat(p.prix_apres) || 0;
+  document.getElementById('img-modal-before').textContent = _av ? _av.toFixed(2) + ' €' : '';
+  document.getElementById('img-modal-after').textContent  = _ap ? _ap.toFixed(2) + ' €' : '';
   document.getElementById('img-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -498,6 +498,7 @@ function renderCartItems() {
       <img class="cart-item-img" src="${item.imgSrc}" alt="${item.nom}" onerror="this.style.display='none'">
       <div class="cart-item-info">
         <div class="cart-item-name">${item.nom}</div>
+        ${item.marque ? `<div style="font-size:11px;color:#94a3b8">${item.marque}</div>` : ''}
         <div class="cart-item-price">${(item.prix * item.qty).toFixed(2)} €</div>
         <div class="cart-item-qty">Qté : ${item.qty}</div>
       </div>
