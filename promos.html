@@ -38,14 +38,16 @@
       display:flex; align-items:center; justify-content:center; font-size:16px;
       color:var(--text); text-decoration:none; box-shadow:var(--shadow); transition:all .15s;
     }
-    .btn-back:hover { background:var(--blue-l); border-color:var(--blue); color:var(--blue); }
+    .btn-back:hover { background:var(--blue-l); border-color:var(--blue); }
+    .btn-back img { width:16px; height:16px; transform:rotate(180deg); opacity:.75; transition:opacity .2s; }
+    .btn-back:hover img { opacity:1; }
     .header-title { font-size:17px; font-weight:800; color:var(--blue); }
 
     /* ── PANIER FLOATING ── */
     .cart-fab {
       position:fixed; bottom:24px; right:50%; transform:translateX(50%);
       max-width:440px; width:calc(100% - 32px);
-      background:var(--blue); color:#fff; border:none; cursor:pointer;
+      background:#1753FF; color:#fff; border:none; cursor:pointer;
       border-radius:16px; padding:14px 20px;
       display:none; align-items:center; justify-content:space-between;
       box-shadow:0 8px 24px rgba(23,83,255,.4); z-index:100; font-family:inherit;
@@ -53,7 +55,7 @@
     }
     .cart-fab.visible { display:flex; }
     .cart-fab-left { display:flex; align-items:center; gap:10px; }
-    .cart-fab-icon { font-size:20px; }
+    .cart-fab-icon { width:22px; height:22px; filter:brightness(0) invert(1); display:block; }
     .cart-fab-label { font-size:14px; font-weight:700; }
     .cart-fab-count { background:rgba(255,255,255,.25); padding:2px 8px; border-radius:20px; font-size:12px; font-weight:700; }
     .cart-fab-total { font-size:16px; font-weight:800; }
@@ -75,9 +77,10 @@
     .product-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.13); }
     .product-img-wrap {
       position:relative; width:100%; aspect-ratio:1;
-      background:#f5f5f5; overflow:hidden; cursor:pointer;
+      background:#fff; overflow:hidden; cursor:pointer;
+      border-radius:20px 20px 0 0;
     }
-    .product-img-wrap img { width:100%; height:100%; object-fit:contain; display:block; padding:10px; }
+    .product-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
     .product-badge {
       position:absolute; top:10px; left:10px; background:var(--red); color:#fff;
       font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; letter-spacing:.3px;
@@ -102,13 +105,15 @@
       padding:6px 12px 12px;
     }
     .btn-add-cart {
-      width:38px; height:38px; border-radius:12px;
-      background:var(--text); color:#fff; border:none; cursor:pointer;
+      width:40px; height:40px; border-radius:13px;
+      background:#1753FF; color:#fff; border:none; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      font-size:18px; transition:all .2s; flex-shrink:0;
+      transition:all .2s; flex-shrink:0; padding:0;
     }
-    .btn-add-cart:hover:not(:disabled) { background:var(--blue); transform:scale(1.08); }
-    .btn-add-cart:disabled { background:#e5e5e5; color:#aaa; cursor:not-allowed; }
+    .btn-add-cart img { width:20px; height:20px; filter:brightness(0) invert(1); }
+    .btn-add-cart:hover:not(:disabled) { background:#0d3fd6; transform:scale(1.08); }
+    .btn-add-cart:disabled { background:#e5e5e5; cursor:not-allowed; }
+    .btn-add-cart:disabled img { filter:none; opacity:.35; }
     .counter-inline {
       display:none; align-items:center;
       background:#f5f5f5; border-radius:12px; overflow:hidden;
@@ -132,13 +137,28 @@
     }
     .img-modal-overlay.open { display:flex; }
     .img-modal-inner { display:flex; flex-direction:column; align-items:center; width:100%; max-width:480px; margin-top:20px; cursor:default; }
-    .img-modal-img { width:100%; max-height:52vh; object-fit:contain; border-radius:16px; animation:img-pop .25s cubic-bezier(.25,1,.5,1); }
+    .img-modal-img { width:100%; max-height:52vh; object-fit:cover; border-radius:16px; animation:img-pop .25s cubic-bezier(.25,1,.5,1); }
     @keyframes img-pop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
     .img-modal-info { background:#fff; width:100%; border-radius:0 0 20px 20px; padding:18px 18px 24px; text-align:center; }
     .img-modal-name { font-size:15px; font-weight:700; color:var(--text); line-height:1.4; margin-bottom:8px; }
     .img-modal-prices { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px; }
     .img-modal-after  { font-size:22px; font-weight:800; color:var(--blue); }
     .img-modal-before { font-size:13px; color:#94a3b8; text-decoration:line-through; }
+    .img-modal-brand { font-size:12px; color:#94a3b8; margin-bottom:10px; }
+    .img-modal-add {
+      width:100%; padding:13px; border-radius:12px; border:none;
+      background:#1753FF; color:#fff; font-family:inherit;
+      font-size:14px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      transition:all .2s; margin-top:4px;
+    }
+    .img-modal-add img { width:19px; height:19px; filter:brightness(0) invert(1); }
+    .img-modal-add:hover:not(:disabled) { background:#0d3fd6; transform:translateY(-1px); box-shadow:0 6px 18px rgba(23,83,255,.3); }
+    .img-modal-add:disabled { background:#e5e5e5; color:#aaa; cursor:not-allowed; transform:none; box-shadow:none; }
+    .img-modal-add:disabled img { filter:none; opacity:.35; }
+    .img-modal-add.added { background:var(--green); }
+    .img-modal-stock { font-size:11px; font-weight:600; margin-top:9px; }
+
     .img-modal-close-btn { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.15); border:none; cursor:pointer; font-size:22px; color:#fff; line-height:1; padding:6px 8px; border-radius:8px; }
 
     /* ── MODAL COMMANDE ── */
@@ -155,9 +175,8 @@
     }
     @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
     .order-handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:12px auto 0; }
-    .order-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); }
-    .order-header h3 { font-size:18px; font-weight:800; }
-    .order-header p { font-size:13px; color:var(--muted); margin-top:3px; }
+    .order-header { padding:18px 20px 14px; border-bottom:1px solid var(--border); text-align:center; }
+    .order-header h3 { font-size:24px; font-weight:800; color:#1753FF; letter-spacing:-.4px; }
 
     /* Cart items */
     /* ══ PANIER ══ */
@@ -205,11 +224,12 @@
     }
 
     .cart-item-remove {
-      background:none; border:none; cursor:pointer; color:#cbd5e1;
-      font-size:12px; padding:2px 4px; transition:color .2s;
-      align-self:flex-start;
+      background:none; border:none; cursor:pointer; padding:3px;
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity .2s, transform .2s; opacity:.55;
     }
-    .cart-item-remove:hover { color:var(--red); }
+    .cart-item-remove img { width:19px; height:19px; display:block; }
+    .cart-item-remove:hover { opacity:1; transform:scale(1.12); }
 
     .cart-empty { text-align:center; padding:32px 0; color:var(--muted); font-size:14px; }
 
@@ -219,7 +239,15 @@
 
     /* Formulaire commande */
     .order-form { padding:0 20px; }
-    .order-form .section-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 10px; }
+    .order-form .section-label {
+      font-size:11px; font-weight:700; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.5px; margin:16px 0 10px;
+    }
+    .order-form .section-label.big {
+      font-size:19px; font-weight:800; color:#1753FF;
+      text-transform:none; letter-spacing:-.3px;
+      text-align:center; margin:24px 0 16px;
+    }
     .order-field { margin-bottom:12px; }
     .order-field label { display:block; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; }
     .order-field input { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:14px; color:var(--text); outline:none; transition:border-color .2s; }
@@ -227,10 +255,11 @@
     .time-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .order-submit {
       width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
-      background:var(--blue); color:#fff; font-family:inherit; font-size:15px; font-weight:800;
+      background:#1753FF; color:#fff; font-family:inherit; font-size:15px; font-weight:800;
       margin-top:16px; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
     }
-    .order-submit:hover { background:var(--blue-d); transform:translateY(-1px); box-shadow:0 4px 16px rgba(23,83,255,.35); }
+    .order-submit:hover:not(:disabled) { background:#0d3fd6; transform:translateY(-1px); box-shadow:0 6px 20px rgba(23,83,255,.35); }
+    .order-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
     .order-submit:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
     .order-cancel { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); cursor:pointer; background:#fff; font-family:inherit; font-size:14px; font-weight:600; color:var(--muted); margin-top:8px; }
 
@@ -333,7 +362,7 @@
 
 <!-- HEADER -->
 <div class="page-header">
-  <a class="btn-back" id="btn-back-pharma" href="#">←</a>
+  <a class="btn-back" id="btn-back-pharma" href="#"><img id="icon-back" alt="Retour"></a>
   <div class="header-title">Promotions &amp; Nouveautés</div>
 </div>
 
@@ -343,7 +372,7 @@
 <!-- PANIER FLOTTANT -->
 <button class="cart-fab" id="cart-fab" onclick="openOrderModal()">
   <div class="cart-fab-left">
-    <span class="cart-fab-icon">🛒</span>
+    <img class="cart-fab-icon" id="fab-icon" alt="">
     <span class="cart-fab-label">Voir mon panier</span>
     <span class="cart-fab-count" id="cart-count">0</span>
   </div>
@@ -357,10 +386,15 @@
     <img class="img-modal-img" id="img-modal-src" src="" alt="">
     <div class="img-modal-info">
       <div class="img-modal-name" id="img-modal-name"></div>
+      <div class="img-modal-brand" id="img-modal-brand"></div>
       <div class="img-modal-prices">
         <span class="img-modal-after" id="img-modal-after"></span>
         <span class="img-modal-before" id="img-modal-before"></span>
       </div>
+      <button class="img-modal-add" id="img-modal-add" onclick="addFromModal()">
+        <img src="" id="img-modal-add-icon" alt=""> Ajouter au panier
+      </button>
+      <div class="img-modal-stock" id="img-modal-stock"></div>
     </div>
   </div>
 </div>
@@ -373,8 +407,7 @@
     <!-- Contenu panier -->
     <div id="order-content">
       <div class="order-header">
-        <h3>🛒 Mon panier</h3>
-        <p id="order-pharmacy-name">Votre commande click &amp; collect</p>
+        <h3>Mon panier</h3>
       </div>
 
       <div class="cart-items" id="cart-items-list"></div>
@@ -385,7 +418,7 @@
       </div>
 
       <div class="order-form">
-        <div class="section-label">Vos coordonnées</div>
+        <div class="section-label big">Vos coordonnées</div>
         <div class="time-row">
           <div class="order-field">
             <label>Prénom</label>
@@ -414,9 +447,9 @@
         </div>
 
         <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
-          ✓ Confirmer ma commande
+          Confirmer ma commande
         </button>
-        <button class="order-cancel" onclick="closeOrderModal()">Annuler</button>
+        <button class="order-cancel" onclick="closeOrderModal()">Continuer mes achats</button>
       </div>
     </div>
 
@@ -471,6 +504,10 @@
 // ── CONFIG ──
 const urlParams = new URLSearchParams(window.location.search);
 const SLUG = urlParams.get('slug') || window.location.pathname.replace(/\//g,'').trim() || '';
+const ICON_PANIER   = 'data:image/png;base64,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';
+const ICON_FLECHE   = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACH0lEQVR4nO3cPY9NURTG8X8kEtFQkVAoaOkpScRIdHR0voN2Sq1SdD4AX4CGTkGtMkHGWyUhCmLJJJOYYl7Ovffss/Y++/9LnmaqtfIk9+auufeAJEmSJEmSJEmSJEmSpP9uAJ+ATeDOjr8rySYQO/IIOJI9VM9il7wBzmUP1qvYI9+BW9nD9Sj2yV/gAXA4e8iexIC8As5kD9qLGJhvwNXsYXsQC2TrJew+cCh76DmLJfIcOJk9+FzFkvkAXMoefo5ihfwG7mUvMDcxQp4Cx7MXmYsYKW+BC9nLzEGMmF/A3eyFWhcF8hg4mr1Yq6JQPFBWVshWPFBWVkjqgfL69oel0gtGo3kJnJ6yEMvgwHwBrkxVSPay0UgmO1BmLxqNpfiBMnvBaDBFD5TZy0WjKXagzF4sGs/oB8rshWIGGfVAmb1MzCQ/gTULoapsWAhV5Z2FUE1+ANcshGre1M+PUYaFsHKeAMfGKsNCWDp+MKSevAculijDQlg4z4ATpcqwEAbnD7A+xfndf1BxYD4Dl5nI2vZrYvbSUWleAKemKqNlUTj+CmtBpb8GdHPRgXoXhfIaOJu9XIuiQPwq6QrGLMIvW4+gysNgz6LGw2DPYoX4k7YCosbDYM+ixsNgz6LGw2DPYmC++miNacSAeBicUOwTD4MJYo94GEwSu8TDYEUPwXzoQzDzHxO7AXwEbmcPI0mSJEmSJEmSJEmSJFHMP87XIvT7Fhl4AAAAAElFTkSuQmCC';
+const ICON_POUBELLE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAADaUlEQVR4nO3XWYoUURCF4bsBB1AccC36pjbSQ0UUtQNRcSW+C4LoLuzeirbtHhQcoO8pISUbRRGtAls9dTLOB/cxqog/M2tozczMzMzMzMzMzMzMzMzMzEwMMm8g8xkijnrmJ2QOpzl9fI2Io5PXnM+vs/ez3xhmsws94uC0Fxzrb4j98b3Y+9oPxguCiDf/+uLj24l445tgg/yPJx+/+CRg723fv/MHypn7NwEdIp7TboCIp+z9y/v6C511Axyy9y/vb/zVw5/+Doj4yN6/vHUXadNf307JN0BxvgGK8w2w4Wi/0Cdymjp2QPXT1LEDqp+mjh1Q/TR17IDqp6ljB1Q/TR07oPpp6tgB1U+bmnIL/6T6/uUDoPj+5QOg+P7lA6D4/uUDoPj+5QOg+P7lA6D4/uUDoPj+5QOg+P7lA6D4/uUDoPj+5QOg+P6nDlB9Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5bEDQnxeHjsgxOflsQNCfF4eOyDE5+WxA0J8Xh47IMTn5VUPgOL7lw+A4vuXD4Di+5cPgOL7lw+A4vuXD4Di+5cPgOL7lw+A4vu3nvl+VYBhd/dMm6hhsTi3avexTZs6RByuinCcOWsTdTyb5cpPgIhXbep6xMGaCIfD3t75NjHD3t55ZL5e8wnwok0dIh6u+x4cb4LjiBi2ts42ccPW1tmvT/7Ki39yZrMHbeo+LRbXeuZybYxip0dgiLjaKugRT9jBsWGnRzxuVQw7O5d75jt2dGzI6Zlvh4hLrZJlxE1/FeT45H9eZt5pFSHz3hig8JO/7BF3W2XLzNsVvw565tvlfH6L3X8jDNvbF3vmo555PPkLHwFEPB0Wiyvs7htn/Bs0/hfumfvIfNkjPkzggn842WXcKeJ+mb96ZmZmZmZmZmZmZmZmZmZm1v6XL27Q9Sxh7k0DAAAAAElFTkSuQmCC';
+
 const EMAILJS_SERVICE   = 'service_ehw7pcv';
 const EMAILJS_TEMPLATE  = 'template_a15fvjn';  // Template Commandes (global)
 
@@ -483,8 +520,17 @@ let cart = {}; // { productId: { nom, prix, qty, stock, imgSrc } }
 let pharmacyData = {};
 let promosData = [];
 
+// ── Icônes statiques ──
+function initIcons() {
+  const back = document.getElementById('icon-back');
+  if (back) back.src = ICON_FLECHE;
+  const fab = document.getElementById('fab-icon');
+  if (fab) fab.src = ICON_PANIER;
+}
+
 // ── LOAD ──
 async function init() {
+  initIcons();
   await loadPharmacy();
   await renderPromos();
 }
@@ -561,14 +607,14 @@ async function renderPromos() {
         <div class="product-footer">
           <span class="stock-dot ${stockClass}">${stockLabel}</span>
           ${isOut
-            ? `<button class="btn-add-cart" disabled title="Rupture de stock">✕</button>`
+            ? `<button class="btn-add-cart" disabled title="Rupture de stock"><img src="${ICON_PANIER}" alt=""></button>`
             : `<div style="display:flex;align-items:center">
                 <div class="counter-inline" id="counter-${p.id}">
                   <button class="counter-btn" onclick="changeQty('${p.id}',-1)">−</button>
                   <div class="counter-qty" id="qty-${p.id}">1</div>
                   <button class="counter-btn" onclick="changeQty('${p.id}',1)">＋</button>
                 </div>
-                <button class="btn-add-cart" id="addbtn-${p.id}" onclick="addToCart('${p.id}')" title="Ajouter au panier">🛒</button>
+                <button class="btn-add-cart" id="addbtn-${p.id}" onclick="addToCart('${p.id}')" title="Ajouter au panier"><img src="${ICON_PANIER}" alt=""></button>
               </div>`
           }
         </div>
@@ -626,19 +672,84 @@ function updateCartUI() {
 }
 
 // ── MODAL IMAGE ──
+let modalProductId = null;
+
 function openImgModal(el) {
   const card = el.closest('.product-card');
   const id = card.id.replace('pcard-', '');
   const p = promosData.find(x => String(x.id) === String(id));
   if (!p) return;
+
+  modalProductId = id;
+
   document.getElementById('img-modal-src').src = p.image_url || '';
-  document.getElementById('img-modal-name').textContent = p.nom || '';
+  document.getElementById('img-modal-name').textContent  = p.nom || '';
+  document.getElementById('img-modal-brand').textContent = p.marque || '';
+
   const _av = parseFloat(p.prix_avant) || 0;
   const _ap = parseFloat(p.prix_apres) || 0;
-  document.getElementById('img-modal-before').textContent = _av ? _av.toFixed(2) + ' €' : '';
-  document.getElementById('img-modal-after').textContent  = _ap ? _ap.toFixed(2) + ' €' : '';
+  document.getElementById('img-modal-before').textContent = _av ? _av.toFixed(2).replace('.',',') + ' €' : '';
+  document.getElementById('img-modal-after').textContent  = _ap ? _ap.toFixed(2).replace('.',',') + ' €' : '';
+
+  // Bouton ajouter
+  const stock  = parseInt(p.stock) || 0;
+  const inCart = cart[id] ? cart[id].qty : 0;
+  const btn    = document.getElementById('img-modal-add');
+  const icon   = document.getElementById('img-modal-add-icon');
+  const stockEl= document.getElementById('img-modal-stock');
+
+  icon.src = ICON_PANIER;
+  btn.classList.remove('added');
+
+  if (stock === 0) {
+    btn.disabled = true;
+    btn.innerHTML = 'Rupture de stock';
+    stockEl.textContent = '';
+  } else if (inCart >= stock) {
+    btn.disabled = true;
+    btn.innerHTML = 'Stock maximum atteint';
+    stockEl.style.color = 'var(--amber)';
+    stockEl.textContent = `${inCart} déjà dans votre panier`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `<img src="${ICON_PANIER}" alt=""> Ajouter au panier`;
+    stockEl.style.color = stock <= 5 ? 'var(--amber)' : 'var(--green)';
+    stockEl.textContent = stock <= 5
+      ? `Plus que ${stock} en stock`
+      : 'En stock';
+  }
+
   document.getElementById('img-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+// Ajouter au panier depuis la modale image
+function addFromModal() {
+  if (!modalProductId) return;
+  addToCart(modalProductId);
+
+  const p      = promosData.find(x => String(x.id) === String(modalProductId));
+  const stock  = parseInt(p?.stock) || 0;
+  const inCart = cart[modalProductId] ? cart[modalProductId].qty : 0;
+  const btn    = document.getElementById('img-modal-add');
+  const stockEl= document.getElementById('img-modal-stock');
+
+  btn.classList.add('added');
+  btn.innerHTML = '✓ Ajouté au panier';
+
+  stockEl.style.color = 'var(--muted)';
+  stockEl.textContent = `${inCart} dans votre panier`;
+
+  setTimeout(() => {
+    if (inCart >= stock) {
+      btn.disabled = true;
+      btn.classList.remove('added');
+      btn.innerHTML = 'Stock maximum atteint';
+    } else {
+      btn.classList.remove('added');
+      btn.innerHTML = `<img src="${ICON_PANIER}" alt=""> Ajouter au panier`;
+    }
+  }, 1100);
 }
 function closeImgModal() {
   document.getElementById('img-modal').classList.remove('open');
@@ -682,13 +793,15 @@ function renderCartItems() {
       </div>
 
       <div class="cart-item-right">
-        <button class="cart-item-remove" onclick="removeFromCart('${id}')" title="Retirer">✕</button>
+        <div class="cart-item-total">${(item.prix * item.qty).toFixed(2).replace('.',',')} €</div>
         <div class="qty-stepper">
           <button onclick="cartQty('${id}',-1)" ${item.qty <= 1 ? 'disabled' : ''}>−</button>
           <span class="qty-val">${item.qty}</span>
           <button onclick="cartQty('${id}',1)" ${atMax ? 'disabled' : ''}>＋</button>
         </div>
-        <div class="cart-item-total">${(item.prix * item.qty).toFixed(2).replace('.',',')} €</div>
+        <button class="cart-item-remove" onclick="removeFromCart('${id}')" title="Retirer">
+          <img src="${ICON_POUBELLE}" alt="Retirer">
+        </button>
       </div>
     </div>`;
   }).join('');
