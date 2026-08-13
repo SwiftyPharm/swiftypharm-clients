@@ -546,11 +546,40 @@ async function loadFromSupabase(){
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
 
+        // ── Charger les promos depuis Supabase ──
+        try {
+          const resPromos = await fetch(
+            SUPABASE_REST + 'promos?pharmacie_slug=eq.' + SLUG + '&select=*&order=position.asc',
+            { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY } }
+          );
+          if (resPromos.ok) {
+            const rowsP = await resPromos.json();
+            if (rowsP && rowsP.length) {
+              cfg.promos = rowsP.map(r => ({
+                active:      !!r.actif,
+                name:        r.nom || '',
+                brand:       r.marque || '',
+                img:         r.image_url || '',
+                imgData:     '',
+                priceBefore: r.prix_avant != null ? String(r.prix_avant) : '',
+                priceAfter:  r.prix_apres != null ? String(r.prix_apres) : '',
+                badge:       r.badge || '',
+                stock:       parseInt(r.stock) || 0,
+              }));
+            }
+          }
+        } catch(e) { console.warn('Chargement promos :', e); }
+
+        // Toujours au moins 8 emplacements
+        while (cfg.promos.length < 8) {
+          cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+        }
+
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
         buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
         applyPlanRestrictions();
-        buildPromoGrid(getConfig());
+        buildPromoGrid(cfg);
       }
     }
   }catch(e){console.error('Load error:',e);}
