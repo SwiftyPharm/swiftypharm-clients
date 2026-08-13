@@ -170,7 +170,7 @@
     .order-modal-overlay.open { display:flex; }
     .order-sheet {
       background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px;
-      padding:0 0 40px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      padding:0 0 32px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
       animation:slide-up .3s cubic-bezier(.25,1,.5,1);
     }
     @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
@@ -262,6 +262,65 @@
     .order-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
     .order-submit:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
     .order-cancel { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); cursor:pointer; background:#fff; font-family:inherit; font-size:14px; font-weight:600; color:var(--muted); margin-top:8px; }
+
+    /* ══ ÉTAPES ══ */
+    .order-step { display:none; animation:step-in .28s cubic-bezier(.25,1,.5,1) both; }
+    .order-step.active { display:block; }
+    @keyframes step-in { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:none} }
+
+    .step-header { display:flex; align-items:center; gap:10px; text-align:left !important; }
+    .step-header h3 { flex:1; text-align:center; }
+    .step-back {
+      width:34px; height:34px; border-radius:10px; flex-shrink:0;
+      border:1px solid var(--border); background:#fff; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--muted); transition:all .18s;
+    }
+    .step-back svg { width:17px; height:17px; }
+    .step-back:hover { border-color:#1753FF; color:#1753FF; background:#f5f8ff; }
+    .step-header::after { content:''; width:34px; flex-shrink:0; }
+
+    /* ══ TIME PICKER ══ */
+    .tp-summary {
+      display:flex; align-items:center; gap:9px;
+      background:#f5f8ff; border:1px solid #dbe6ff; border-radius:12px;
+      padding:12px 15px; margin-bottom:14px;
+      font-size:14px; font-weight:600; color:#1753FF;
+      transition:all .2s;
+    }
+    .tp-summary svg { width:17px; height:17px; flex-shrink:0; }
+    .tp-summary.empty { background:#f8fafc; border-color:var(--border); color:var(--muted); font-weight:500; }
+
+    .tp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
+    .tp-col { display:flex; flex-direction:column; min-width:0; }
+    .tp-col-label {
+      font-size:11px; font-weight:700; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.5px;
+      margin-bottom:8px; padding-left:2px;
+    }
+    .tp-scroll {
+      height:196px; overflow-y:auto; overscroll-behavior:contain;
+      border:1px solid var(--border); border-radius:14px;
+      padding:6px; display:flex; flex-direction:column; gap:4px;
+      background:#fff; scrollbar-width:thin; scrollbar-color:#d8dee9 transparent;
+      -webkit-overflow-scrolling:touch;
+    }
+    .tp-scroll::-webkit-scrollbar { width:5px; }
+    .tp-scroll::-webkit-scrollbar-track { background:transparent; }
+    .tp-scroll::-webkit-scrollbar-thumb { background:#d8dee9; border-radius:3px; }
+    .tp-scroll::-webkit-scrollbar-thumb:hover { background:#b9c3d2; }
+
+    .tp-slot {
+      flex-shrink:0; padding:9px 0; border:none; border-radius:9px;
+      background:none; cursor:pointer; font-family:inherit;
+      font-size:13.5px; font-weight:600; color:var(--text);
+      transition:background .14s, color .14s;
+      text-align:center; width:100%;
+    }
+    .tp-slot:hover:not(:disabled):not(.selected) { background:#f1f5f9; }
+    .tp-slot.selected { background:#1753FF; color:#fff; font-weight:700; }
+    .tp-slot:disabled { color:#cbd5e1; cursor:not-allowed; }
+    .tp-empty { padding:16px 8px; font-size:12px; color:var(--muted); text-align:center; line-height:1.5; }
 
     /* Succès commande */
     /* ══ CARTE DE CONFIRMATION ══ */
@@ -406,51 +465,79 @@
 
     <!-- Contenu panier -->
     <div id="order-content">
-      <div class="order-header">
-        <h3>Mon panier</h3>
-      </div>
 
-      <div class="cart-items" id="cart-items-list"></div>
-
-      <div class="cart-total-row">
-        <span>Total</span>
-        <span id="modal-cart-total">0,00 €</span>
-      </div>
-
-      <div class="order-form">
-        <div class="section-label big">Vos coordonnées</div>
-        <div class="time-row">
-          <div class="order-field">
-            <label>Prénom</label>
-            <input type="text" id="order-prenom" placeholder="Jean" autocomplete="given-name">
-          </div>
-          <div class="order-field">
-            <label>Nom</label>
-            <input type="text" id="order-nom" placeholder="DUPONT" autocomplete="family-name">
-          </div>
-        </div>
-        <div class="order-field">
-          <label>Téléphone</label>
-          <input type="tel" id="order-tel" placeholder="06 12 34 56 78" autocomplete="tel">
+      <!-- ══ ÉTAPE 1 — PANIER ══ -->
+      <div class="order-step active" id="step-cart">
+        <div class="order-header">
+          <h3>Mon panier</h3>
         </div>
 
-        <div class="section-label">Heure de retrait souhaitée</div>
-        <div class="time-row">
-          <div class="order-field">
-            <label>À partir de</label>
-            <input type="time" id="order-heure-debut" value="12:00">
-          </div>
-          <div class="order-field">
-            <label>Avant</label>
-            <input type="time" id="order-heure-fin" value="13:00">
-          </div>
+        <div class="cart-items" id="cart-items-list"></div>
+
+        <div class="cart-total-row">
+          <span>Total</span>
+          <span id="modal-cart-total">0,00 €</span>
         </div>
 
-        <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
-          Confirmer ma commande
-        </button>
-        <button class="order-cancel" onclick="closeOrderModal()">Continuer mes achats</button>
+        <div class="order-form">
+          <button class="order-submit" id="btn-goto-info" onclick="gotoInfoStep()">
+            Continuer
+          </button>
+          <button class="order-cancel" onclick="closeOrderModal()">Continuer mes achats</button>
+        </div>
       </div>
+
+      <!-- ══ ÉTAPE 2 — COORDONNÉES ══ -->
+      <div class="order-step" id="step-info">
+        <div class="order-header step-header">
+          <button class="step-back" onclick="gotoCartStep()" title="Retour au panier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <h3>Vos coordonnées</h3>
+        </div>
+
+        <div class="order-form">
+          <div class="time-row">
+            <div class="order-field">
+              <label>Prénom</label>
+              <input type="text" id="order-prenom" placeholder="Jean" autocomplete="given-name">
+            </div>
+            <div class="order-field">
+              <label>Nom</label>
+              <input type="text" id="order-nom" placeholder="DUPONT" autocomplete="family-name">
+            </div>
+          </div>
+          <div class="order-field">
+            <label>Téléphone</label>
+            <input type="tel" id="order-tel" placeholder="06 12 34 56 78" autocomplete="tel">
+          </div>
+
+          <!-- ══ TIME PICKER ══ -->
+          <div class="section-label big" style="margin-top:26px">Créneau de retrait</div>
+
+          <div class="tp-summary" id="tp-summary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span id="tp-summary-text">Choisissez un créneau</span>
+          </div>
+
+          <div class="tp-grid">
+            <div class="tp-col">
+              <div class="tp-col-label">À partir de</div>
+              <div class="tp-scroll" id="tp-start"></div>
+            </div>
+            <div class="tp-col">
+              <div class="tp-col-label">Avant</div>
+              <div class="tp-scroll" id="tp-end"></div>
+            </div>
+          </div>
+
+          <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
+            Confirmer ma commande
+          </button>
+          <button class="order-cancel" onclick="gotoCartStep()">← Retour au panier</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- Succès -->
@@ -756,11 +843,144 @@ function closeImgModal() {
   document.body.style.overflow = '';
 }
 
+// ══════════════════════════════════
+//  TIME PICKER
+// ══════════════════════════════════
+const TP_START_HOUR = 8;
+const TP_END_HOUR   = 20;
+const TP_STEP       = 15;   // minutes
+
+let selectedStart = null;
+let selectedEnd   = null;
+
+function tpSlots() {
+  const out = [];
+  for (let h = TP_START_HOUR; h <= TP_END_HOUR; h++) {
+    for (let m = 0; m < 60; m += TP_STEP) {
+      if (h === TP_END_HOUR && m > 0) break;
+      out.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+    }
+  }
+  return out;
+}
+
+function tpToMin(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function buildTimePicker() {
+  const slots    = tpSlots();
+  const colStart = document.getElementById('tp-start');
+  const colEnd   = document.getElementById('tp-end');
+
+  // Heure de début — à partir de maintenant si on est dans la journée
+  const now     = new Date();
+  const nowMin  = now.getHours() * 60 + now.getMinutes();
+
+  colStart.innerHTML = slots.map(t => {
+    const past = tpToMin(t) < nowMin;
+    return `<button class="tp-slot${selectedStart === t ? ' selected' : ''}"
+      ${past ? 'disabled' : ''}
+      onclick="tpPickStart('${t}')">${t}</button>`;
+  }).join('');
+
+  renderEndColumn();
+  updateTpSummary();
+}
+
+function renderEndColumn() {
+  const colEnd = document.getElementById('tp-end');
+
+  if (!selectedStart) {
+    colEnd.innerHTML = '<div class="tp-empty">Choisissez d\'abord<br>une heure de début</div>';
+    return;
+  }
+
+  const startMin = tpToMin(selectedStart);
+  const options  = tpSlots().filter(t => tpToMin(t) > startMin);
+
+  if (!options.length) {
+    colEnd.innerHTML = '<div class="tp-empty">Aucun créneau<br>disponible</div>';
+    return;
+  }
+
+  colEnd.innerHTML = options.map(t =>
+    `<button class="tp-slot${selectedEnd === t ? ' selected' : ''}"
+      onclick="tpPickEnd('${t}')">${t}</button>`
+  ).join('');
+}
+
+function tpPickStart(t) {
+  selectedStart = t;
+  // Réinitialiser la fin si elle devient invalide
+  if (selectedEnd && tpToMin(selectedEnd) <= tpToMin(t)) selectedEnd = null;
+
+  // Proposer automatiquement +1h
+  if (!selectedEnd) {
+    const target = tpToMin(t) + 60;
+    const match  = tpSlots().find(s => tpToMin(s) === target);
+    if (match) selectedEnd = match;
+  }
+
+  buildTimePicker();
+  scrollToSelected('tp-start');
+  scrollToSelected('tp-end');
+}
+
+function tpPickEnd(t) {
+  selectedEnd = t;
+  renderEndColumn();
+  updateTpSummary();
+}
+
+function scrollToSelected(colId) {
+  const col = document.getElementById(colId);
+  const sel = col?.querySelector('.tp-slot.selected');
+  if (sel) sel.scrollIntoView({ block:'center', behavior:'smooth' });
+}
+
+function updateTpSummary() {
+  const box  = document.getElementById('tp-summary');
+  const text = document.getElementById('tp-summary-text');
+  if (selectedStart && selectedEnd) {
+    box.classList.remove('empty');
+    text.textContent = `Retrait entre ${selectedStart} et ${selectedEnd}`;
+  } else if (selectedStart) {
+    box.classList.add('empty');
+    text.textContent = `À partir de ${selectedStart} — choisissez l'heure de fin`;
+  } else {
+    box.classList.add('empty');
+    text.textContent = 'Choisissez un créneau';
+  }
+}
+
+// ══════════════════════════════════
+//  NAVIGATION ENTRE LES ÉTAPES
+// ══════════════════════════════════
+function gotoInfoStep() {
+  if (!Object.keys(cart).length) { alert('Votre panier est vide.'); return; }
+  document.getElementById('step-cart').classList.remove('active');
+  document.getElementById('step-info').classList.add('active');
+  buildTimePicker();
+  document.querySelector('.order-sheet').scrollTop = 0;
+}
+
+function gotoCartStep() {
+  document.getElementById('step-info').classList.remove('active');
+  document.getElementById('step-cart').classList.add('active');
+  renderCartItems();
+  document.querySelector('.order-sheet').scrollTop = 0;
+}
+
 // ── MODAL COMMANDE ──
 function openOrderModal() {
   renderCartItems();
   document.getElementById('order-content').style.display = 'block';
   document.getElementById('order-success').style.display = 'none';
+  // Toujours démarrer sur l'étape panier
+  document.getElementById('step-cart').classList.add('active');
+  document.getElementById('step-info').classList.remove('active');
   document.getElementById('order-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -772,12 +992,15 @@ function closeOrderModal() {
 function renderCartItems() {
   const list = document.getElementById('cart-items-list');
   const entries = Object.entries(cart);
+  const btnNext = document.getElementById('btn-goto-info');
 
   if (!entries.length) {
     list.innerHTML = '<div class="cart-empty">Votre panier est vide.</div>';
     document.getElementById('modal-cart-total').textContent = '0,00 €';
+    if (btnNext) btnNext.disabled = true;
     return;
   }
+  if (btnNext) btnNext.disabled = false;
 
   list.innerHTML = entries.map(([id, item]) => {
     const atMax = item.qty >= item.stock;
@@ -856,8 +1079,8 @@ async function submitOrder() {
   const prenom = document.getElementById('order-prenom').value.trim();
   const nom    = document.getElementById('order-nom').value.trim();
   const tel    = document.getElementById('order-tel').value.trim();
-  const debut  = document.getElementById('order-heure-debut').value;
-  const fin    = document.getElementById('order-heure-fin').value;
+  const debut  = selectedStart;
+  const fin    = selectedEnd;
 
   if (!prenom || !nom || !tel) { alert('Veuillez renseigner vos coordonnées.'); return; }
   if (!debut || !fin)          { alert('Veuillez choisir un créneau de retrait.'); return; }
@@ -931,8 +1154,10 @@ async function submitOrder() {
     document.getElementById('order-content').style.display = 'none';
     document.getElementById('order-success').style.display = 'block';
 
-    // Reset panier
+    // Reset panier et créneau
     cart = {};
+    selectedStart = null;
+    selectedEnd   = null;
     updateCartUI();
     // Reload promos pour stocks mis à jour
     await renderPromos();
