@@ -9,8 +9,6 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#fff;}
-
-/* ══ LAYOUT ══ */
 .layout{display:flex;width:100%;min-height:100vh;}
 
 /* ══ LEFT ══ */
@@ -20,91 +18,43 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
   display:flex;flex-direction:column;justify-content:space-between;
   padding:40px 48px;position:relative;overflow:hidden;
 }
-
-/* Subtle light reflection */
-.left::after{
-  content:'';position:absolute;
-  width:600px;height:600px;border-radius:50%;
-  background:radial-gradient(circle,rgba(28,181,224,.18) 0%,transparent 65%);
-  bottom:-200px;right:-200px;pointer-events:none;
-}
-.left::before{
-  content:'';position:absolute;
-  width:400px;height:400px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);
-  top:-100px;left:-100px;pointer-events:none;
-}
-
+.left::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(28,181,224,.18) 0%,transparent 65%);bottom:-200px;right:-200px;pointer-events:none;}
+.left::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);top:-100px;left:-100px;pointer-events:none;}
 .left-top{position:relative;z-index:2;}
 .left-logo img{height:32px;object-fit:contain;filter:brightness(0) invert(1);}
-
 .left-middle{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0;}
-.left-tag{
-  display:inline-flex;align-items:center;gap:7px;
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
-  border-radius:20px;padding:5px 14px;
-  font-size:11px;font-weight:600;color:rgba(255,255,255,.8);
-  letter-spacing:.5px;text-transform:uppercase;margin-bottom:28px;
-  width:fit-content;
-}
+.left-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);letter-spacing:.5px;text-transform:uppercase;margin-bottom:28px;width:fit-content;}
 .left-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:#1cb5e0;}
-.left-title{
-  font-size:40px;font-weight:800;color:#fff;
-  line-height:1.12;letter-spacing:-1px;margin-bottom:20px;
-}
-.left-title span{
-  display:block;font-weight:300;font-size:34px;
-  color:rgba(255,255,255,.65);letter-spacing:-.5px;
-}
+.left-title{font-size:40px;font-weight:800;color:#fff;line-height:1.12;letter-spacing:-1px;margin-bottom:20px;}
+.left-title span{display:block;font-weight:300;font-size:34px;color:rgba(255,255,255,.65);letter-spacing:-.5px;}
 .left-desc{font-size:14px;color:rgba(255,255,255,.55);line-height:1.75;max-width:300px;font-weight:400;}
-
 .left-bottom{position:relative;z-index:2;}
-.left-quote{
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;padding:18px 20px;
-  backdrop-filter:blur(10px);
-}
+.left-quote{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 20px;backdrop-filter:blur(10px);}
 .quote-text{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:14px;font-style:italic;}
 .quote-author{display:flex;align-items:center;gap:10px;}
-.quote-avatar{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,#1cb5e0,#000046);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;color:#fff;
-}
+.quote-avatar{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#1cb5e0,#000046);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
 .quote-name{font-size:12px;font-weight:700;color:#fff;}
 .quote-role{font-size:11px;color:rgba(255,255,255,.45);}
 
 /* ══ RIGHT ══ */
-.right{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  padding:48px 40px;background:#fff;
-}
+.right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 40px;background:#fff;}
 .form-wrap{width:100%;max-width:360px;}
-.mobile-logo{display:none;height:28px;object-fit:contain;margin-bottom:32px;}
+.mobile-logo{display:none;height:48px;object-fit:contain;margin:0 auto 32px;}
 
 .form-title{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px;margin-bottom:6px;}
 .form-sub{font-size:14px;color:#64748b;margin-bottom:32px;line-height:1.5;}
 
 .field{margin-bottom:18px;}
 .field-label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:7px;}
-.field-input{
-  width:100%;padding:12px 16px;
-  border:1.5px solid #e5e7eb;border-radius:10px;
-  font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;
-  background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;
-}
+.field-input{width:100%;padding:12px 16px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
 .field-input:focus{border-color:#1cb5e0;box-shadow:0 0 0 3px rgba(28,181,224,.12);}
 .field-input::placeholder{color:#9ca3af;}
+
 .pw-wrap{position:relative;}
 .pw-wrap .field-input{padding-right:44px;}
-.pw-eye{
-  position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;
-  transition:color .2s;padding:2px;
-}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;padding:3px;display:flex;align-items:center;transition:color .2s;}
 .pw-eye:hover{color:#374151;}
+.pw-eye svg{width:18px;height:18px;}
 
 .form-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .check-label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#6b7280;}
@@ -112,21 +62,10 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
 .forgot{font-size:12px;font-weight:600;color:#000046;text-decoration:none;}
 .forgot:hover{color:#1cb5e0;}
 
-.btn-login{
-  width:100%;padding:13px;border-radius:10px;border:none;
-  background:linear-gradient(135deg,#000046,#1cb5e0);
-  color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;transition:all .2s;letter-spacing:.1px;
-}
+.btn-login{width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#000046,#1cb5e0);color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.1px;}
 .btn-login:hover:not(:disabled){opacity:.92;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,70,.25);}
 .btn-login:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-
-.btn-ghost{
-  width:100%;padding:12px;border-radius:10px;margin-top:10px;
-  border:1.5px solid #e5e7eb;background:#fff;
-  font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#6b7280;
-  cursor:pointer;transition:all .2s;
-}
+.btn-ghost{width:100%;padding:12px;border-radius:10px;margin-top:10px;border:1.5px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;}
 .btn-ghost:hover{border-color:#1cb5e0;color:#000046;}
 
 .signup-link{text-align:center;font-size:13px;color:#6b7280;margin-top:24px;}
@@ -143,7 +82,6 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
 .spin{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#000046;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* Animations */
 .fade{opacity:0;transform:translateY(10px);animation:fadein .45s ease forwards;}
 .d1{animation-delay:.04s}.d2{animation-delay:.1s}.d3{animation-delay:.16s}
 .d4{animation-delay:.22s}.d5{animation-delay:.28s}.d6{animation-delay:.34s}
@@ -171,9 +109,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
     </div>
     <div class="left-middle">
       <div class="left-tag">Espace pharmacien</div>
-      <div class="left-title">
-        Votre pharmacie,<span>en ligne.</span>
-      </div>
+      <div class="left-title">Votre pharmacie,<span>en ligne.</span></div>
       <div class="left-desc">Gérez votre vitrine, vos ordonnances et vos promotions depuis un seul tableau de bord.</div>
     </div>
     <div class="left-bottom">
@@ -210,7 +146,9 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
           <label class="field-label">Mot de passe</label>
           <div class="pw-wrap">
             <input class="field-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-            <button class="pw-eye" type="button" id="pw-eye">👁</button>
+            <button class="pw-eye" type="button" id="pw-eye">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
           </div>
         </div>
 
@@ -245,70 +183,90 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#ff
 </div>
 
 <script>
-const SUPABASE_URL='https://twewgozdynowoieyqrcf.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(session)redirectToDashboard(session.user.id);})();
+const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
 
-document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('btn-login').addEventListener('click',login);
-  document.getElementById('btn-send-reset').addEventListener('click',sendReset);
-  document.getElementById('btn-back-login').addEventListener('click',showLogin);
-  document.getElementById('forgot-link').addEventListener('click',function(e){e.preventDefault();showReset();});
-  document.getElementById('pw-eye').addEventListener('click',function(){
-    const i=document.getElementById('password');
-    i.type=i.type==='password'?'text':'password';
-    this.textContent=i.type==='password'?'👁':'🙈';
+// Auto-redirect si session active
+(async function(){
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    if (session) redirectToDashboard(session.user.id);
+  } catch(e) { console.warn('Session check:', e); }
+})();
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('btn-login').addEventListener('click', login);
+  document.getElementById('btn-send-reset').addEventListener('click', sendReset);
+  document.getElementById('btn-back-login').addEventListener('click', showLogin);
+  document.getElementById('forgot-link').addEventListener('click', function(e){ e.preventDefault(); showReset(); });
+
+  document.getElementById('pw-eye').addEventListener('click', function(){
+    const i = document.getElementById('password');
+    i.type = i.type === 'password' ? 'text' : 'password';
+    this.innerHTML = i.type === 'password' ? EYE_OPEN : EYE_OFF;
   });
-  document.getElementById('email').addEventListener('keydown',function(e){if(e.key==='Enter')login();});
-  document.getElementById('password').addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+
+  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') login(); });
+  document.getElementById('password').addEventListener('keydown', function(e){ if(e.key==='Enter') login(); });
 });
 
 async function login(){
-  const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value;
+  const email = document.getElementById('email').value.trim();
+  const pw    = document.getElementById('password').value;
   clearAlert();
-  if(!email||!pw){showAlert('Remplissez tous les champs.');return;}
-  showLoader(true);document.getElementById('btn-login').disabled=true;
-  try{
-    const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
-    if(error)throw error;
+  if (!email || !pw) { showAlert('Remplissez tous les champs.'); return; }
+
+  showLoader(true);
+  document.getElementById('btn-login').disabled = true;
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
     await redirectToDashboard(data.user.id);
-  }catch(err){
-    showLoader(false);document.getElementById('btn-login').disabled=false;
-    if(err.message.includes('Invalid login'))showAlert('Email ou mot de passe incorrect.');
-    else if(err.message.includes('Email not confirmed'))showAlert('⚠️ Confirmez votre email d\'abord.','info');
-    else showAlert('Erreur : '+err.message);
+  } catch(err) {
+    showLoader(false);
+    document.getElementById('btn-login').disabled = false;
+    const msg = err.message || '';
+    if (msg.includes('Invalid login')) showAlert('Email ou mot de passe incorrect.');
+    else if (msg.includes('Email not confirmed')) showAlert('⚠️ Confirmez votre email avant de vous connecter.', 'info');
+    else showAlert('Erreur : ' + msg);
   }
 }
 
 async function redirectToDashboard(userId){
-  try{
-    const{data,error}=await sb.from('pharmacies').select('slug').eq('user_id',userId).single();
-    if(error||!data)throw new Error();
-    localStorage.setItem('swiftlink_slug',data.slug);
-    window.location.href='https://swiftypharm.fr/backoffice.html?slug='+data.slug;
-  }catch(){
-    showLoader(false);document.getElementById('btn-login').disabled=false;
-    showAlert('Pharmacie introuvable. Contactez le support.');
+  try {
+    const { data, error } = await sb.from('pharmacies').select('slug').eq('user_id', userId).single();
+    if (error || !data) throw new Error('Pharmacie introuvable.');
+    localStorage.setItem('swiftlink_slug', data.slug);
+    window.location.href = 'https://swiftypharm.fr/backoffice.html?slug=' + data.slug;
+  } catch(err) {
+    showLoader(false);
+    const btn = document.getElementById('btn-login');
+    if (btn) btn.disabled = false;
+    showAlert('Compte trouvé mais aucune pharmacie associée. Contactez le support.');
   }
 }
 
 async function sendReset(){
-  const email=document.getElementById('reset-email').value.trim();
+  const email = document.getElementById('reset-email').value.trim();
   clearAlert();
-  if(!email){showAlert('Entrez votre email.');return;}
-  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://swiftypharm.fr/reset-password.html'});
-  if(error)showAlert('Erreur : '+error.message);
-  else{showAlert('✓ Lien envoyé !','ok');setTimeout(showLogin,3000);}
+  if (!email) { showAlert('Entrez votre email.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://swiftypharm.fr/reset-password.html'
+  });
+  if (error) showAlert('Erreur : ' + error.message);
+  else { showAlert('✓ Lien envoyé ! Vérifiez votre boîte mail.', 'ok'); setTimeout(showLogin, 3000); }
 }
 
-function showLoader(s){document.getElementById('loader').classList.toggle('active',s);}
-function showAlert(msg,t='err'){const el=document.getElementById('global-alert');el.textContent=msg;el.className='alert '+t;}
-function clearAlert(){const el=document.getElementById('global-alert');el.className='alert';el.textContent='';}
-function showReset(){clearAlert();document.getElementById('screen-login').style.display='none';document.getElementById('screen-reset').style.display='block';}
-function showLogin(){clearAlert();document.getElementById('screen-reset').style.display='none';document.getElementById('screen-login').style.display='block';}
+function showLoader(s){ document.getElementById('loader').classList.toggle('active', s); }
+function showAlert(msg, t){ const el=document.getElementById('global-alert'); el.textContent=msg; el.className='alert ' + (t || 'err'); }
+function clearAlert(){ const el=document.getElementById('global-alert'); el.className='alert'; el.textContent=''; }
+function showReset(){ clearAlert(); document.getElementById('screen-login').style.display='none'; document.getElementById('screen-reset').style.display='block'; }
+function showLogin(){ clearAlert(); document.getElementById('screen-reset').style.display='none'; document.getElementById('screen-login').style.display='block'; }
 </script>
 </body>
 </html>
