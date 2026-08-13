@@ -2,598 +2,1143 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Promotions</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SwiftyPharm</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH4392ZE5G"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KH4392ZE5G');
+    function trackSend() { gtag('event', 'ordonnance_envoyee'); }
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){ emailjs.init("Apzn8FzYNZlXAQTs-"); })();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script>(function(){ emailjs.init("Apzn8FzYNZlXAQTs-"); })();</script>
   <script>
     const SUPABASE_URL = 'https://twewgozdynowoieyqrcf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZXdnb3pkeW5vd29pZXlxcmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM4MjEsImV4cCI6MjA5OTEwOTgyMX0.p8niB1AotODvOlTg529rWz4BsPVRwHqflx5EXasgn5s';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
+
   <style>
-    :root {
-      --blue:#1753ff; --blue-l:#eef2ff; --blue-d:#1040d8;
-      --text:#0f172a; --muted:#64748b; --border:#e2e8f0;
-      --bg:#f1f5f9; --card:#fff;
-      --green:#16a34a; --amber:#d97706; --red:#dc2626;
-      --radius:18px; --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
-    }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding-bottom:120px; }
-
-    /* ── HEADER ── */
-    .page-header {
-      width:100%; max-width:480px; position:sticky; top:0; z-index:50;
-      background:rgba(241,245,249,.92); backdrop-filter:blur(12px);
-      padding:16px 16px 12px; display:flex; align-items:center; justify-content:center;
-      border-bottom:1px solid var(--border);
+    * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn-back {
-      position:absolute; left:16px; width:36px; height:36px; border-radius:10px;
-      background:var(--card); border:1px solid var(--border); cursor:pointer;
-      display:flex; align-items:center; justify-content:center; font-size:16px;
-      color:var(--text); text-decoration:none; box-shadow:var(--shadow); transition:all .15s;
-    }
-    .btn-back:hover { background:var(--blue-l); border-color:var(--blue); color:var(--blue); }
-    .header-title { font-size:17px; font-weight:800; color:var(--blue); }
-
-    /* ── PANIER FLOATING ── */
-    .cart-fab {
-      position:fixed; bottom:24px; right:50%; transform:translateX(50%);
-      max-width:440px; width:calc(100% - 32px);
-      background:var(--blue); color:#fff; border:none; cursor:pointer;
-      border-radius:16px; padding:14px 20px;
-      display:none; align-items:center; justify-content:space-between;
-      box-shadow:0 8px 24px rgba(23,83,255,.4); z-index:100; font-family:inherit;
-      transition:all .3s;
-    }
-    .cart-fab.visible { display:flex; }
-    .cart-fab-left { display:flex; align-items:center; gap:10px; }
-    .cart-fab-icon { font-size:20px; }
-    .cart-fab-label { font-size:14px; font-weight:700; }
-    .cart-fab-count { background:rgba(255,255,255,.25); padding:2px 8px; border-radius:20px; font-size:12px; font-weight:700; }
-    .cart-fab-total { font-size:16px; font-weight:800; }
-
-    /* ── GRILLE ── */
-    .promo-grid {
-      width:100%; max-width:480px; display:grid;
-      grid-template-columns:1fr 1fr; gap:12px; padding:16px 16px 0;
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
     }
 
-    /* ── CARD PRODUIT ── */
-    /* ── PRODUCT CARD — style Nike ── */
-    .product-card {
-      background:var(--card); border-radius:20px; overflow:hidden;
-      display:flex; flex-direction:column;
-      box-shadow:0 2px 12px rgba(0,0,0,.08); transition:transform .2s, box-shadow .2s;
-      border:none; position:relative;
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 64px;
+      background-color: #d2d2d2;
     }
-    .product-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.13); }
-    .product-img-wrap {
-      position:relative; width:100%; aspect-ratio:1;
-      background:#f5f5f5; overflow:hidden; cursor:pointer;
-    }
-    .product-img-wrap img { width:100%; height:100%; object-fit:contain; display:block; padding:10px; }
-    .product-badge {
-      position:absolute; top:10px; left:10px; background:var(--red); color:#fff;
-      font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; letter-spacing:.3px;
-    }
-    .stock-dot {
-      display:inline-flex; align-items:center; gap:4px;
-      font-size:10px; font-weight:600;
-    }
-    .stock-dot::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-    .stock-dot.stock-ok  { color:var(--green); } .stock-dot.stock-ok::before  { background:var(--green); }
-    .stock-dot.stock-low { color:var(--amber); } .stock-dot.stock-low::before { background:var(--amber); }
-    .stock-dot.stock-out { color:var(--red);   } .stock-dot.stock-out::before { background:var(--red);   }
-    .product-info { padding:10px 12px 4px; display:flex; flex-direction:column; gap:2px; flex:1; }
-    .product-name { font-size:13px; font-weight:700; color:var(--text); line-height:1.3;
-      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .product-brand { font-size:11px; color:#94a3b8; font-weight:500; }
-    .product-price-row { display:flex; align-items:baseline; gap:7px; margin-top:5px; }
-    .price-after  { font-size:17px; font-weight:800; color:var(--text); }
-    .price-before { font-size:11px; color:#b0b0b0; text-decoration:line-through; font-weight:400; }
-    .product-footer {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:6px 12px 12px;
-    }
-    .btn-add-cart {
-      width:38px; height:38px; border-radius:12px;
-      background:var(--text); color:#fff; border:none; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px; transition:all .2s; flex-shrink:0;
-    }
-    .btn-add-cart:hover:not(:disabled) { background:var(--blue); transform:scale(1.08); }
-    .btn-add-cart:disabled { background:#e5e5e5; color:#aaa; cursor:not-allowed; }
-    .counter-inline {
-      display:none; align-items:center;
-      background:#f5f5f5; border-radius:12px; overflow:hidden;
-    }
-    .counter-inline.show { display:flex; }
-    .counter-btn { width:32px; height:32px; background:none; border:none; cursor:pointer;
-      font-size:16px; font-weight:700; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .15s; }
-    .counter-btn:hover { background:#e0e0e0; }
-    .counter-qty { font-size:13px; font-weight:700; color:var(--text); min-width:24px; text-align:center;
-      border-left:1px solid #e0e0e0; border-right:1px solid #e0e0e0; height:32px; display:flex; align-items:center; justify-content:center; }
 
-    /* ── ÉTAT VIDE ── */
-    .empty-state { grid-column:1/-1; text-align:center; padding:48px 16px; color:var(--muted); }
-    .empty-state .emoji { font-size:48px; margin-bottom:12px; }
-    .empty-state p { font-size:15px; line-height:1.6; }
-
-    /* ── MODAL IMAGE ── */
-    .img-modal-overlay {
-      display:none; position:fixed; inset:0; z-index:9500;
-      background:rgba(0,0,0,.88); align-items:flex-start; justify-content:center; padding:20px;
+    /* ══ BANNIÈRE ══ */
+    .banniere {
+      width: calc(100% - 32px);
+      max-width: 448px;
+      height: 160px;
+      border-radius: 20px;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin: 16px 0 0;
     }
-    .img-modal-overlay.open { display:flex; }
-    .img-modal-inner { display:flex; flex-direction:column; align-items:center; width:100%; max-width:480px; margin-top:20px; cursor:default; }
-    .img-modal-img { width:100%; max-height:52vh; object-fit:contain; border-radius:16px; animation:img-pop .25s cubic-bezier(.25,1,.5,1); }
-    @keyframes img-pop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
-    .img-modal-info { background:#fff; width:100%; border-radius:0 0 20px 20px; padding:18px 18px 24px; text-align:center; }
-    .img-modal-name { font-size:15px; font-weight:700; color:var(--text); line-height:1.4; margin-bottom:8px; }
-    .img-modal-prices { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px; }
-    .img-modal-after  { font-size:22px; font-weight:800; color:var(--blue); }
-    .img-modal-before { font-size:13px; color:#94a3b8; text-decoration:line-through; }
-    .img-modal-close-btn { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.15); border:none; cursor:pointer; font-size:22px; color:#fff; line-height:1; padding:6px 8px; border-radius:8px; }
+    .banniere img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-    /* ── MODAL COMMANDE ── */
-    .order-modal-overlay {
+    /* ══ HEADER PROFIL ══ */
+    .profile-section { opacity:0; transition:opacity .3s ease; }
+    .profile-section.loaded {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 480px;
+      padding: 0 16px;
+    }
+    .profile-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffffff;
+      margin-top: -48px;
+      border: 3px solid #ffffff;
+      position: relative;
+      z-index: 10;
+    }
+    .profile-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: -0.5px;
+      text-align: center;
+    }
+    .profile-sub {
+      font-size: 15px;
+      color: #555;
+      font-weight: 400;
+      text-align: center;
+      margin-top: -0.5em;
+    }
+
+    /* ══ ICÔNES DE CONTACT ══ */
+    .contact-icons {
+      display: flex;
+      gap: 11px;
+      margin-top: 6px;
+      align-items: flex-start;
+      justify-content: center;
+      transform: translateY(-0.5em);
+    }
+    .contact-icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s, opacity 0.18s;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 4px;
+    }
+    .contact-icon-btn:hover {
+      transform: scale(1.12);
+      opacity: 0.7;
+      box-shadow: none;
+    }
+    .contact-icon-btn img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    /* ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ */
+    .dynamic-social-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 480px;
+      padding: 0 16px;
+      margin-bottom: 20px;
+    }
+    .social-card-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .social-card-item:hover {
+      transform: translateY(-3px);
+    }
+    .social-card-img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border-radius: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .social-card-fallback {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .social-card-txt {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+      line-height: 1.4;
+    }
+
+    /* ══ BENTO GRID ══ */
+    .bento {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 480px;
+      padding: 0 16px;
+    }
+
+    /* ══ CARD DE BASE ══ */
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: #ffffff;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+    /* ══ CARD PROMO (pleine largeur) ══ */
+    .card-promo {
+      width: 100%;
+      height: 200px;
+      padding: 0;
+      cursor: pointer;
+    }
+    .card-promo img.card-full-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ══ BENTO ORDONNANCE ══ */
+    .card-ordonnance {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      cursor: default;
+    }
+    .card-ordonnance:hover { transform: none; box-shadow: none; }
+
+    /* ══ CHAMPS FORMULAIRE ══ */
+    .input-group label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 500;
+      color: #111;
+      font-size: 13px;
+    }
+    .input-group input {
+      width: 100%; padding: 11px 12px; border-radius: 10px;
+      border: 1.5px solid #d0d0d0;
+      background: #f7f7f7; color: #111;
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      margin-bottom: 14px; transition: border 0.2s;
+    }
+    .input-group input::placeholder { color: #aaa; }
+    .input-group input:focus { outline: none; border-color: #0012ff; background: #fff; }
+    .input-group input.input-error { border-color: rgba(220, 50, 50, 0.9) !important; }
+    .input-group input.input-ok { border-color: rgba(40, 180, 100, 0.8) !important; }
+    .field-error-msg { display: none; color: #cc2222; font-size: 11px; font-weight: 500; margin-top: -10px; margin-bottom: 12px; }
+
+    /* ══ ZONE DÉPÔT ══ */
+    .file-trigger-zone {
+      position: relative;
+      padding: 16px;
+      background: #f0f0f0;
+      border: 1.5px dashed #bbb;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .file-trigger-zone:hover { background: #e8e8e8; }
+    .file-trigger-zone.drag-over {
+      background: #e8edff;
+      border: 1.5px solid #0012ff;
+      box-shadow: 0 0 0 3px rgba(0,18,255,0.15);
+    }
+    .file-trigger-zone input[type="file"] {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;
+    }
+    .file-info-row { display: flex; align-items: center; gap: 14px; }
+
+    /* ══ ICÔNE DOSSIER ══ */
+    .folder-icon-container { position: relative; width: 60px; height: 50px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); flex-shrink: 0; }
+    .folder-back { position: absolute; top: 0; left: 0; width: 52px; height: 40px; background: #c0c8e8; border-radius: 5px 10px 5px 5px; }
+    .folder-back::before { content: ''; position: absolute; top: -4px; left: 0; width: 20px; height: 8px; background: #c0c8e8; border-radius: 3px 3px 0 0; }
+    .folder-front { position: absolute; bottom: 0; left: 2px; width: 56px; height: 38px; background: #d8e0f5; border-radius: 5px; transform: skewX(-2deg); }
+    .badge-files { position: absolute; bottom: 2px; left: -8px; z-index: 10; background: #0012ff; border: 1px solid rgba(0,18,255,0.2); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.5px; }
+
+    .text-details { display: flex; flex-direction: column; gap: 3px; }
+    .file-title { color: #111; font-size: 15px; font-weight: 700; }
+    .file-subtitle { color: #888; font-size: 11px; font-weight: 500; }
+
+    /* ══ CROIX ══ */
+    .file-remove-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 30;
+      background: none; border: none; color: #aaa;
+      font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 4px;
+      border-radius: 4px; display: none; transition: color 0.2s, transform 0.2s;
+    }
+    .file-remove-btn:hover { color: #cc2222; transform: scale(1.2) rotate(90deg); }
+
+    /* ══ APERÇU ══ */
+    .file-preview { display: none; width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
+    .file-preview-pdf { display: none; width: 44px; height: 44px; border-radius: 8px; background: #e8edff; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+
+    .file-error-msg { display: none; color: #cc2222; font-size: 12px; font-weight: 600; margin-top: 8px; text-align: center; }
+
+    /* ══ BARRE DE PROGRESSION ══ */
+    .progress-panel { margin-top: 14px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; padding: 12px 14px; display: none; flex-direction: column; gap: 10px; }
+    .progress-status-row { display: flex; justify-content: space-between; align-items: center; }
+    .status-left { display: flex; align-items: center; gap: 8px; }
+    .spinner { width: 13px; height: 13px; border: 2px solid #555; border-right-color: transparent; border-radius: 50%; animation: rotate 1s linear infinite; }
+    .status-text { color: #444; font-size: 13px; }
+    .percentage { color: #111; font-size: 16px; font-weight: 700; }
+    .progress-bar-bg { width: 100%; height: 5px; background: #ddd; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: #0012ff; border-radius: 10px; transition: width 0.5s ease-out; }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ══ BOUTON ENVOYER ══ */
+    .btn-send {
+      width: 100%; height: 3.2em; border-radius: 30em;
+      font-size: 15px; font-family: 'Poppins', inherit; font-weight: 800;
+      border: none; cursor: pointer; color: #fff;
+      background: #0012ff;
+      box-shadow: 0 4px 16px rgba(0,18,255,0.25);
+      margin-top: 16px; transition: all 0.2s; display: block;
+    }
+    .btn-send:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(0,18,255,0.4); transform: translateY(-1px); }
+    .btn-send:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    /* ══ FEEDBACK SUCCÈS ══ */
+    .success-overlay { display: none; flex-direction: column; align-items: center; gap: 16px; padding: 28px 16px 20px; text-align: center; }
+    .success-icon { width: 80px; height: 80px; object-fit: contain; animation: pop-in 0.5s cubic-bezier(0.175,0.885,0.32,2.2) both; }
+    .success-title { color: #111; font-size: 20px; font-weight: 800; }
+    .success-sub { color: #555; font-size: 13px; font-weight: 500; line-height: 1.6; }
+    .success-actions { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; }
+    .btn-back-home { width: 48px; height: 48px; border-radius: 12px; border: 1.5px solid #ddd; background: #f0f0f0; color: #555; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .btn-back-home:hover { background: #e0e0e0; color: #111; }
+    .btn-google-review { flex: 1; height: 48px; border-radius: 12px; border: none; background: #0012ff; color: #fff; font-family: 'Poppins', inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: box-shadow 0.2s, transform 0.2s; }
+    .btn-google-review:hover { box-shadow: 0 4px 16px rgba(0,18,255,0.3); transform: translateY(-1px); }
+    @keyframes pop-in { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* ══ MODALE HORAIRES / INFOS ══ */
+    .modal-overlay {
       display:none; position:fixed; inset:0; z-index:9000;
-      background:rgba(0,0,0,.5); backdrop-filter:blur(4px);
+      background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
       align-items:flex-end; justify-content:center;
     }
-    .order-modal-overlay.open { display:flex; }
-    .order-sheet {
-      background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:480px;
-      padding:0 0 40px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    .modal-overlay.open { display:flex; }
+    .modal-sheet {
+      background:#fff; border-radius:24px 24px 0 0;
+      width:100%; max-width:480px; padding:24px 20px 40px;
+      max-height:80vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
       animation:slide-up .3s cubic-bezier(.25,1,.5,1);
     }
     @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
-    .order-handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:12px auto 0; }
-    .order-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); }
-    .order-header h3 { font-size:18px; font-weight:800; }
-    .order-header p { font-size:13px; color:var(--muted); margin-top:3px; }
-
-    /* Cart items */
-    .cart-items { padding:12px 20px; }
-    .cart-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
-    .cart-item:last-child { border-bottom:none; }
-    .cart-item-img { width:44px; height:44px; border-radius:8px; object-fit:cover; background:#f8fafc; flex-shrink:0; }
-    .cart-item-info { flex:1; min-width:0; }
-    .cart-item-name { font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .cart-item-price { font-size:12px; color:var(--blue); font-weight:700; margin-top:2px; }
-    .cart-item-qty { font-size:12px; color:var(--muted); }
-    .cart-item-remove { background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; padding:4px; flex-shrink:0; }
-    .cart-item-remove:hover { color:var(--red); }
-    .cart-total-row { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-top:2px solid var(--border); font-weight:800; font-size:15px; }
-
-    /* Formulaire commande */
-    .order-form { padding:0 20px; }
-    .order-form .section-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 10px; }
-    .order-field { margin-bottom:12px; }
-    .order-field label { display:block; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; }
-    .order-field input { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:14px; color:var(--text); outline:none; transition:border-color .2s; }
-    .order-field input:focus { border-color:var(--blue); }
-    .time-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .order-submit {
-      width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
-      background:var(--blue); color:#fff; font-family:inherit; font-size:15px; font-weight:800;
-      margin-top:16px; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+    .modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 20px; }
+    .modal-title { font-size:19px; font-weight:800; color:#0012ff; margin-bottom:18px; text-align:center; }
+    .horaire-liste { display:flex; flex-direction:column; gap:6px; }
+    .horaire-ligne {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-radius:12px; background:#f5f6fa; font-size:14px;
     }
-    .order-submit:hover { background:var(--blue-d); transform:translateY(-1px); box-shadow:0 4px 16px rgba(23,83,255,.35); }
-    .order-submit:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
-    .order-cancel { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); cursor:pointer; background:#fff; font-family:inherit; font-size:14px; font-weight:600; color:var(--muted); margin-top:8px; }
+    .horaire-ligne.today { background:#e8eaff; }
+    .horaire-ligne .jour { font-weight:700; color:#111; min-width:90px; }
+    .horaire-ligne .heure { color:#0012ff; font-weight:600; }
+    .horaire-ligne .heure.ferme { color:#aaa; font-weight:500; }
+    .modal-close {
+      margin-top:18px; width:100%; padding:13px; border-radius:30px;
+      background:#f0f0f0; border:none; font-family:'Inter',sans-serif;
+      font-size:14px; font-weight:700; color:#111; cursor:pointer;
+    }
 
-    /* Succès commande */
-    .order-success { display:none; text-align:center; padding:32px 20px 20px; }
-    .order-success-icon { font-size:52px; margin-bottom:14px; }
-    .order-success h3 { font-size:20px; font-weight:800; margin-bottom:8px; }
-    .order-success p { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
-    .order-success-detail { background:var(--blue-l); border-radius:12px; padding:14px 16px; font-size:13px; color:var(--blue); font-weight:600; margin-bottom:20px; text-align:left; line-height:1.8; }
+    /* ══ POPUP INFOS (STYLES ÉTENDUS) ══ */
+    .infos-section-title {
+      font-size:15px; font-weight:800; color:#111; margin:28px 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .infos-section-title:first-child { margin-top: 0; }
+    .infos-intro {
+      font-size:13px; color:#666; margin-bottom:14px; line-height:1.5;
+    }
+    .urgence-ligne {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px; border-radius:12px; background:#f5f6fa;
+      margin-bottom:8px;
+    }
+    .urgence-numero {
+      font-size:18px; font-weight:800; color:#0012ff;
+      min-width:44px; text-align:center;
+    }
+    .urgence-texte { display:flex; flex-direction:column; gap:1px; }
+    .urgence-nom { font-size:14px; font-weight:700; color:#111; }
+    .urgence-desc { font-size:12px; color:#777; line-height:1.4; }
+    
+    .infos-garde-box {
+      background:#e8eaff; border-radius:14px; padding:14px 16px;
+      margin:20px 0; font-size:13px; color:#333; line-height:1.5; text-align:center;
+    }
+    .infos-garde-box a {
+      color:#0012ff; font-weight:700; text-decoration:none;
+    }
+    
+    /* Nouvelles boîtes d'informations (Santé, Recyclage, Ordonnance) */
+    .info-box-styled {
+      background: #f8f9fc;
+      border: 1px solid #eaeff5;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .info-box-styled h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0012ff;
+      margin-bottom: 4px;
+    }
+    .info-box-styled p {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .info-box-styled p:last-child {
+      margin-bottom: 0;
+    }
 
-    /* ── DESKTOP ── */
-    @media(min-width:769px){
-      html { background:var(--bg); }
-      body { max-width:580px; margin:24px auto; border-radius:28px; box-shadow:0 8px 40px rgba(0,0,0,.1); }
+    .docteur-box {
+      display:flex; align-items:center; gap:12px;
+      background:#f5f6fa; border-radius:14px; padding:14px 16px; margin-top:6px;
+    }
+    .docteur-avatar {
+      width:44px; height:44px; border-radius:50%;
+      background:#0012ff; color:#fff; display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:16px; flex-shrink:0;
+    }
+    .docteur-info { display:flex; flex-direction:column; gap:1px; }
+    .docteur-nom { font-size:14px; font-weight:800; color:#111; }
+    .docteur-titre { font-size:12px; color:#666; }
+
+    /* ══ CADRE DESKTOP ══ */
+    @media (min-width: 769px) {
+      html { background: #d2d2d2; }
+      body {
+        max-width: 580px;
+        margin: 24px auto;
+        border-radius: 28px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+      }
     }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="page-header">
-  <a class="btn-back" id="btn-back-pharma" href="#">←</a>
-  <div class="header-title">Promotions &amp; Nouveautés</div>
-</div>
-
-<!-- GRILLE -->
-<div class="promo-grid" id="promo-grid"></div>
-
-<!-- PANIER FLOTTANT -->
-<button class="cart-fab" id="cart-fab" onclick="openOrderModal()">
-  <div class="cart-fab-left">
-    <span class="cart-fab-icon">🛒</span>
-    <span class="cart-fab-label">Voir mon panier</span>
-    <span class="cart-fab-count" id="cart-count">0</span>
+  <!-- ══ BANNIÈRE ══ -->
+  <div class="banniere">
+    <img id="banniere-img" src="banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
   </div>
-  <span class="cart-fab-total" id="cart-total">0,00 €</span>
-</button>
 
-<!-- MODAL IMAGE -->
-<div class="img-modal-overlay" id="img-modal" onclick="closeImgModal()">
-  <button class="img-modal-close-btn" onclick="closeImgModal()">✕</button>
-  <div class="img-modal-inner" onclick="event.stopPropagation()">
-    <img class="img-modal-img" id="img-modal-src" src="" alt="">
-    <div class="img-modal-info">
-      <div class="img-modal-name" id="img-modal-name"></div>
-      <div class="img-modal-prices">
-        <span class="img-modal-after" id="img-modal-after"></span>
-        <span class="img-modal-before" id="img-modal-before"></span>
+  <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
+  <div class="profile-section">
+    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie">
+    <div class="profile-name" id="profile-name-display"></div>
+    <div class="profile-sub" id="profile-sub-display"></div>
+
+    <!-- 4 icônes de contact -->
+    <div class="contact-icons">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" id="link-phone" href="#">
+          <img src="phone.svg" alt="Téléphone">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" id="link-maps" href="#" target="_blank" id="link-maps-href">
+          <img src="map-pin.svg" alt="Adresse">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" id="link-infos" href="#">
+          <img src="infos.svg" alt="Infos">
+        </a>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <a class="contact-icon-btn" id="link-clock" href="#">
+          <img src="clock.svg" alt="Horaires">
+        </a>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL COMMANDE -->
-<div class="order-modal-overlay" id="order-modal" onclick="if(event.target===this)closeOrderModal()">
-  <div class="order-sheet">
-    <div class="order-handle"></div>
+  <!-- ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ -->
+  <div class="dynamic-social-container" id="dynamic-social-links">
+    <!-- Rempli automatiquement par JavaScript (Supabase) -->
+    <a href="#" class="social-card-item">
+      <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img">
+      <div class="social-card-txt">Notez nous sur <br>Google !</div>
+    </a>
+    <a href="#" target="_blank" class="social-card-item">
+      <img src="instagram-icon.png" alt="Instagram" class="social-card-img">
+      <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
+    </a>
+  </div>
 
-    <!-- Contenu panier -->
-    <div id="order-content">
-      <div class="order-header">
-        <h3>🛒 Mon panier</h3>
-        <p id="order-pharmacy-name">Votre commande click &amp; collect</p>
-      </div>
+  <!-- ══ BENTO ══ -->
+  <div class="bento">
 
-      <div class="cart-items" id="cart-items-list"></div>
+    <!-- Promo du mois -->
+<a class="card card-promo" id="card-promo" href="/promos.html?slug=" style="display:none;text-decoration:none;">
+  <img class="card-full-img" src="promo-du-mois.png" alt="Promo du mois">
+    </a>
 
-      <div class="cart-total-row">
-        <span>Total</span>
-        <span id="modal-cart-total">0,00 €</span>
-      </div>
+    <!-- Formulaire ordonnance -->
+    <div class="card card-ordonnance">
+      <div id="form-content">
+        <div style="color:#111; font-weight:800; font-size:18px; margin-bottom:24px; text-align:center;">Envoyer votre ordonnance</div>
 
-      <div class="order-form">
-        <div class="section-label">Vos coordonnées</div>
-        <div class="time-row">
-          <div class="order-field">
-            <label>Prénom</label>
-            <input type="text" id="order-prenom" placeholder="Jean" autocomplete="given-name">
-          </div>
-          <div class="order-field">
-            <label>Nom</label>
-            <input type="text" id="order-nom" placeholder="DUPONT" autocomplete="family-name">
-          </div>
-        </div>
-        <div class="order-field">
-          <label>Téléphone</label>
-          <input type="tel" id="order-tel" placeholder="06 12 34 56 78" autocomplete="tel">
-        </div>
+        <div class="input-group">
+          <label for="sender-name">Nom et Prénom :</label>
+          <input type="text" id="sender-name" autocomplete="name" placeholder="Ex: DUPONT Jean">
+          <div class="field-error-msg" id="name-error">Veuillez renseigner votre nom et prénom.</div>
 
-        <div class="section-label">Heure de retrait souhaitée</div>
-        <div class="time-row">
-          <div class="order-field">
-            <label>À partir de</label>
-            <input type="time" id="order-heure-debut" value="12:00">
-          </div>
-          <div class="order-field">
-            <label>Avant</label>
-            <input type="time" id="order-heure-fin" value="13:00">
-          </div>
+          <label for="sender-phone">Téléphone — pour vous rappeler si besoin :</label>
+          <input type="tel" id="sender-phone" autocomplete="tel" placeholder="06 12 34 56 78">
+          <div class="field-error-msg" id="phone-error">Format invalide.</div>
         </div>
 
-        <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
-          ✓ Confirmer ma commande
-        </button>
-        <button class="order-cancel" onclick="closeOrderModal()">Annuler</button>
-      </div>
-    </div>
+        <div class="file-trigger-zone" id="drop-zone">
+          <button class="file-remove-btn" id="removeFileBtn" title="Supprimer le fichier">✕</button>
+          <input type="file" id="fileInput" accept="image/*,application/pdf">
+          <div class="file-info-row">
+            <img class="file-preview" id="filePreviewImg" alt="Aperçu">
+            <div class="file-preview-pdf" id="filePreviewPdf">📄</div>
+            <div class="folder-icon-container" id="folderIcon">
+              <div class="folder-back"></div>
+              <div class="folder-front"></div>
+              <div class="badge-files">FILES</div>
+            </div>
+            <div class="text-details">
+              <div id="Title" class="file-title">Déposez votre ordonnance ici</div>
+              <div id="Subtitle" class="file-subtitle">JPG, PNG ou PDF · 5 MB max</div>
+            </div>
+          </div>
+        </div>
+        <div class="file-error-msg" id="file-error-msg">Fichier trop lourd (5 MB max). Veuillez en choisir un autre.</div>
 
-    <!-- Succès -->
-    <div class="order-success" id="order-success">
-      <div class="order-success-icon">✅</div>
-      <h3>Commande envoyée !</h3>
-      <p>La pharmacie a bien reçu votre commande.<br>Elle sera prête pour votre créneau.</p>
-      <div class="order-success-detail" id="order-success-detail"></div>
-      <button class="order-submit" onclick="closeOrderModal()">Fermer</button>
+        <div id="progressPanel" class="progress-panel">
+          <div class="progress-status-row">
+            <div class="status-left">
+              <div class="spinner" id="spinner"></div>
+              <span class="status-text" id="statusText">Préparation...</span>
+            </div>
+            <div class="percentage" id="percentage">0%</div>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <button class="btn-send" id="btn-send" onclick="sendWithAttachment()" disabled>Envoyer à la pharmacie</button>
+      </div>
+
+      <div class="success-overlay" id="success-overlay">
+        <img class="success-icon" src="confirm_icon.png" alt="Succès">
+        <div class="success-title">Ordonnance envoyée !</div>
+        <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
+        <div class="success-actions">
+          <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
+          <a id="btn-google-review-link" href="#" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
+        </div>
+      </div>
+      <img src="down-upload.png" alt="" style="width:100%; display:block; margin-top:10px;">
     </div>
   </div>
-</div>
 
-<script>
-// ── CONFIG ──
-const urlParams = new URLSearchParams(window.location.search);
-const SLUG = urlParams.get('slug') || window.location.pathname.replace(/\//g,'').trim() || '';
-const EMAILJS_SERVICE = 'service_ehw7pcv';
+  <!-- ══ SCRIPTS FORMULAIRE ORDONNANCE ══ -->
+  <script>
+  const fileInput      = document.getElementById('fileInput');
+  const Title          = document.getElementById('Title');
+  const Subtitle       = document.getElementById('Subtitle');
+  const progressPanel  = document.getElementById('progressPanel');
+  const progressBarFill= document.getElementById('progressBarFill');
+  const percentageText = document.getElementById('percentage');
+  const statusText     = document.getElementById('statusText');
+  const spinner        = document.getElementById('spinner');
+  const btnSend        = document.getElementById('btn-send');
+  const phoneInput     = document.getElementById('sender-phone');
+  const nameInput      = document.getElementById('sender-name');
+  const removeFileBtn  = document.getElementById('removeFileBtn');
+  const dropZone       = document.getElementById('drop-zone');
+  const filePreviewImg = document.getElementById('filePreviewImg');
+  const filePreviewPdf = document.getElementById('filePreviewPdf');
+  const folderIcon     = document.getElementById('folderIcon');
+  const fileErrorMsg   = document.getElementById('file-error-msg');
+  const successOverlay = document.getElementById('success-overlay');
+  const formContent    = document.getElementById('form-content');
 
-// Back link
-const backBtn = document.getElementById('btn-back-pharma');
-if (backBtn && SLUG) backBtn.href = '/' + SLUG;
+  const MAX_SIZE_MB = 5;
+  let selectedFile  = null;
 
-// ── ÉTAT PANIER ──
-let cart = {}; // { productId: { nom, prix, qty, stock, imgSrc } }
-let pharmacyData = {};
-let promosData = [];
-
-// ── LOAD ──
-async function init() {
-  await loadPharmacy();
-  await renderPromos();
-}
-
-async function loadPharmacy() {
-  try {
-    const { data } = await supabaseClient.from('pharmacies').select('nom,email_contact,emailjs_template_id,emailjs_service_id').eq('slug', SLUG).single();
-    if (data) {
-      pharmacyData = data;
-      document.getElementById('order-pharmacy-name').textContent = data.nom || 'Votre commande click & collect';
+  function playSound(type) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'success') {
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } else if (type === 'error') {
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.setValueAtTime(200, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(); osc.stop(ctx.currentTime + 0.4);
     }
-  } catch(e) {}
-}
-
-function calcDiscount(avant, apres) {
-  if (!avant || !apres || avant <= apres) return null;
-  return '-' + Math.round((1 - apres / avant) * 100) + '%';
-}
-
-async function renderPromos() {
-  const grid = document.getElementById('promo-grid');
-  try {
-    const { data, error } = await supabaseClient.from('promos').select('*').eq('pharmacie_slug', SLUG).order('position', { ascending: true });
-    if (error) throw error;
-    promosData = (data || []).filter(p => p.actif === true && p.nom && p.nom.trim().length > 0);
-  } catch(e) {
-    console.error('Erreur promos:', e);
   }
 
-  if (!promosData.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="emoji">🏷️</div><p>Aucune promotion disponible<br>pour le moment.<br><br>Revenez bientôt !</p></div>`;
-    return;
+  nameInput.addEventListener('blur', validateName);
+  nameInput.addEventListener('input', validateName);
+  function validateName() {
+    const val = nameInput.value.trim();
+    const err = document.getElementById('name-error');
+    if (val.length < 2) {
+      nameInput.classList.add('input-error'); nameInput.classList.remove('input-ok');
+      err.style.display = 'block';
+    } else {
+      nameInput.classList.remove('input-error'); nameInput.classList.add('input-ok');
+      err.style.display = 'none';
+    }
+    updateSendBtn();
   }
 
-  grid.innerHTML = promosData.map(p => {
-    const stock = parseInt(p.stock) || 0;
-    const isOut = stock === 0;
-    const isLow = stock > 0 && stock <= 5;
-    const stockClass = isOut ? 'stock-out' : isLow ? 'stock-low' : 'stock-ok';
-    const stockLabel = isOut ? 'Rupture de stock' : isLow ? `Peu de stock (${stock})` : 'En stock';
-
-    const nom       = p.nom || '';
-    const imgSrc    = p.image_url || '';
-    const badge     = p.badge || '';
-    const prixAvant = parseFloat(p.prix_avant) || 0;
-    const prixApres = parseFloat(p.prix_apres) || 0;
-    const discount  = calcDiscount(prixAvant, prixApres);
-
-    const badgeHtml = badge    ? `<div class="product-badge">${badge}</div>` : '';
-    const avantHtml = prixAvant ? `<span class="price-before">${prixAvant.toFixed(2)} €</span>` : '';
-    const apresHtml = prixApres ? `<span class="price-after">${prixApres.toFixed(2)} €</span>` : '';
-    const pctHtml   = discount  ? `<span class="discount-pct">${discount}</span>` : '';
-
-    const marque = p.marque || '';
-
-    return `
-      <div class="product-card" id="pcard-${p.id}">
-        <div class="product-img-wrap" onclick="openImgModal('${(imgSrc||'').replace(/'/g,\"\\\'\")}',' ${nom.replace(/'/g,\"\\\'\")},${prixAvant},${prixApres})">
-          ${imgSrc ? `<img src="${imgSrc}" alt="${nom}" onerror="this.parentElement.style.background='#f5f5f5'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;color:#ccc">🧴</div>'}
-          ${badgeHtml}
-        </div>
-        <div class="product-info">
-          <div class="product-name">${nom}</div>
-          ${marque ? `<div class="product-brand">${marque}</div>` : ''}
-          <div class="product-price-row">
-            ${apresHtml}
-            ${avantHtml}
-          </div>
-        </div>
-        <div class="product-footer">
-          <span class="stock-dot ${stockClass}">${stockLabel}</span>
-          ${isOut
-            ? `<button class="btn-add-cart" disabled title="Rupture de stock">✕</button>`
-            : `<div style="display:flex;align-items:center">
-                <div class="counter-inline" id="counter-${p.id}">
-                  <button class="counter-btn" onclick="changeQty('${p.id}',-1)">−</button>
-                  <div class="counter-qty" id="qty-${p.id}">1</div>
-                  <button class="counter-btn" onclick="changeQty('${p.id}',1)">＋</button>
-                </div>
-                <button class="btn-add-cart" id="addbtn-${p.id}" onclick="addToCart('${p.id}')" title="Ajouter au panier">🛒</button>
-              </div>`
-          }
-        </div>
-      </div>`;
-  }).join('');
-}
-
-}
-
-// ── PANIER ──
-function addToCart(id) {
-  const p = promosData.find(x => String(x.id) === String(id));
-  if (!p || (parseInt(p.stock)||0) === 0) return;
-
-  if (!cart[id]) {
-    cart[id] = { nom:p.nom, prix:parseFloat(p.prix_apres)||0, qty:1, stock:parseInt(p.stock)||0, imgSrc:p.image_url||'' };
-  } else {
-    if (cart[id].qty >= cart[id].stock) return;
-    cart[id].qty++;
-  }
-
-  const addbtn = document.getElementById('addbtn-'+id);
-  if(addbtn) addbtn.style.display = 'none';
-  const counter = document.getElementById('counter-'+id);
-  if(counter) counter.classList.add('show');
-  document.getElementById('qty-'+id).textContent = cart[id].qty;
-  updateCartUI();
-}
-
-function changeQty(id, delta) {
-  if (!cart[id]) return;
-  cart[id].qty += delta;
-  if (cart[id].qty <= 0) {
-    delete cart[id];
-    const _counter = document.getElementById('counter-'+id);
-    const _addbtn  = document.getElementById('addbtn-'+id);
-    if(_counter) _counter.classList.remove('show');
-    if(_addbtn)  _addbtn.style.display = 'flex';
-  } else {
-    if (cart[id].qty > cart[id].stock) cart[id].qty = cart[id].stock;
-    document.getElementById('qty-'+id).textContent = cart[id].qty;
-  }
-  updateCartUI();
-}
-
-function updateCartUI() {
-  const items = Object.values(cart);
-  const totalQty = items.reduce((s,i) => s + i.qty, 0);
-  const totalPrice = items.reduce((s,i) => s + i.qty * i.prix, 0);
-
-  document.getElementById('cart-count').textContent = totalQty;
-  document.getElementById('cart-total').textContent = totalPrice.toFixed(2).replace('.',',') + ' €';
-  document.getElementById('modal-cart-total').textContent = totalPrice.toFixed(2).replace('.',',') + ' €';
-
-  const fab = document.getElementById('cart-fab');
-  fab.classList.toggle('visible', totalQty > 0);
-}
-
-// ── MODAL IMAGE ──
-function openImgModal(src, nom, avant, apres) {
-  document.getElementById('img-modal-src').src = src;
-  document.getElementById('img-modal-name').textContent = nom;
-  document.getElementById('img-modal-before').textContent = avant ? avant.toFixed(2) + ' €' : '';
-  document.getElementById('img-modal-after').textContent  = apres ? apres.toFixed(2) + ' €' : '';
-  document.getElementById('img-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeImgModal() {
-  document.getElementById('img-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// ── MODAL COMMANDE ──
-function openOrderModal() {
-  renderCartItems();
-  document.getElementById('order-content').style.display = 'block';
-  document.getElementById('order-success').style.display = 'none';
-  document.getElementById('order-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeOrderModal() {
-  document.getElementById('order-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function renderCartItems() {
-  const list = document.getElementById('cart-items-list');
-  list.innerHTML = Object.entries(cart).map(([id, item]) => `
-    <div class="cart-item">
-      <img class="cart-item-img" src="${item.imgSrc}" alt="${item.nom}" onerror="this.style.display='none'">
-      <div class="cart-item-info">
-        <div class="cart-item-name">${item.nom}</div>
-        <div class="cart-item-price">${(item.prix * item.qty).toFixed(2)} €</div>
-        <div class="cart-item-qty">Qté : ${item.qty}</div>
-      </div>
-      <button class="cart-item-remove" onclick="removeFromCart('${id}')">✕</button>
-    </div>`).join('');
-
-  const total = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
-  document.getElementById('modal-cart-total').textContent = total.toFixed(2).replace('.',',') + ' €';
-}
-
-function removeFromCart(id) {
-  const item = cart[id];
-  if (!item) return;
-  // Reset UI
-  const counter = document.getElementById('counter-'+id);
-  const addbtn  = document.getElementById('addbtn-'+id);
-  if (counter) counter.classList.remove('show');
-  if (addbtn)  addbtn.style.display = 'flex';
-  delete cart[id];
-  updateCartUI();
-  renderCartItems();
-  if (Object.keys(cart).length === 0) closeOrderModal();
-}
-
-// ── SOUMETTRE COMMANDE ──
-async function submitOrder() {
-  const prenom = document.getElementById('order-prenom').value.trim();
-  const nom    = document.getElementById('order-nom').value.trim();
-  const tel    = document.getElementById('order-tel').value.trim();
-  const debut  = document.getElementById('order-heure-debut').value;
-  const fin    = document.getElementById('order-heure-fin').value;
-
-  if (!prenom || !nom || !tel) { alert('Veuillez renseigner vos coordonnées.'); return; }
-  if (!debut || !fin)          { alert('Veuillez choisir un créneau de retrait.'); return; }
-
-  const btn = document.getElementById('btn-order-submit');
-  btn.disabled = true; btn.textContent = 'Envoi en cours…';
-
-  const articles = Object.values(cart).map(i => `${i.nom} x${i.qty} (${(i.prix*i.qty).toFixed(2)}€)`).join('\n');
-  const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
-  const now      = new Date().toLocaleString('fr-FR');
-
-  try {
-    // 1. Sauvegarder dans Supabase
-    await supabaseClient.from('commandes').insert({
-      pharmacie_slug: SLUG,
-      client_nom: nom, client_prenom: prenom, client_tel: tel,
-      heure_debut: debut, heure_fin: fin,
-      articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
-    });
-
-    // 2. Décrémenter stocks
-    for (const [id, item] of Object.entries(cart)) {
-      const p = promosData.find(x => String(x.id) === String(id));
-      if (p) {
-        const newStock = Math.max(0, (parseInt(p.stock)||0) - item.qty);
-        await supabaseClient.from('promos').update({ stock: newStock }).eq('id', id);
+  let phoneValidateTimer = null;
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function(e) {
+      let raw = e.target.value;
+      phoneInput.classList.remove('input-error');
+      document.getElementById('phone-error').style.display = 'none';
+      if (raw.startsWith('+33')) {
+        let digits = raw.replace(/^\+33/, '').replace(/\D/g, '').substring(0, 9);
+        let formatted = '+33';
+        if (digits.length > 0) formatted += ' ' + digits.substring(0, 1);
+        if (digits.length > 1) formatted += ' ' + digits.substring(1, 3);
+        if (digits.length > 3) formatted += ' ' + digits.substring(3, 5);
+        if (digits.length > 5) formatted += ' ' + digits.substring(5, 7);
+        if (digits.length > 7) formatted += ' ' + digits.substring(7, 9);
+        e.target.value = formatted;
+      } else {
+        let digits = raw.replace(/\D/g, '');
+        if (digits.startsWith('0') && digits.length > 10) digits = digits.substring(0, 10);
+        e.target.value = digits.replace(/(\d{2})(?=\d)/g, '$1 ');
       }
-    }
-
-    // 3. Email pharmacien
-    const templateId = pharmacyData.emailjs_template_id;
-    const serviceId  = pharmacyData.emailjs_service_id || EMAILJS_SERVICE;
-    if (templateId && pharmacyData.email_contact) {
-      await emailjs.send(serviceId, templateId, {
-        to_email:      pharmacyData.email_contact,
-        pharmacy_name: pharmacyData.nom || SLUG,
-        client_nom:    `${prenom} ${nom}`,
-        client_tel:    tel,
-        heure_retrait: `entre ${debut} et ${fin}`,
-        articles:      articles,
-        total:         total.toFixed(2) + ' €',
-        commande_at:   now,
-      });
-    }
-
-    // 4. Succès
-    document.getElementById('order-success-detail').innerHTML =
-      `📋 <strong>${prenom} ${nom}</strong><br>` +
-      `📞 ${tel}<br>⏰ Retrait : entre <strong>${debut}</strong> et <strong>${fin}</strong><br><br>` +
-      `${articles.split('\n').join('<br>')}`;
-
-    document.getElementById('order-content').style.display = 'none';
-    document.getElementById('order-success').style.display = 'block';
-
-    // Reset panier
-    cart = {};
-    updateCartUI();
-    // Reload promos pour stocks mis à jour
-    await renderPromos();
-
-  } catch(e) {
-    alert('Erreur lors de l\'envoi. Réessayez.');
-    console.error(e);
+      clearTimeout(phoneValidateTimer);
+      phoneValidateTimer = setTimeout(validatePhone, 3000);
+    });
+    phoneInput.addEventListener('blur', validatePhone);
+  }
+  function validatePhone() {
+    const val = phoneInput.value.trim().replace(/\s+/g, '');
+    const err = document.getElementById('phone-error');
+    if (val.length === 0) { phoneInput.classList.remove('input-error', 'input-ok'); err.style.display = 'none'; return; }
+    let ok = false;
+    if (val.startsWith('0')) ok = val.length === 10 && /^\d+$/.test(val);
+    else if (val.startsWith('+33')) ok = val.replace(/^\+33/, '').replace(/\D/g,'').length === 9;
+    else ok = /^\d+$/.test(val) && val.length >= 7;
+    phoneInput.classList.toggle('input-error', !ok);
+    phoneInput.classList.toggle('input-ok', ok);
+    err.style.display = ok ? 'none' : 'block';
   }
 
-  btn.disabled = false; btn.textContent = '✓ Confirmer ma commande';
-}
+  function updateSendBtn() {
+    btnSend.disabled = !(selectedFile && nameInput.value.trim().length >= 2);
+  }
 
-init();
-</script>
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
+
+  function handleFile(file) {
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > MAX_SIZE_MB) { playSound('error'); fileErrorMsg.style.display = 'block'; return; }
+    fileErrorMsg.style.display = 'none';
+    selectedFile = file;
+    Title.innerText = file.name;
+    Subtitle.innerText = sizeMB.toFixed(2) + ' MB';
+    removeFileBtn.style.display = 'block';
+    folderIcon.style.display = 'none';
+    if (file.type === 'application/pdf') {
+      filePreviewImg.style.display = 'none';
+      filePreviewPdf.style.display = 'flex';
+    } else {
+      filePreviewPdf.style.display = 'none';
+      filePreviewImg.style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = (ev) => { filePreviewImg.src = ev.target.result; };
+      reader.readAsDataURL(file);
+    }
+    progressPanel.style.display = 'flex';
+    spinner.style.display = 'block';
+    updateSendBtn();
+    startSatisfyingLoading();
+  }
+
+  removeFileBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    selectedFile = null; fileInput.value = '';
+    Title.innerText = 'Déposez votre ordonnance ici';
+    Subtitle.innerText = 'JPG, PNG ou PDF · 5 MB max';
+    removeFileBtn.style.display = 'none';
+    filePreviewImg.style.display = 'none';
+    filePreviewPdf.style.display = 'none';
+    folderIcon.style.display = 'block';
+    progressPanel.style.display = 'none';
+    progressBarFill.style.width = '0%';
+    spinner.style.display = 'block';
+    fileErrorMsg.style.display = 'none';
+    updateSendBtn();
+  });
+
+  function startSatisfyingLoading() {
+    const bar = progressBarFill;
+    bar.style.transition = "none"; bar.style.width = "0%";
+    percentageText.innerText = "0%"; statusText.innerText = "Préparation...";
+    function animatePercent(from, to, duration, onDone) {
+      const start = performance.now();
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        percentageText.innerText = Math.round(from + (to - from) * progress) + "%";
+        if (progress < 1) requestAnimationFrame(step);
+        else if (onDone) onDone();
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(() => {
+      bar.style.transition = "width 0.5s ease-out"; bar.style.width = "50%";
+      statusText.innerText = "Téléchargement..."; animatePercent(0, 50, 500);
+    });
+    setTimeout(() => {
+      bar.style.transition = "width 2.5s ease-in-out"; bar.style.width = "75%";
+      animatePercent(50, 75, 2500);
+    }, 500);
+    setTimeout(() => {
+      bar.style.transition = "width 0.4s ease-in"; bar.style.width = "100%";
+      statusText.innerText = "Fichier prêt !";
+      animatePercent(75, 100, 400, () => { if (spinner) spinner.style.display = 'none'; });
+    }, 3000);
+  }
+
+  function sendWithAttachment() {
+    const senderName  = nameInput ? nameInput.value.trim() : "";
+    const senderPhone = phoneInput ? phoneInput.value.trim().replace(/\s+/g, '') : "";
+    if (!senderName) {
+      nameInput.classList.add('input-error');
+      document.getElementById('name-error').style.display = 'block';
+      nameInput.focus(); return;
+    }
+    if (!selectedFile) {
+      fileErrorMsg.innerText = "Veuillez sélectionner un fichier.";
+      fileErrorMsg.style.display = 'block'; return;
+    }
+    btnSend.textContent = "Envoi en cours...";
+    btnSend.style.opacity = "0.6";
+    btnSend.disabled = true;
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onload = function() {
+      const templateParams = {
+        name_sender:  senderName,
+        phone_sender: senderPhone || "Non renseigné",
+        file_name:    selectedFile.name,
+        my_file:      reader.result,
+        sent_at:      new Date().toLocaleString('fr-FR')
+      };
+      emailjs.send(window.PHARMACY_EMAILJS_SERVICE||'service_ehw7pcv', window.PHARMACY_EMAILJS_TEMPLATE||'', {...templateParams, to_email: window.PHARMACY_EMAIL||''})
+        .then(function() {
+          trackSend();
+          playSound('success');
+          formContent.style.display = 'none';
+          successOverlay.style.display = 'flex';
+        }, function(error) {
+          console.error("Échec EmailJS :", error);
+          playSound('error');
+          alert("Erreur lors de l'envoi. Veuillez réessayer.");
+          btnSend.textContent = "Envoyer à la pharmacie";
+          btnSend.style.opacity = "1";
+          btnSend.disabled = false;
+        });
+    };
+    reader.onerror = function() {
+      alert("Impossible de lire le fichier.");
+      btnSend.textContent = "Envoyer à la pharmacie";
+      btnSend.style.opacity = "1";
+      btnSend.disabled = false;
+    };
+  }
+
+  document.getElementById('btn-back-home').addEventListener('click', function() {
+    successOverlay.style.display = 'none';
+    formContent.style.display = 'block';
+    selectedFile = null; fileInput.value = '';
+    nameInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    Title.innerText = 'Déposez votre ordonnance ici';
+    Subtitle.innerText = 'JPG, PNG ou PDF · 5 MB max';
+    removeFileBtn.style.display = 'none';
+    filePreviewImg.style.display = 'none';
+    filePreviewPdf.style.display = 'none';
+    folderIcon.style.display = 'block';
+    progressPanel.style.display = 'none';
+    progressBarFill.style.width = '0%';
+    spinner.style.display = 'block';
+    nameInput.classList.remove('input-ok', 'input-error');
+    if (phoneInput) phoneInput.classList.remove('input-ok', 'input-error');
+    updateSendBtn();
+  });
+  </script>
+
+  <!-- ══ MODALE HORAIRES ══ -->
+  <div class="modal-overlay" id="modal-horaires" onclick="if(event.target===this)closeHoraires()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nos horaires</div>
+      <div class="horaire-liste" id="horaire-liste"></div>
+      <button class="modal-close" onclick="closeHoraires()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- ══ MODALE INFOS (AVEC LES 3 NOUVEAUX ÉLÉMENTS) ══ -->
+  <div class="modal-overlay" id="modal-infos" onclick="if(event.target===this)closeInfos()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Informations utiles</div>
+
+      <!-- 1. URGENCES -->
+      <div class="infos-section-title">🚨 En cas d'urgence</div>
+      <div class="infos-intro">Voici les numéros principaux à contacter pour vos urgences rapides.</div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">15</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Samu</div>
+          <div class="urgence-desc">En cas d'urgences vitales</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">18</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Pompiers</div>
+          <div class="urgence-desc">Situation de péril ou accident</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">114</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Sourds / Malentendants</div>
+          <div class="urgence-desc">Numéro unique, national et gratuit, accessible par visiophonie, tchat, SMS ou fax, 24h/24, 7j/7.</div>
+        </div>
+      </div>
+
+      <div class="urgence-ligne">
+        <div class="urgence-numero">17</div>
+        <div class="urgence-texte">
+          <div class="urgence-nom">Police secours</div>
+          <div class="urgence-desc">Signaler une infraction</div>
+        </div>
+      </div>
+
+      <div class="infos-garde-box">
+        Pour connaître la pharmacie de garde près de chez vous, rendez-vous sur<br>
+        <a href="https://www.3237.fr" target="_blank">www.3237.fr</a>
+      </div>
+
+      <!-- 2. NOUVEAU : SERVICES DE SANTÉ EN OFFICINE -->
+      <div class="infos-section-title">💉 Services de santé en officine</div>
+      <div class="info-box-styled">
+        <h4>Vaccination & Rappels</h4>
+        <p>Nous réalisons vos vaccins (Grippe, Covid-19, rappels obligatoires adultes : Tétanos, Diphtérie, Polio...) directement à la pharmacie, avec ou sans rendez-vous.</p>
+        <h4>Dépistages rapides (TROD)</h4>
+        <p>Angine, Grippe, Covid-19 ou infection urinaire (Cystite) : nous réalisons des tests rapides en quelques minutes au comptoir, permettant la délivrance d'un traitement adapté sous certaines conditions.</p>
+      </div>
+
+      <!-- 3. NOUVEAU : RECYCLAGE ÉCO-RESPONSABLE -->
+      <div class="infos-section-title">♻️ Recyclage : Médicaments & Aiguilles</div>
+      <div class="info-box-styled">
+        <h4>Médicaments non utilisés (Cyclamed)</h4>
+        <p>Ne jetez pas vos médicaments à la poubelle ou dans l'évier ! Rapportez-nous vos médicaments périmés ou non utilisés (en séparant les boîtes en carton et les notices pour le tri sélectif).</p>
+        <h4>Aiguilles et seringues (DASTRI)</h4>
+        <p>Vous êtes en auto-traitement ? Des boîtes jaunes sécurisées sont à votre disposition gratuitement à l'officine pour éliminer vos déchets piquants ou coupants en toute sécurité.</p>
+      </div>
+
+      <!-- 4. NOUVEAU : ORDONNANCES & CARTE VITALE -->
+      <div class="infos-section-title">💳 Ordonnances & Carte Vitale</div>
+      <div class="info-box-styled">
+        <h4>Validité de votre ordonnance</h4>
+        <p>Vous avez <strong>3 mois</strong> maximum après la date de prescription du médecin pour venir chercher votre traitement pour la première fois à la pharmacie.</p>
+        <h4>Mise à jour de la Carte Vitale</h4>
+        <p>Pensez à mettre à jour votre carte au moins <strong>1 fois par an</strong> et après chaque changement de situation (déménagement, maternité, affection de longue durée). Une borne libre-service est à votre disposition.</p>
+      </div>
+
+      <!-- 5. DOCTEUR EN PHARMACIE -->
+      <div class="infos-section-title">👨‍⚕️ Votre docteur en pharmacie</div>
+      <div class="docteur-box">
+        <div class="docteur-avatar" id="docteur-initiales">DR</div>
+        <div class="docteur-info">
+          <div class="docteur-nom" id="docteur-nom">Dr. Daracoena NHEAN</div>
+          <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
+        </div>
+      </div>
+
+      <button class="modal-close" onclick="closeInfos()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- ══ SCRIPTS HORAIRES / INFOS / SUPABASE DYNAMIQUE ══ -->
+  <script>
+  const JOURS_FR = [
+    {id:'lun',label:'Lundi'},{id:'mar',label:'Mardi'},{id:'mer',label:'Mercredi'},
+    {id:'jeu',label:'Jeudi'},{id:'ven',label:'Vendredi'},
+    {id:'sam',label:'Samedi'},{id:'dim',label:'Dimanche'},
+  ];
+  const JOUR_INDEX = ['dim','lun','mar','mer','jeu','ven','sam'];
+
+  // ── Slug dynamique depuis l'URL ──
+  const PAGE_SLUG = window.location.pathname.replace(/\//g, '').trim() || 'pharmacie-nhean';
+
+  document.getElementById('link-clock').addEventListener('click', async function(e) {
+    e.preventDefault();
+    await openHoraires();
+  });
+
+  async function openHoraires() {
+    const liste   = document.getElementById('horaire-liste');
+    const todayId = JOUR_INDEX[new Date().getDay()];
+
+    liste.innerHTML = '<div style="color:#555;font-size:14px;text-align:center;padding:16px 0">Chargement des horaires...</div>';
+    document.getElementById('modal-horaires').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    let semaine = {};
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('pharmacies')
+        .select('horaires')
+        .eq('slug', PAGE_SLUG)
+        .single()
+      if (data && data.horaires) {
+        semaine = typeof data.horaires === 'string' ? JSON.parse(data.horaires) : data.horaires;
+      }
+    } catch(e) {
+      console.error("Erreur de récupération des horaires :", e);
+    }
+
+    if (!Object.keys(semaine).length) {
+      liste.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0">Horaires non renseignés.<br>Contactez-nous par téléphone.</div>';
+    } else {
+      liste.innerHTML = JOURS_FR.map(j => {
+        const d = semaine[j.id] || {open:'09:00',close:'19:00',closed:false};
+        const isToday = j.id === todayId;
+        const badge = isToday ? ' <span style="font-size:10px;color:#0012ff;background:#d0d4ff;padding:1px 6px;border-radius:10px;font-weight:700">Auj.</span>' : '';
+        const heure = d.closed
+          ? '<span class="heure ferme">Fermé</span>'
+          : `<span class="heure">${d.open} – ${d.close}</span>`;
+        return `<div class="horaire-ligne${isToday?' today':''}"><span class="jour">${j.label}${badge}</span>${heure}</div>`;
+      }).join('');
+    }
+  }
+
+  function closeHoraires() {
+    document.getElementById('modal-horaires').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('link-infos').addEventListener('click', function(e) {
+    e.preventDefault();
+    openInfos();
+  });
+
+  function openInfos() {
+    const nomEl = document.getElementById('docteur-nom');
+    const avatarEl = document.getElementById('docteur-initiales');
+    const nomComplet = nomEl.textContent.replace(/^Dr\.?\s*/i, '').trim();
+    const parts = nomComplet.split(' ').filter(Boolean);
+    const initiales = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : nomComplet.substring(0, 2).toUpperCase();
+    avatarEl.textContent = initiales;
+
+    document.getElementById('modal-infos').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeInfos() {
+    document.getElementById('modal-infos').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // SYNCHRONISATION DU PROFIL & DES MID ICONS AVEC SUPABASE
+  // ═════════════════════════════════════════════════════════════
+  async function initPharmacyProfile() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('pharmacies')
+        .select('*')
+        .eq('slug', PAGE_SLUG)
+        .single();
+
+      if (error || !data) {
+        document.querySelector('.profile-section')?.classList.add('loaded');
+        return;
+      }
+
+      // 1. Textes et Logo du Profil
+      if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
+      if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
+      const _logo = data.logo_url || data.logo_base64;
+      if (_logo) document.getElementById('profile-avatar-img').src = _logo;
+      if (data.banniere_base64) document.getElementById('banniere-img').src = data.banniere_base64;
+      // Plan — affichage conditionnel de la carte promo
+      const cartePromo = document.getElementById('card-promo');
+      if (cartePromo) {
+        if (data.plan === 'pro') {
+          cartePromo.style.display = 'block';
+          cartePromo.href = '/promos.html?slug=' + PAGE_SLUG;
+        } else {
+          cartePromo.style.display = 'none';
+        }
+      }
+      // EmailJS dynamique
+      window.PHARMACY_EMAILJS_SERVICE  = data.emailjs_service_id  || 'service_ehw7pcv';
+      window.PHARMACY_EMAILJS_TEMPLATE = data.emailjs_template_id || '';
+      window.PHARMACY_EMAIL            = data.email_contact        || '';
+
+      // Téléphone & Maps dynamiques
+      if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
+      // Maps : utilise adresse_maps si dispo, sinon génère depuis l'adresse
+      if (data.adresse_maps) {
+        document.getElementById('link-maps').href = data.adresse_maps;
+      } else if (data.adresse) {
+        document.getElementById('link-maps').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(data.adresse);
+      }
+
+      // Google Avis link dans overlay succès
+      const googleSoc = (data.reseaux||{}).google;
+      if (googleSoc?.url) {
+        const reviewBtn = document.getElementById('btn-google-review-link');
+        if (reviewBtn) reviewBtn.href = googleSoc.url.startsWith('http') ? googleSoc.url : 'https://www.google.com/search?q=' + encodeURIComponent(googleSoc.url + ' avis google') + '&tbm=lcl';
+      }
+
+      if (data.docteur) {
+        const docEl = document.getElementById('docteur-nom');
+        if (docEl) docEl.textContent = data.docteur;
+      }
+
+      document.querySelector('.profile-section')?.classList.add('loaded');
+
+      // 2. On lit la colonne "reseaux"
+      const soc = data.reseaux || data.reseaux_sociaux || {};
+      const container = document.getElementById('dynamic-social-links');
+      container.innerHTML = '';
+
+      // ── GOOGLE AVIS ── (cherche 'google' ou 'avis')
+      const googleObj = soc.google || soc.avis;
+      const googleActif = googleObj?.actif ?? googleObj?.active;
+      const googleUrlVal = googleObj?.url || googleObj?.val;
+      
+      if (googleObj && googleActif) {
+        let url = '#';
+        if (googleUrlVal && googleUrlVal.trim() !== '') {
+          url = googleUrlVal.startsWith('http') ? googleUrlVal : `https://www.google.com/search?q=${encodeURIComponent(googleUrlVal + ' avis google')}&tbm=lcl`;
+        }
+        container.innerHTML += `
+          <a href="${url}" target="_blank" class="social-card-item">
+            <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
+            <div class="social-card-txt">Notez nous sur <br>Google !</div>
+          </a>`;
+      }
+
+      // ── INSTAGRAM ── (cherche 'instagram' ou 'insta')
+      const instaObj = soc.instagram || soc.insta;
+      const instaActif = instaObj?.actif ?? instaObj?.active;
+      const instaUrlVal = instaObj?.url || instaObj?.val;
+
+      if (instaObj && instaActif) {
+        let instaUrl = '#';
+        if (instaUrlVal && instaUrlVal.trim() !== '') {
+          const clean = instaUrlVal.replace(/.*instagram\.com\//, '').replace(/\//g, '').replace('@', '');
+          instaUrl = instaUrlVal.startsWith('http') ? instaUrlVal : `https://instagram.com/${clean}`;
+        }
+        container.innerHTML += `
+          <a href="${instaUrl}" target="_blank" class="social-card-item">
+            <img src="instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
+            <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
+          </a>`;
+      }
+
+     // ── FACEBOOK ── (Affichage style Instagram avec image)
+      const fbObj = soc.facebook || soc.fb;
+      const fbActif = fbObj?.actif ?? fbObj?.active;
+      const fbUrlVal = fbObj?.url || fbObj?.val;
+
+      if (fbObj && fbActif && fbUrlVal) {
+        let fbUrl = fbUrlVal.startsWith('http') ? fbUrlVal : `https://facebook.com/${fbUrlVal}`;
+        container.innerHTML += `
+          <a href="${fbUrl}" target="_blank" class="social-card-item">
+            <img src="facebook-icon.png" alt="Facebook" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#1877f2;\\'>📘</div>'">
+            <div class="social-card-txt">Retrouvez nous<br>sur Facebook !</div>
+          </a>`;
+      }
+
+      // ── SITE WEB ── (Affichage style Instagram avec image)
+      const webObj = soc.website || soc.web;
+      const webActif = webObj?.actif ?? webObj?.active;
+      const webUrlVal = webObj?.url || webObj?.val;
+
+      if (webObj && webActif && webUrlVal) {
+        let webUrl = webUrlVal.startsWith('http') ? webUrlVal : `https://${webUrlVal}`;
+        container.innerHTML += `
+          <a href="${webUrl}" target="_blank" class="social-card-item">
+            <img src="website-icon.png" alt="Site Web" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0012ff;\\'>🌐</div>'">
+            <div class="social-card-txt">Visitez notre<br>Site Web !</div>
+          </a>`;
+      }
+
+    } catch (err) {
+      console.error("Erreur lors de la synchronisation Supabase du profil :", err);
+    }
+  }
+
+  // Chargement des données au démarrage de la page
+  document.addEventListener("DOMContentLoaded", initPharmacyProfile);
+  </script>
 </body>
 </html>
