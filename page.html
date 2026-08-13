@@ -80,6 +80,10 @@
       max-width: 480px;
       padding: 0 16px;
     }
+    
+    .profile-section { opacity: 0; transition: opacity .3s ease; }
+    .profile-section.loaded { opacity: 1; }
+    
     .profile-avatar {
       width: 96px;
       height: 96px;
@@ -457,8 +461,8 @@
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
     <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.src='/logo_pharmacie_general.jpg'">
-    <div class="profile-name" id="profile-name-display">Pharmacie</div>
-    <div class="profile-sub" id="profile-sub-display">Votre pharmacie de confiance à</div>
+    <div class="profile-name" id="profile-name-display"></div>
+    <div class="profile-sub" id="profile-sub-display"></div>
 
     <!-- 4 icônes de contact -->
     <div class="contact-icons">
@@ -1117,6 +1121,7 @@ if (data && data.horaires) {
     } catch (err) {
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
     }
+    document.querySelector('.profile-section').classList.add('loaded');
   }
 
   // Chargement des données au démarrage de la page
