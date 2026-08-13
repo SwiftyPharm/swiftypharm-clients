@@ -498,7 +498,9 @@ async function syncToSupabase(cfg){
       body:JSON.stringify(payload)
     });
     const promosPayload=cfg.promos.map((p,i)=>({
-      pharmacie_slug:SLUG,position:i+1,actif:p.active,nom:p.name,
+      pharmacie_slug:SLUG,position:i+1,
+      actif:p.active && !!(p.name && p.name.trim()),
+      nom:p.name,
       image_url:p.imgData||p.img||'',
       prix_avant:p.priceBefore?parseFloat(p.priceBefore):null,
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
