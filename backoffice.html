@@ -481,7 +481,6 @@ async function syncToSupabase(cfg){
     const payload={
       slug:SLUG,
       nom:cfg.pharmacy.name||'',
-      marque: p.brand || '',
       soustitre:cfg.pharmacy.sub||'',
       telephone:cfg.pharmacy.tel||'',
       email_contact:cfg.pharmacy.email_contact||'',
@@ -498,13 +497,16 @@ async function syncToSupabase(cfg){
       body:JSON.stringify(payload)
     });
     const promosPayload=cfg.promos.map((p,i)=>({
-      pharmacie_slug:SLUG,position:i+1,
+      pharmacie_slug:SLUG,
+      position:i+1,
       actif:p.active && !!(p.name && p.name.trim()),
       nom:p.name,
+      marque:p.brand||'',
       image_url:p.imgData||p.img||'',
       prix_avant:p.priceBefore?parseFloat(p.priceBefore):null,
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
-      badge:p.badge,stock:parseInt(p.stock)||0
+      badge:p.badge,
+      stock:parseInt(p.stock)||0
     }));
     await fetch(SUPABASE_REST+'promos?on_conflict=pharmacie_slug,position',{
       method:'POST',
