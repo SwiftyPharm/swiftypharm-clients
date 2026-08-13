@@ -440,7 +440,7 @@ const DEFAULTS = {
   pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', docteur:'',
     reseaux:{ instagram:{actif:true,url:''}, facebook:{actif:false,url:''}, google:{actif:true,url:''}, website:{actif:false,url:''} },
     horairesSemaine:{}, logoData:'', logo:''},
-  promos: Array.from({length:8},()=>({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
+  promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
   onesignal:{appid:'',apikey:''}, notifHistory:[], credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
 };
 
@@ -481,6 +481,7 @@ async function syncToSupabase(cfg){
     const payload={
       slug:SLUG,
       nom:cfg.pharmacy.name||'',
+      marque: p.brand || '',
       soustitre:cfg.pharmacy.sub||'',
       telephone:cfg.pharmacy.tel||'',
       email_contact:cfg.pharmacy.email_contact||'',
@@ -973,6 +974,7 @@ function buildPromoGrid(cfg){
           </div>
         </div>
         <div class="field"><label>Nom du produit</label><input type="text" id="promo-name-${i}" placeholder="Ex: Vitamine C 1000mg" value="${esc(p.name)}" oninput="autoSave()"></div>
+        <div class="field"><label>Marque <span style="font-weight:400;color:#94a3b8">(facultatif)</span></label><input type="text" id="promo-brand-${i}" placeholder="Ex: Vichy, Bioderma, Nuxe…" value="${esc(p.brand||'')}" oninput="autoSave()"></div>
         <div class="field-row">
           <div class="field"><label>Prix avant (€)</label><input type="number" id="promo-before-${i}" placeholder="12.99" value="${esc(p.priceBefore)}" step="0.01" oninput="autoSave()"></div>
           <div class="field"><label>Prix après (€)</label><input type="number" id="promo-after-${i}" placeholder="8.99" value="${esc(p.priceAfter)}" step="0.01" oninput="autoSave()"></div>
@@ -1032,6 +1034,7 @@ function collectPromos(){
     return{
       active:document.getElementById('promo-active-'+i)?.checked||false,
       name:document.getElementById('promo-name-'+i)?.value||'',
+      brand: document.getElementById('promo-brand-'+i)?.value || '',
       img:imgData?'':imgUrl,imgData,
       priceBefore:document.getElementById('promo-before-'+i)?.value||'',
       priceAfter:document.getElementById('promo-after-'+i)?.value||'',
