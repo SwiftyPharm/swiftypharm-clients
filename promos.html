@@ -1265,41 +1265,42 @@ async function submitOrder() {
   const prenom = document.getElementById('order-prenom').value.trim();
   const nom    = document.getElementById('order-nom').value.trim();
   const tel    = document.getElementById('order-tel').value.trim();
+  const email  = document.getElementById('order-email').value.trim();
   const debut  = selectedStart;
   const fin    = selectedEnd;
-
-  const email = document.getElementById('order-email').value.trim();
 
   if (!prenom || !nom || !tel) { alert('Veuillez renseigner vos coordonnées.'); return; }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     alert('Adresse email invalide.'); return;
   }
-  if (!debut || !fin)          { alert('Veuillez choisir un créneau de retrait.'); return; }
+  if (!debut || !fin) { alert('Veuillez choisir un créneau de retrait.'); return; }
 
   const btn = document.getElementById('btn-order-submit');
-  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
 
-  const articles = Object.values(cart)
-      .map(i => `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''} × ${i.qty} — ${(i.prix*i.qty).toFixed(2).replace('.', ',')} €`)
-      .join('\n');
-  const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
-  const now      = new Date().toLocaleString('fr-FR');
-  const numero  = genererNumeroCommande();
+  const total      = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
+  const now        = new Date().toLocaleString('fr-FR');
+  const numero     = genererNumeroCommande();
+  const smsConsent = document.getElementById('order-sms-consent')?.checked ?? false;
 
   try {
-    // 1. Sauvegarder dans Supabase
-    const smsConsent = document.getElementById('order-sms-consent')?.checked ?? false;
-
+    // ── 1. Enregistrer la commande ──
     const { data: cmdInsert, error: cmdErr } = await supabaseClient
       .from('commandes')
       .insert({
         pharmacie_slug: SLUG,
-        numero: numero,
-        client_nom: nom, client_prenom: prenom, client_tel: tel,
-        client_email: email || null,
-        heure_debut: debut, heure_fin: fin,
-        sms_consent: smsConsent,
-        articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
+        numero:         numero,
+        client_nom:     nom,
+        client_prenom:  prenom,
+        client_tel:     tel,
+        client_email:   email || null,
+        heure_debut:    debut,
+        heure_fin:      fin,
+        sms_consent:    smsConsent,
+        articles: Object.entries(cart).map(([id,i]) => ({
+          id, nom: i.nom, marque: i.marque || '', qty: i.qty, prix: i.prix
+        }))
       })
       .select('id')
       .single();
@@ -1307,19 +1308,32 @@ async function submitOrder() {
     if (cmdErr) throw cmdErr;
     const commandeId = cmdInsert?.id;
 
-    // 2. Décrémenter stocks
+    // ── 2. Décrémenter les stocks et mémoriser le restant ──
+    const stocksRestants = {};
     for (const [id, item] of Object.entries(cart)) {
       const p = promosData.find(x => String(x.id) === String(id));
       if (p) {
-        const newStock = Math.max(0, (parseInt(p.stock)||0) - item.qty);
+        const newStock = Math.max(0, (parseInt(p.stock) || 0) - item.qty);
         await supabaseClient.from('promos').update({ stock: newStock }).eq('id', id);
+        stocksRestants[id] = newStock;
       }
     }
 
-    // 3. Email pharmacien — non bloquant : la commande reste valide même si l'email échoue
-    // Template global par défaut, surchargeable par pharmacie si besoin
+    // ── 3. Récapitulatif détaillé pour le pharmacien ──
+    const articlesPharmacien = Object.entries(cart)
+      .map(([id, i]) => {
+        const reste  = stocksRestants[id] ?? '—';
+        const alerte = reste === 0 ? ' [RUPTURE]' : (reste <= 5 ? ' [stock bas]' : '');
+        return `• ${i.nom}${i.marque ? ' (' + i.marque + ')' : ''}\n`
+             + `  Quantité : ${i.qty} — ${(i.prix * i.qty).toFixed(2).replace('.', ',')} €\n`
+             + `  Stock restant : ${reste}${alerte}`;
+      })
+      .join('\n\n');
+
+    // ── 4. Email au pharmacien — non bloquant ──
     const templateId = pharmacyData.emailjs_template_commandes || EMAILJS_TEMPLATE;
     const serviceId  = pharmacyData.emailjs_service_id || EMAILJS_SERVICE;
+
     if (templateId && pharmacyData.email_contact) {
       try {
         await emailjs.send(serviceId, templateId, {
@@ -1329,18 +1343,18 @@ async function submitOrder() {
           client_nom:    `${prenom} ${nom}`,
           client_tel:    tel,
           heure_retrait: `entre ${debut} et ${fin}`,
-          articles:      articles,
+          articles:      articlesPharmacien,
           total:         total.toFixed(2).replace('.', ',') + ' €',
           commande_at:   now,
         });
       } catch(mailErr) {
-        console.warn('Email non envoyé :', mailErr);
+        console.warn('Email pharmacien non envoyé :', mailErr);
       }
     } else {
-      console.warn('Email de contact non renseigné pour', SLUG, '— aucun email envoyé.');
+      console.warn('Email de contact non renseigné pour', SLUG);
     }
 
-    // 4. Notification client — email et/ou SMS selon l'offre. Non bloquant.
+    // ── 5. Notification au client — email et/ou SMS selon l'offre ──
     if (commandeId) {
       fetch('/api/notify-client', {
         method: 'POST',
@@ -1348,21 +1362,19 @@ async function submitOrder() {
         body: JSON.stringify({ slug: SLUG, commandeId })
       })
       .then(r => r.json())
-      .then(res => console.info('Notifications :', res))
-      .catch(e => console.warn('Notification non envoyée :', e));
+      .then(res => console.info('Notifications client :', res))
+      .catch(e => console.warn('Notification client non envoyée :', e));
     }
 
-    // 5. Confirmation — son, vibration et carte
+    // ── 6. Confirmation à l'écran ──
     playConfirmSound();
     if (navigator.vibrate) navigator.vibrate([15, 60, 15, 60, 30]);
 
     const dateFr = new Date().toLocaleDateString('fr-FR', {
-      day:'numeric', month:'long', year:'numeric'
+      day: 'numeric', month: 'long', year: 'numeric'
     });
-    const nbArticles = Object.values(cart).reduce((s,i) => s + i.qty, 0);
-    const listeClient = Object.values(cart)
-      .map(i => `${i.qty} × ${i.nom}`)
-      .join(' · ');
+    const nbArticles  = Object.values(cart).reduce((s,i) => s + i.qty, 0);
+    const listeClient = Object.values(cart).map(i => `${i.qty} × ${i.nom}`).join(' · ');
 
     const cfNum = document.getElementById('cf-numero');
     if (cfNum) cfNum.textContent = numero;
@@ -1370,35 +1382,38 @@ async function submitOrder() {
     document.getElementById('cf-date').textContent    = dateFr;
     document.getElementById('cf-retrait').textContent = `${debut} – ${fin}`;
     document.getElementById('cf-total').textContent   = total.toFixed(2).replace('.', ',') + ' €';
-    document.getElementById('cf-articles').innerHTML  =
+
+    let mentionEnvoi = '';
+    if (email || smsConsent) {
+      const canaux = [];
+      if (email)      canaux.push(`par email à <strong>${email}</strong>`);
+      if (smsConsent) canaux.push(`par SMS au <strong>${tel}</strong>`);
+      mentionEnvoi = `<div style="margin-top:9px;padding-top:9px;border-top:1px solid #bae6fd;font-size:12px">`
+                   + `Votre récapitulatif part ${canaux.join(' et ')}.</div>`;
+    }
+
+    document.getElementById('cf-articles').innerHTML =
       `<strong>${nbArticles} article${nbArticles > 1 ? 's' : ''}</strong> — ${listeClient}`
-      + ((email || smsConsent)
-          ? `<div style="margin-top:9px;padding-top:9px;border-top:1px solid #bae6fd;font-size:12px">
-               Votre récapitulatif part
-               ${email ? `par email à <strong>${email}</strong>` : ''}
-               ${email && smsConsent ? ' et ' : ''}
-               ${smsConsent ? `par SMS au <strong>${tel}</strong>` : ''}.
-             </div>`
-          : '');
+      + mentionEnvoi;
 
     document.getElementById('order-content').style.display = 'none';
     document.getElementById('order-success').style.display = 'block';
 
-    // Reset panier et créneau
+    // ── 7. Réinitialisation ──
     cart = {};
     selectedStart = null;
     selectedEnd   = null;
     clearSavedCart();
     updateCartUI();
-    // Reload promos pour stocks mis à jour
     await renderPromos();
 
   } catch(e) {
-    alert('Erreur lors de l\'envoi. Réessayez.');
-    console.error(e);
+    console.error('Erreur commande :', e);
+    alert("Une erreur est survenue lors de l'envoi. Merci de réessayer.");
   }
 
-  btn.disabled = false; btn.textContent = '✓ Confirmer ma commande';
+  btn.disabled = false;
+  btn.textContent = 'Confirmer ma commande';
 }
 
 init();
