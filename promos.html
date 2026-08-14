@@ -1256,6 +1256,7 @@ async function submitOrder() {
       .join('\n');
   const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
   const now      = new Date().toLocaleString('fr-FR');
+  const numero  = genererNumeroCommande();
 
   try {
     // 1. Sauvegarder dans Supabase
