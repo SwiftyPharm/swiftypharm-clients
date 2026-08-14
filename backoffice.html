@@ -521,7 +521,7 @@ const DEFAULTS = {
   pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', docteur:'',
     reseaux:{ instagram:{actif:true,url:''}, facebook:{actif:false,url:''}, google:{actif:true,url:''}, website:{actif:false,url:''} },
     horairesSemaine:{}, logoData:'', logo:''},
-  promos: Array.from({length:8},()=>({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
+  promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
   onesignal:{appid:'',apikey:''}, notifHistory:[], credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
 };
 
@@ -533,7 +533,7 @@ function loadConfig(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
     const cfg=JSON.parse(raw);
-    while(cfg.promos.length<8) cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+    while(cfg.promos.length<8) cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
     if(currentPlan!=='max' && cfg.promos.length>8) cfg.promos=cfg.promos.slice(0,8);
     if(!cfg.credentials) cfg.credentials={id:DEFAULT_ID,pw:DEFAULT_PW};
     return cfg;
@@ -547,7 +547,10 @@ function flashSaved(){
 }
 
 let _syncTimer;
+let _appReady = false;   // empêche toute sync avant le chargement complet
+
 function autoSave(){
+  if(!_appReady) return;
   const cfg=collectAll();
   localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
   updateLivePreviews();
@@ -578,7 +581,11 @@ async function syncToSupabase(cfg){
       body:JSON.stringify(payload)
     });
     const promosPayload=cfg.promos.map((p,i)=>({
-      pharmacie_slug:SLUG,position:i+1,actif:p.active,nom:p.name,
+      pharmacie_slug:SLUG,
+      position:i+1,
+      actif:p.active && !!(p.name && p.name.trim()),
+      nom:p.name,
+      marque:p.brand||'',
       image_url:p.imgData||p.img||'',
       prix_avant:p.priceBefore?parseFloat(p.priceBefore):null,
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
@@ -622,14 +629,56 @@ async function loadFromSupabase(){
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
 
+        // ══ PROMOS — Supabase fait autorité ══
+        // On garde en secours les promos du localStorage : si Supabase ne répond
+        // pas, on ne veut surtout pas écraser les articles déjà saisis.
+        const promosLocales = (loadConfig().promos || []);
+        let promosChargees = false;
+
+        try {
+          const resP = await fetch(
+            SUPABASE_REST + 'promos?pharmacie_slug=eq.' + SLUG + '&select=*&order=position.asc',
+            { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY } }
+          );
+          if (resP.ok) {
+            const rowsP = await resP.json();
+            promosChargees = true;
+            cfg.promos = (rowsP || []).map(r => ({
+              active:      !!r.actif,
+              name:        r.nom || '',
+              brand:       r.marque || '',
+              img:         r.image_url || '',
+              imgData:     '',
+              priceBefore: r.prix_avant != null ? String(r.prix_avant) : '',
+              priceAfter:  r.prix_apres != null ? String(r.prix_apres) : '',
+              badge:       r.badge || '',
+              stock:       parseInt(r.stock) || 0,
+            }));
+          }
+        } catch(e) {
+          console.warn('Promos non chargées depuis Supabase :', e);
+        }
+
+        // Si le chargement a échoué, on restaure les promos locales
+        if (!promosChargees) cfg.promos = promosLocales;
+
+        // Toujours au moins 8 emplacements
+        while (cfg.promos.length < 8) {
+          cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+        }
+
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
         buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
         applyPlanRestrictions();
-        buildPromoGrid(getConfig());
+        buildPromoGrid(cfg);
+        _appReady = true;   // les sauvegardes peuvent démarrer
       }
     }
-  }catch(e){console.error('Load error:',e);}
+  }catch(e){
+    console.error('Load error:',e);
+    _appReady = true;   // même en cas d'échec, on débloque la saisie
+  }
 }
 
 function applyPlanRestrictions(){
@@ -1063,6 +1112,7 @@ function buildPromoGrid(cfg){
           </div>
         </div>
         <div class="field"><label>Nom du produit</label><input type="text" id="promo-name-${i}" placeholder="Ex: Vitamine C 1000mg" value="${esc(p.name)}" oninput="autoSave()"></div>
+        <div class="field"><label>Marque <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8">(facultatif)</span></label><input type="text" id="promo-brand-${i}" placeholder="Ex: Vichy, Bioderma…" value="${esc(p.brand||'')}" oninput="autoSave()"></div>
         <div class="field-row">
           <div class="field"><label>Prix avant (€)</label><input type="number" id="promo-before-${i}" placeholder="12.99" value="${esc(p.priceBefore)}" step="0.01" oninput="autoSave()"></div>
           <div class="field"><label>Prix après (€)</label><input type="number" id="promo-after-${i}" placeholder="8.99" value="${esc(p.priceAfter)}" step="0.01" oninput="autoSave()"></div>
@@ -1114,7 +1164,10 @@ function onPromoToggle(i){
   autoSave();
 }
 function collectPromos(){
-  const total=document.querySelectorAll('[id^="promo-card-"]').length||8;
+  // Si la grille n'est pas construite, on conserve les promos existantes
+  const cards = document.querySelectorAll('[id^="promo-card-"]');
+  if (!cards.length) return getConfig().promos || [];
+  const total = cards.length;
   return Array.from({length:total},(_,i)=>{
     const thumbBox=document.getElementById('promo-thumb-'+i);
     const imgData=thumbBox?.dataset.imgdata&&thumbBox.dataset.imgdata.startsWith('data:')?thumbBox.dataset.imgdata:'';
@@ -1122,6 +1175,7 @@ function collectPromos(){
     return{
       active:document.getElementById('promo-active-'+i)?.checked||false,
       name:document.getElementById('promo-name-'+i)?.value||'',
+      brand:document.getElementById('promo-brand-'+i)?.value||'',
       img:imgData?'':imgUrl,imgData,
       priceBefore:document.getElementById('promo-before-'+i)?.value||'',
       priceAfter:document.getElementById('promo-after-'+i)?.value||'',
