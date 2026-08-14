@@ -32,6 +32,55 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .nav-tab{padding:0 16px;height:56px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;gap:6px}
 .nav-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 .nav-tab:hover{color:var(--text)}
+.tab-badge{display:none;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;padding:0 5px;border-radius:9px;align-items:center;justify-content:center;margin-left:2px}
+.tab-badge.show{display:inline-flex}
+
+/* ══ COMMANDES ══ */
+.cmd-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.cmd-filter{padding:7px 15px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s}
+.cmd-filter.active{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.cmd-filter .n{opacity:.6;font-weight:500;margin-left:3px}
+.cmd-refresh{margin-left:auto;padding:7px 15px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;background:var(--blue);color:#fff;transition:all .2s}
+.cmd-refresh:hover{background:var(--blue-d)}
+
+.cmd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.cmd-stats{grid-template-columns:1fr 1fr}}
+.cmd-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center}
+.cmd-stat-n{font-size:24px;font-weight:800;color:var(--blue)}
+.cmd-stat-l{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
+
+.cmd-list{display:flex;flex-direction:column;gap:12px}
+.cmd-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);transition:border-color .2s,opacity .2s}
+.cmd-card.done{opacity:.6;background:#fafafa}
+.cmd-card.urgent{border-color:#fca5a5;background:#fffbfb}
+
+.cmd-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cmd-num{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:14px;font-weight:800;color:var(--blue);letter-spacing:.4px}
+.cmd-client{font-size:15px;font-weight:700;color:var(--text);margin-top:2px}
+.cmd-tel{font-size:12px;color:var(--muted);margin-top:1px}
+.cmd-tel a{color:var(--blue);text-decoration:none;font-weight:600}
+.cmd-tel a:hover{text-decoration:underline}
+.cmd-when{margin-left:auto;text-align:right;flex-shrink:0}
+.cmd-slot{display:inline-flex;align-items:center;gap:5px;background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px}
+.cmd-slot.passed{background:#fee2e2;color:var(--red)}
+.cmd-ago{font-size:11px;color:var(--muted);margin-top:4px}
+
+.cmd-articles{background:var(--bg);border-radius:10px;padding:11px 14px;margin-bottom:12px}
+.cmd-art{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0;color:var(--text)}
+.cmd-art-qty{font-weight:700;color:var(--blue);flex-shrink:0}
+.cmd-total{display:flex;justify-content:space-between;border-top:1px solid var(--border);margin-top:7px;padding-top:7px;font-size:14px;font-weight:800}
+
+.cmd-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cmd-btn{padding:8px 15px;border-radius:9px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text);transition:all .2s;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.cmd-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cmd-btn-ready{background:var(--green);border-color:var(--green);color:#fff}
+.cmd-btn-ready:hover{background:#15803d;border-color:#15803d;color:#fff}
+.cmd-btn-undo{margin-left:auto;border:none;background:none;color:var(--muted);font-weight:600;font-size:12px}
+.cmd-btn-undo:hover{color:var(--blue)}
+.cmd-done-tag{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:var(--green);font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px}
+
+.cmd-empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.cmd-empty-emoji{font-size:40px;margin-bottom:12px;opacity:.5}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 #save-indicator{font-size:11px;font-weight:600;opacity:0;transition:opacity .3s;padding:3px 10px;border-radius:20px;background:var(--blue-l);color:var(--blue)}
 .btn-logout{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -200,6 +249,7 @@ textarea{resize:vertical;min-height:72px}
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" id="tab-btn-info">Mes infos</button>
+    <button class="nav-tab" id="tab-btn-commandes">Commandes<span class="tab-badge" id="cmd-badge">0</span></button>
     <button class="nav-tab" id="tab-btn-promo">Promotions</button>
     <button class="nav-tab" id="tab-btn-notif">Notifications</button>
   </div>
@@ -340,6 +390,37 @@ textarea{resize:vertical;min-height:72px}
   </div>
 </div>
 
+<!-- SECTION — Commandes -->
+<div class="section" id="section-commandes">
+  <div class="section-title">Commandes click &amp; collect</div>
+
+  <div id="cmd-plan-notice" style="display:none">
+    <div class="plan-lock">
+      <strong>🔒 Réservé aux membres Pro et Max</strong>
+      <p>Le click &amp; collect nécessite une offre Pro ou Max pour recevoir des commandes.</p>
+    </div>
+  </div>
+
+  <div id="cmd-content">
+    <div class="cmd-stats">
+      <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-attente" style="color:var(--amber)">—</div><div class="cmd-stat-l">À préparer</div></div>
+      <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-jour">—</div><div class="cmd-stat-l">Aujourd'hui</div></div>
+      <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-ca" style="color:var(--green)">—</div><div class="cmd-stat-l">CA du jour</div></div>
+    </div>
+
+    <div class="cmd-toolbar">
+      <button class="cmd-filter active" data-cmd-filter="attente">À préparer<span class="n" id="f-n-attente"></span></button>
+      <button class="cmd-filter" data-cmd-filter="jour">Aujourd'hui<span class="n" id="f-n-jour"></span></button>
+      <button class="cmd-filter" data-cmd-filter="all">Toutes<span class="n" id="f-n-all"></span></button>
+      <button class="cmd-refresh" id="btn-cmd-refresh">Actualiser</button>
+    </div>
+
+    <div class="cmd-list" id="cmd-list">
+      <div class="cmd-empty">Chargement…</div>
+    </div>
+  </div>
+</div>
+
 <!-- SECTION 2 — Promos -->
 <div class="section" id="section-promo">
   <div class="section-title">Promotions</div>
@@ -440,7 +521,7 @@ const DEFAULTS = {
   pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', docteur:'',
     reseaux:{ instagram:{actif:true,url:''}, facebook:{actif:false,url:''}, google:{actif:true,url:''}, website:{actif:false,url:''} },
     horairesSemaine:{}, logoData:'', logo:''},
-  promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
+  promos: Array.from({length:8},()=>({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
   onesignal:{appid:'',apikey:''}, notifHistory:[], credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
 };
 
@@ -497,16 +578,11 @@ async function syncToSupabase(cfg){
       body:JSON.stringify(payload)
     });
     const promosPayload=cfg.promos.map((p,i)=>({
-      pharmacie_slug:SLUG,
-      position:i+1,
-      actif:p.active && !!(p.name && p.name.trim()),
-      nom:p.name,
-      marque:p.brand||'',
+      pharmacie_slug:SLUG,position:i+1,actif:p.active,nom:p.name,
       image_url:p.imgData||p.img||'',
       prix_avant:p.priceBefore?parseFloat(p.priceBefore):null,
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
-      badge:p.badge,
-      stock:parseInt(p.stock)||0
+      badge:p.badge,stock:parseInt(p.stock)||0
     }));
     await fetch(SUPABASE_REST+'promos?on_conflict=pharmacie_slug,position',{
       method:'POST',
@@ -546,40 +622,11 @@ async function loadFromSupabase(){
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
 
-        // ── Charger les promos depuis Supabase ──
-        try {
-          const resPromos = await fetch(
-            SUPABASE_REST + 'promos?pharmacie_slug=eq.' + SLUG + '&select=*&order=position.asc',
-            { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY } }
-          );
-          if (resPromos.ok) {
-            const rowsP = await resPromos.json();
-            if (rowsP && rowsP.length) {
-              cfg.promos = rowsP.map(r => ({
-                active:      !!r.actif,
-                name:        r.nom || '',
-                brand:       r.marque || '',
-                img:         r.image_url || '',
-                imgData:     '',
-                priceBefore: r.prix_avant != null ? String(r.prix_avant) : '',
-                priceAfter:  r.prix_apres != null ? String(r.prix_apres) : '',
-                badge:       r.badge || '',
-                stock:       parseInt(r.stock) || 0,
-              }));
-            }
-          }
-        } catch(e) { console.warn('Chargement promos :', e); }
-
-        // Toujours au moins 8 emplacements
-        while (cfg.promos.length < 8) {
-          cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
-        }
-
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
         buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
         applyPlanRestrictions();
-        buildPromoGrid(cfg);
+        buildPromoGrid(getConfig());
       }
     }
   }catch(e){console.error('Load error:',e);}
@@ -605,6 +652,14 @@ function applyPlanRestrictions(){
   if(!isPaid){
     document.querySelectorAll('[id^="promo-active-"]').forEach(el=>{el.disabled=true;});
   }
+
+  // Commandes : Pro et Max
+  const cmdNotice  = document.getElementById('cmd-plan-notice');
+  const cmdContent = document.getElementById('cmd-content');
+  if(cmdNotice)  cmdNotice.style.display  = isPaid ? 'none' : 'block';
+  if(cmdContent) cmdContent.style.display = isPaid ? 'block' : 'none';
+  const cmdTab = document.getElementById('tab-btn-commandes');
+  if(cmdTab) cmdTab.style.display = isPaid ? 'flex' : 'none';
 
   // Bouton "ajouter un article" visible pour Max seulement
   const addWrap=document.getElementById('add-promo-wrap');
@@ -675,6 +730,7 @@ function showTab(name,btn){
   document.getElementById('section-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='notif') fetchSubscribers();
+  if(name==='commandes') fetchCommandes();
 }
 
 // ═══════════════════════════════
@@ -1007,7 +1063,6 @@ function buildPromoGrid(cfg){
           </div>
         </div>
         <div class="field"><label>Nom du produit</label><input type="text" id="promo-name-${i}" placeholder="Ex: Vitamine C 1000mg" value="${esc(p.name)}" oninput="autoSave()"></div>
-        <div class="field"><label>Marque <span style="font-weight:400;color:#94a3b8">(facultatif)</span></label><input type="text" id="promo-brand-${i}" placeholder="Ex: Vichy, Bioderma, Nuxe…" value="${esc(p.brand||'')}" oninput="autoSave()"></div>
         <div class="field-row">
           <div class="field"><label>Prix avant (€)</label><input type="number" id="promo-before-${i}" placeholder="12.99" value="${esc(p.priceBefore)}" step="0.01" oninput="autoSave()"></div>
           <div class="field"><label>Prix après (€)</label><input type="number" id="promo-after-${i}" placeholder="8.99" value="${esc(p.priceAfter)}" step="0.01" oninput="autoSave()"></div>
@@ -1059,9 +1114,7 @@ function onPromoToggle(i){
   autoSave();
 }
 function collectPromos(){
-  const cards = document.querySelectorAll('[id^="promo-card-"]');
-  if (!cards.length) return getConfig().promos || [];
-  const total = cards.length;
+  const total=document.querySelectorAll('[id^="promo-card-"]').length||8;
   return Array.from({length:total},(_,i)=>{
     const thumbBox=document.getElementById('promo-thumb-'+i);
     const imgData=thumbBox?.dataset.imgdata&&thumbBox.dataset.imgdata.startsWith('data:')?thumbBox.dataset.imgdata:'';
@@ -1069,7 +1122,6 @@ function collectPromos(){
     return{
       active:document.getElementById('promo-active-'+i)?.checked||false,
       name:document.getElementById('promo-name-'+i)?.value||'',
-      brand: document.getElementById('promo-brand-'+i)?.value || '',
       img:imgData?'':imgUrl,imgData,
       priceBefore:document.getElementById('promo-before-'+i)?.value||'',
       priceAfter:document.getElementById('promo-after-'+i)?.value||'',
@@ -1077,6 +1129,181 @@ function collectPromos(){
       stock:parseInt(document.getElementById('promo-stock-'+i)?.value)||0,
     };
   });
+}
+
+// ═══════════════════════════════
+//  COMMANDES CLICK & COLLECT
+// ═══════════════════════════════
+let allCommandes = [];
+let cmdFilter = 'attente';
+
+async function fetchCommandes(){
+  if(!SLUG) return;
+  try{
+    const res = await fetch(
+      SUPABASE_REST+'commandes?pharmacie_slug=eq.'+SLUG+'&select=*&order=created_at.desc&limit=200',
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY } }
+    );
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    allCommandes = await res.json() || [];
+    updateCmdStats();
+    renderCommandes();
+  }catch(e){
+    console.error('Commandes:', e);
+    document.getElementById('cmd-list').innerHTML =
+      '<div class="cmd-empty">Impossible de charger les commandes.</div>';
+  }
+}
+
+function cmdTotal(cmd){
+  const arts = Array.isArray(cmd.articles) ? cmd.articles : [];
+  return arts.reduce((s,a)=> s + (parseFloat(a.prix)||0) * (parseInt(a.qty)||0), 0);
+}
+
+function isToday(dateStr){
+  if(!dateStr) return false;
+  const d = new Date(dateStr);
+  const n = new Date();
+  return d.toDateString() === n.toDateString();
+}
+
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const min = Math.floor(diff/60000);
+  if(min < 1)  return "à l'instant";
+  if(min < 60) return 'il y a '+min+' min';
+  const h = Math.floor(min/60);
+  if(h < 24)   return 'il y a '+h+' h';
+  const j = Math.floor(h/24);
+  return 'il y a '+j+' j';
+}
+
+function slotPassed(cmd){
+  if(!cmd.heure_fin || !isToday(cmd.created_at)) return false;
+  const [h,m] = cmd.heure_fin.split(':').map(Number);
+  const now = new Date();
+  return (now.getHours()*60 + now.getMinutes()) > (h*60 + m);
+}
+
+function updateCmdStats(){
+  const enAttente = allCommandes.filter(c => c.statut !== 'prete');
+  const duJour    = allCommandes.filter(c => isToday(c.created_at));
+  const ca        = duJour.reduce((s,c) => s + cmdTotal(c), 0);
+
+  document.getElementById('cmd-n-attente').textContent = enAttente.length;
+  document.getElementById('cmd-n-jour').textContent    = duJour.length;
+  document.getElementById('cmd-n-ca').textContent      = ca.toFixed(2).replace('.',',')+' €';
+
+  document.getElementById('f-n-attente').textContent = ' ('+enAttente.length+')';
+  document.getElementById('f-n-jour').textContent    = ' ('+duJour.length+')';
+  document.getElementById('f-n-all').textContent     = ' ('+allCommandes.length+')';
+
+  // Badge dans l'onglet
+  const badge = document.getElementById('cmd-badge');
+  if(badge){
+    badge.textContent = enAttente.length;
+    badge.classList.toggle('show', enAttente.length > 0);
+  }
+}
+
+function filteredCommandes(){
+  if(cmdFilter === 'attente') return allCommandes.filter(c => c.statut !== 'prete');
+  if(cmdFilter === 'jour')    return allCommandes.filter(c => isToday(c.created_at));
+  return allCommandes;
+}
+
+function renderCommandes(){
+  const wrap = document.getElementById('cmd-list');
+  const list = filteredCommandes();
+
+  if(!list.length){
+    const msg = cmdFilter === 'attente'
+      ? 'Aucune commande en attente.<br><span style="font-size:12px">Tout est préparé.</span>'
+      : cmdFilter === 'jour'
+        ? 'Aucune commande aujourd\'hui.'
+        : 'Aucune commande pour le moment.';
+    wrap.innerHTML = '<div class="cmd-empty"><div class="cmd-empty-emoji">📦</div>'+msg+'</div>';
+    return;
+  }
+
+  wrap.innerHTML = list.map(cmd => {
+    const prete   = cmd.statut === 'prete';
+    const arts    = Array.isArray(cmd.articles) ? cmd.articles : [];
+    const total   = cmdTotal(cmd);
+    const passed  = slotPassed(cmd) && !prete;
+    const numero  = cmd.numero || '—';
+    const client  = ((cmd.client_prenom||'')+' '+(cmd.client_nom||'')).trim() || 'Client';
+    const tel     = cmd.client_tel || '';
+    const telClean= tel.replace(/[^0-9+]/g,'');
+
+    const lignes = arts.map(a =>
+      '<div class="cmd-art"><span>'+esc(a.nom||'')+'</span>'
+      + '<span class="cmd-art-qty">× '+(a.qty||1)+'</span></div>'
+    ).join('') || '<div class="cmd-art" style="color:var(--muted)">Aucun détail</div>';
+
+    return '<div class="cmd-card'+(prete?' done':'')+(passed?' urgent':'')+'">'
+      + '<div class="cmd-head">'
+      +   '<div>'
+      +     '<div class="cmd-num">'+esc(numero)+'</div>'
+      +     '<div class="cmd-client">'+esc(client)+'</div>'
+      +     (tel ? '<div class="cmd-tel"><a href="tel:'+telClean+'">'+esc(tel)+'</a></div>' : '')
+      +   '</div>'
+      +   '<div class="cmd-when">'
+      +     '<span class="cmd-slot'+(passed?' passed':'')+'">'
+      +       (passed ? '⚠ ' : '')+esc(cmd.heure_debut||'')+' – '+esc(cmd.heure_fin||'')
+      +     '</span>'
+      +     '<div class="cmd-ago">'+timeAgo(cmd.created_at)+'</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="cmd-articles">'+lignes
+      +   '<div class="cmd-total"><span>Total</span><span>'+total.toFixed(2).replace('.',',')+' €</span></div>'
+      + '</div>'
+      + '<div class="cmd-actions">'
+      +   (prete
+          ? '<span class="cmd-done-tag">✓ Préparée</span>'
+            + '<button class="cmd-btn cmd-btn-undo" onclick="setCmdStatut(\''+cmd.id+'\',null)">Annuler</button>'
+          : '<button class="cmd-btn cmd-btn-ready" onclick="setCmdStatut(\''+cmd.id+'\',\'prete\')">✓ Marquer préparée</button>'
+            + (tel ? '<a class="cmd-btn" href="tel:'+telClean+'">Appeler</a>' : '')
+         )
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function setCmdStatut(id, statut){
+  try{
+    const res = await fetch(SUPABASE_REST+'commandes?id=eq.'+id, {
+      method:'PATCH',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':'Bearer '+SUPABASE_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body: JSON.stringify({
+        statut: statut,
+        prete_at: statut === 'prete' ? new Date().toISOString() : null
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+
+    const cmd = allCommandes.find(c => String(c.id) === String(id));
+    if(cmd) cmd.statut = statut;
+    updateCmdStats();
+    renderCommandes();
+    flashSaved();
+  }catch(e){
+    alert('Erreur : '+e.message);
+  }
+}
+window.setCmdStatut = setCmdStatut;
+
+function setCmdFilter(f, btn){
+  cmdFilter = f;
+  document.querySelectorAll('.cmd-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCommandes();
 }
 
 // ═══════════════════════════════
@@ -1189,6 +1416,14 @@ function initApp(){
   fillNotif(cfg);
   applyPlanRestrictions();
   loadFromSupabase();
+
+  // Compteur de commandes en attente dès le chargement
+  setTimeout(fetchCommandes, 1200);
+
+  // Rafraîchissement automatique toutes les 90 secondes
+  setInterval(function(){
+    if(currentPlan === 'pro' || currentPlan === 'max') fetchCommandes();
+  }, 90000);
 }
 
 // Global window exports
@@ -1221,6 +1456,17 @@ document.addEventListener('DOMContentLoaded', function() {
   if(btnSendNotif)btnSendNotif.addEventListener('click', sendNotification);
   const btnAddPromo=document.getElementById('btn-add-promo');
   if(btnAddPromo) btnAddPromo.addEventListener('click', addPromoSlot);
+
+  // Onglet Commandes
+  const tabCmd = document.getElementById('tab-btn-commandes');
+  if(tabCmd) tabCmd.addEventListener('click', function(){ showTab('commandes', this); });
+
+  const btnCmdRefresh = document.getElementById('btn-cmd-refresh');
+  if(btnCmdRefresh) btnCmdRefresh.addEventListener('click', fetchCommandes);
+
+  document.querySelectorAll('[data-cmd-filter]').forEach(function(b){
+    b.addEventListener('click', function(){ setCmdFilter(this.dataset.cmdFilter, this); });
+  });
   if(loginPwField)loginPwField.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
 
   // Drag & drop banner
