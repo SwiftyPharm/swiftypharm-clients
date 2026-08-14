@@ -199,13 +199,30 @@ textarea{resize:vertical;min-height:72px}
 
 /* ── ADDRESS AUTOCOMPLETE ── */
 .autocomplete-wrap{position:relative}
-.autocomplete-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadow-md);z-index:50;max-height:200px;overflow-y:auto;margin-top:4px;display:none}
-.autocomplete-results.show{display:block}
-.autocomplete-item{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .15s}
-.autocomplete-item:last-child{border-bottom:none}
-.autocomplete-item:hover{background:var(--blue-l)}
-.autocomplete-item .addr-main{font-weight:500;color:var(--text)}
-.autocomplete-item .addr-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.autocomplete-results{
+  position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 28px rgba(15,23,42,.12),0 1px 3px rgba(15,23,42,.06);
+  z-index:60;max-height:290px;overflow-y:auto;display:none;padding:5px;
+  scrollbar-width:thin;scrollbar-color:#d8dee9 transparent;
+}
+.autocomplete-results::-webkit-scrollbar{width:5px}
+.autocomplete-results::-webkit-scrollbar-thumb{background:#d8dee9;border-radius:3px}
+.autocomplete-results.show{display:block;animation:ac-in .16s ease}
+@keyframes ac-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+.autocomplete-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 11px;cursor:pointer;border-radius:9px;
+  transition:background .12s;
+}
+.autocomplete-item.active{background:var(--blue-l)}
+.ac-icon{font-size:15px;line-height:1.3;flex-shrink:0;opacity:.85}
+.ac-text{min-width:0;flex:1}
+.autocomplete-item .addr-main{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.35}
+.autocomplete-item .addr-main b{font-weight:800;color:var(--blue)}
+.autocomplete-item .addr-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.ac-loading{padding:14px 12px;font-size:12.5px;color:var(--muted);text-align:center}
 
 /* ── IMG UPLOAD PROMO ── */
 .img-upload-row{display:flex;align-items:center;gap:10px}
@@ -318,10 +335,10 @@ textarea{resize:vertical;min-height:72px}
     <div class="field">
       <label>Adresse de la pharmacie</label>
       <div class="autocomplete-wrap">
-        <input type="text" id="ph-adresse" placeholder="12 Rue de la Paix, Paris" oninput="onAdresseInput()" autocomplete="off">
+        <input type="text" id="ph-adresse" placeholder="Commencez à taper votre adresse…" oninput="onAdresseInput()" onkeydown="onAdresseKey(event)" autocomplete="off" spellcheck="false">
         <div class="autocomplete-results" id="adresse-results"></div>
       </div>
-      <p class="field-hint" id="adresse-hint">L'adresse sera utilisée pour le bouton Maps sur votre page.</p>
+      <p class="field-hint" id="adresse-hint">Sélectionnez votre adresse dans la liste pour un positionnement précis sur Maps.</p>
     </div>
     <div class="field">
       <label>Docteur / Pharmacien titulaire</label>
@@ -518,7 +535,7 @@ let currentPlan = 'basic';
 setStorageKey(SLUG);
 
 const DEFAULTS = {
-  pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', docteur:'',
+  pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', lat:null, lon:null, docteur:'',
     reseaux:{ instagram:{actif:true,url:''}, facebook:{actif:false,url:''}, google:{actif:true,url:''}, website:{actif:false,url:''} },
     horairesSemaine:{}, logoData:'', logo:''},
   promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
@@ -570,6 +587,8 @@ async function syncToSupabase(cfg){
       email_contact:cfg.pharmacy.email_contact||'',
       adresse:cfg.pharmacy.adresse||'',
       adresse_maps:cfg.pharmacy.adresse_maps||'',
+      lat:cfg.pharmacy.lat??null,
+      lon:cfg.pharmacy.lon??null,
       docteur:cfg.pharmacy.docteur||'',
       horaires:cfg.pharmacy.horairesSemaine||{},
       logo_url: cfg.pharmacy.logo || '',
@@ -623,6 +642,8 @@ async function loadFromSupabase(){
         // Le reste reste vide tant que non rempli
         cfg.pharmacy.adresse      = d.adresse || '';
         cfg.pharmacy.adresse_maps = d.adresse_maps || '';
+        cfg.pharmacy.lat          = d.lat ?? null;
+        cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
         else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
@@ -848,52 +869,180 @@ function showLogoPreview(src) {
 }
 
 // ═══════════════════════════════
-//  ADDRESS AUTOCOMPLETE (Nominatim)
+//  AUTOCOMPLÉTION ADRESSE — Base Adresse Nationale
+//  api-adresse.data.gouv.fr · 25M d'adresses officielles
 // ═══════════════════════════════
-let _addrTimer;
+let _addrTimer   = null;
+let _addrCtrl    = null;   // AbortController pour annuler les requêtes obsolètes
+let _addrResults = [];
+let _addrIndex   = -1;     // index surligné au clavier
+
 function onAdresseInput(){
   clearTimeout(_addrTimer);
-  const q=document.getElementById('ph-adresse').value.trim();
-  if(q.length<4){document.getElementById('adresse-results').classList.remove('show');return;}
-  _addrTimer=setTimeout(()=>fetchAddresses(q,'adresse-results','ph-adresse','ph-adresse-selected'),400);
+  const q = document.getElementById('ph-adresse').value.trim();
+  const box = document.getElementById('adresse-results');
+
+  _addrIndex = -1;
+
+  if (q.length < 3) {
+    box.classList.remove('show');
+    box.innerHTML = '';
+    return;
+  }
+
+  // Retour visuel immédiat
+  box.innerHTML = '<div class="ac-loading">Recherche…</div>';
+  box.classList.add('show');
+
+  _addrTimer = setTimeout(() => fetchAdresses(q), 220);
 }
 
-async function fetchAddresses(q,resultsId,inputId,selectedFlag){
-  try{
-    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=fr&addressdetails=1`,{headers:{'Accept-Language':'fr'}});
-    const data=await res.json();
-    const container=document.getElementById(resultsId);
-    if(!data.length){container.classList.remove('show');return;}
-    container.innerHTML=data.map((item,i)=>{
-      const main=item.address?.road?`${item.address.house_number||''} ${item.address.road}`.trim():(item.display_name.split(',')[0]);
-      const sub=item.display_name.split(',').slice(1,3).join(',').trim();
-      return `<div class="autocomplete-item" onclick="selectAddress('${item.display_name.replace(/'/g,"\\'")}','${(item.lat)},${(item.lon)}','${resultsId}','${inputId}')">
-        <div class="addr-main">${main}</div>
-        <div class="addr-sub">${sub}</div>
-      </div>`;
-    }).join('');
-    container.classList.add('show');
-  }catch(e){console.warn('Nominatim error',e);}
+async function fetchAdresses(q){
+  const box = document.getElementById('adresse-results');
+
+  // Annuler la requête précédente si elle est encore en vol
+  if (_addrCtrl) _addrCtrl.abort();
+  _addrCtrl = new AbortController();
+
+  try {
+    const url = 'https://api-adresse.data.gouv.fr/search/?q='
+      + encodeURIComponent(q)
+      + '&limit=8&autocomplete=1';
+
+    const res  = await fetch(url, { signal: _addrCtrl.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    _addrResults = data.features || [];
+
+    if (!_addrResults.length) {
+      box.innerHTML = '<div class="ac-loading">Aucune adresse trouvée</div>';
+      return;
+    }
+
+    renderAdresses(q);
+
+  } catch(e) {
+    if (e.name === 'AbortError') return;   // requête remplacée, on ignore
+    console.warn('Recherche adresse :', e);
+    box.innerHTML = '<div class="ac-loading">Recherche indisponible</div>';
+  }
 }
 
-function selectAddress(display,coords,resultsId,inputId){
-  document.getElementById(inputId).value=display;
-  document.getElementById(resultsId).classList.remove('show');
-  // Generate Maps URL
-  const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(display);
-  // Store in config
-  const cfg=getConfig();
-  cfg.pharmacy.adresse=display;
-  cfg.pharmacy.adresse_maps=mapsUrl;
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
+// Met en gras les portions de texte qui correspondent à la saisie
+function surligner(texte, requete){
+  const mots = requete.split(/\s+/).filter(m => m.length >= 2);
+  let out = esc(texte);
+  mots.forEach(m => {
+    const re = new RegExp('(' + m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    out = out.replace(re, '<b>$1</b>');
+  });
+  return out;
+}
+
+function renderAdresses(requete){
+  const box = document.getElementById('adresse-results');
+
+  box.innerHTML = _addrResults.map((f, i) => {
+    const pr    = f.properties;
+    const type  = pr.type;   // housenumber · street · locality · municipality
+
+    // Ligne principale : numéro + voie, ou nom du lieu
+    const principal = pr.name || pr.label.split(',')[0];
+    // Ligne secondaire : code postal + commune
+    const secondaire = [pr.postcode, pr.city].filter(Boolean).join(' ');
+
+    const icone = type === 'housenumber' ? '🏠'
+                : type === 'street'      ? '🛣️'
+                : type === 'municipality'? '🏙️' : '📍';
+
+    return `<div class="autocomplete-item${i === _addrIndex ? ' active' : ''}"
+        data-idx="${i}" onclick="selectAdresse(${i})" onmouseenter="hoverAdresse(${i})">
+      <span class="ac-icon">${icone}</span>
+      <div class="ac-text">
+        <div class="addr-main">${surligner(principal, requete)}</div>
+        <div class="addr-sub">${esc(secondaire)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  box.classList.add('show');
+}
+
+function hoverAdresse(i){
+  _addrIndex = i;
+  document.querySelectorAll('#adresse-results .autocomplete-item').forEach((el, idx) => {
+    el.classList.toggle('active', idx === i);
+  });
+}
+
+// Navigation au clavier
+function onAdresseKey(e){
+  const box = document.getElementById('adresse-results');
+  if (!box.classList.contains('show') || !_addrResults.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _addrIndex = Math.min(_addrIndex + 1, _addrResults.length - 1);
+    hoverAdresse(_addrIndex);
+    scrollAcIntoView();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _addrIndex = Math.max(_addrIndex - 1, 0);
+    hoverAdresse(_addrIndex);
+    scrollAcIntoView();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (_addrIndex >= 0) selectAdresse(_addrIndex);
+  } else if (e.key === 'Escape') {
+    box.classList.remove('show');
+    _addrIndex = -1;
+  }
+}
+
+function scrollAcIntoView(){
+  const el = document.querySelector('#adresse-results .autocomplete-item.active');
+  if (el) el.scrollIntoView({ block:'nearest' });
+}
+
+function selectAdresse(i){
+  const f = _addrResults[i];
+  if (!f) return;
+
+  const pr    = f.properties;
+  const label = pr.label;
+  const [lon, lat] = f.geometry.coordinates;
+
+  document.getElementById('ph-adresse').value = label;
+  document.getElementById('adresse-results').classList.remove('show');
+  _addrIndex = -1;
+
+  // Lien Maps basé sur les coordonnées : bien plus précis que le texte seul
+  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
+    + encodeURIComponent(label)
+    + '&query_place_id=';
+  const mapsUrlCoords = 'https://www.google.com/maps/search/?api=1&query='
+    + lat + ',' + lon;
+
+  const cfg = getConfig();
+  cfg.pharmacy.adresse      = label;
+  cfg.pharmacy.adresse_maps = mapsUrlCoords;
+  cfg.pharmacy.lat          = lat;
+  cfg.pharmacy.lon          = lon;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+
   autoSave();
-  document.getElementById('adresse-hint').innerHTML='🔗 <a href="'+mapsUrl+'" target="_blank" style="color:var(--blue)">Voir sur Google Maps →</a>';
+
+  document.getElementById('adresse-hint').innerHTML =
+    '📍 <a href="' + mapsUrlCoords + '" target="_blank" style="color:var(--blue);font-weight:600">'
+    + 'Vérifier sur Google Maps →</a>'
+    + '<span style="color:#94a3b8;margin-left:8px">' + lat.toFixed(5) + ', ' + lon.toFixed(5) + '</span>';
 }
 
-// Close autocomplete on outside click
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.autocomplete-wrap')){
-    document.querySelectorAll('.autocomplete-results').forEach(r=>r.classList.remove('show'));
+// Fermer la liste au clic extérieur
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) {
+    document.querySelectorAll('.autocomplete-results').forEach(r => r.classList.remove('show'));
   }
 });
 
@@ -995,7 +1144,10 @@ function fillInfo(cfg){
   if(logoSrc) showLogoPreview(logoSrc);
 
   if(p.adresse_maps){
-    document.getElementById('adresse-hint').innerHTML='🔗 <a href="'+p.adresse_maps+'" target="_blank" style="color:var(--blue)">Voir sur Google Maps →</a>';
+    const coords = (p.lat && p.lon) ? p.lat.toFixed(5)+', '+p.lon.toFixed(5) : '';
+    document.getElementById('adresse-hint').innerHTML =
+      '📍 <a href="'+p.adresse_maps+'" target="_blank" style="color:var(--blue);font-weight:600">Vérifier sur Google Maps →</a>'
+      + (coords ? '<span style="color:#94a3b8;margin-left:8px">'+coords+'</span>' : '');
   }
   updateLivePreviews();
 }
@@ -1014,6 +1166,8 @@ function collectInfo(){
     email_contact:document.getElementById('ph-email').value,
     adresse:document.getElementById('ph-adresse').value,
     adresse_maps:getConfig().pharmacy?.adresse_maps||'',
+    lat:getConfig().pharmacy?.lat??null,
+    lon:getConfig().pharmacy?.lon??null,
     docteur:document.getElementById('ph-docteur').value,
     reseaux:{
       instagram:{actif:document.getElementById('soc-insta-active').checked,url:instaVal?'https://instagram.com/'+instaVal:''},
@@ -1488,7 +1642,7 @@ window.onLogoUrlChange=onLogoUrlChange;window.updateAvisPreview=updateAvisPrevie
 window.onPromoToggle=onPromoToggle;window.onPromoImgUrl=onPromoImgUrl;
 window.handlePromoImg=handlePromoImg;window.onClosedToggle=onClosedToggle;
 window.updateLivePreviews=updateLivePreviews;window.onAdresseInput=onAdresseInput;
-window.onAvisInput=onAvisInput;window.selectAddress=selectAddress;window.selectAvis=selectAvis;
+window.onAvisInput=onAvisInput;window.selectAdresse=selectAdresse;window.hoverAdresse=hoverAdresse;window.onAdresseKey=onAdresseKey;window.selectAvis=selectAvis;
 
 document.addEventListener('DOMContentLoaded', function() {
   // Wire buttons via addEventListener — no global scope dependency
