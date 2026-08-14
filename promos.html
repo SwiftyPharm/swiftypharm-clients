@@ -294,6 +294,19 @@
     .step-back:hover { border-color:#1753FF; color:#1753FF; background:#f5f8ff; }
     .step-header::after { content:''; width:34px; flex-shrink:0; }
 
+    .field-note { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.4; }
+
+    /* ══ CONSENTEMENT SMS ══ */
+    .sms-consent {
+      display:flex; align-items:flex-start; gap:10px;
+      background:#f8fafc; border:1px solid var(--border); border-radius:12px;
+      padding:13px 15px; margin-top:20px; cursor:pointer;
+      transition:border-color .2s, background .2s;
+    }
+    .sms-consent:hover { border-color:#c7d2fe; background:#f5f8ff; }
+    .sms-consent input { width:17px; height:17px; accent-color:#1753FF; cursor:pointer; flex-shrink:0; margin-top:1px; }
+    .sms-consent span { font-size:13px; color:var(--text); line-height:1.45; }
+
     /* ══ TIME PICKER ══ */
     .tp-summary {
       display:flex; align-items:center; gap:9px;
@@ -535,6 +548,11 @@
             <label>Téléphone</label>
             <input type="tel" id="order-tel" placeholder="06 12 34 56 78" autocomplete="tel">
           </div>
+          <div class="order-field">
+            <label>Email</label>
+            <input type="email" id="order-email" placeholder="jean.dupont@email.com" autocomplete="email">
+            <div class="field-note">Pour recevoir votre récapitulatif de commande</div>
+          </div>
 
           <!-- ══ TIME PICKER ══ -->
           <div class="section-label big" style="margin-top:26px">Créneau de retrait</div>
@@ -554,6 +572,11 @@
               <div class="tp-scroll" id="tp-end"></div>
             </div>
           </div>
+
+          <label class="sms-consent" id="sms-consent-wrap">
+            <input type="checkbox" id="order-sms-consent" checked>
+            <span>Recevoir le récapitulatif de ma commande par SMS</span>
+          </label>
 
           <button class="order-submit" id="btn-order-submit" onclick="submitOrder()">
             Confirmer ma commande
@@ -1245,7 +1268,12 @@ async function submitOrder() {
   const debut  = selectedStart;
   const fin    = selectedEnd;
 
+  const email = document.getElementById('order-email').value.trim();
+
   if (!prenom || !nom || !tel) { alert('Veuillez renseigner vos coordonnées.'); return; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Adresse email invalide.'); return;
+  }
   if (!debut || !fin)          { alert('Veuillez choisir un créneau de retrait.'); return; }
 
   const btn = document.getElementById('btn-order-submit');
@@ -1256,17 +1284,27 @@ async function submitOrder() {
       .join('\n');
   const total    = Object.values(cart).reduce((s,i) => s + i.qty * i.prix, 0);
   const now      = new Date().toLocaleString('fr-FR');
-  const numero  = genererNumeroCommande();
 
   try {
     // 1. Sauvegarder dans Supabase
-    await supabaseClient.from('commandes').insert({
-      pharmacie_slug: SLUG,
-      numero: numero,
-      client_nom: nom, client_prenom: prenom, client_tel: tel,
-      heure_debut: debut, heure_fin: fin,
-      articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
-    });
+    const smsConsent = document.getElementById('order-sms-consent')?.checked ?? false;
+
+    const { data: cmdInsert, error: cmdErr } = await supabaseClient
+      .from('commandes')
+      .insert({
+        pharmacie_slug: SLUG,
+        numero: numero,
+        client_nom: nom, client_prenom: prenom, client_tel: tel,
+        client_email: email || null,
+        heure_debut: debut, heure_fin: fin,
+        sms_consent: smsConsent,
+        articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
+      })
+      .select('id')
+      .single();
+
+    if (cmdErr) throw cmdErr;
+    const commandeId = cmdInsert?.id;
 
     // 2. Décrémenter stocks
     for (const [id, item] of Object.entries(cart)) {
@@ -1301,7 +1339,19 @@ async function submitOrder() {
       console.warn('Email de contact non renseigné pour', SLUG, '— aucun email envoyé.');
     }
 
-    // 4. Confirmation — son, vibration et carte
+    // 4. Notification client — email et/ou SMS selon l'offre. Non bloquant.
+    if (commandeId) {
+      fetch('/api/notify-client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: SLUG, commandeId })
+      })
+      .then(r => r.json())
+      .then(res => console.info('Notifications :', res))
+      .catch(e => console.warn('Notification non envoyée :', e));
+    }
+
+    // 5. Confirmation — son, vibration et carte
     playConfirmSound();
     if (navigator.vibrate) navigator.vibrate([15, 60, 15, 60, 30]);
 
@@ -1320,7 +1370,15 @@ async function submitOrder() {
     document.getElementById('cf-retrait').textContent = `${debut} – ${fin}`;
     document.getElementById('cf-total').textContent   = total.toFixed(2).replace('.', ',') + ' €';
     document.getElementById('cf-articles').innerHTML  =
-      `<strong>${nbArticles} article${nbArticles > 1 ? 's' : ''}</strong> — ${listeClient}`;
+      `<strong>${nbArticles} article${nbArticles > 1 ? 's' : ''}</strong> — ${listeClient}`
+      + ((email || smsConsent)
+          ? `<div style="margin-top:9px;padding-top:9px;border-top:1px solid #bae6fd;font-size:12px">
+               Votre récapitulatif part
+               ${email ? `par email à <strong>${email}</strong>` : ''}
+               ${email && smsConsent ? ' et ' : ''}
+               ${smsConsent ? `par SMS au <strong>${tel}</strong>` : ''}.
+             </div>`
+          : '');
 
     document.getElementById('order-content').style.display = 'none';
     document.getElementById('order-success').style.display = 'block';
