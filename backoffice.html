@@ -36,6 +36,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .tab-badge.show{display:inline-flex}
 
 /* ══ COMMANDES ══ */
+.sms-setting{display:flex;align-items:center;gap:16px;background:var(--blue-l);border:1px solid rgba(23,83,255,.15);border-radius:12px;padding:14px 18px;margin-bottom:18px}
+.sms-setting-txt{flex:1}
+.sms-setting-txt strong{display:block;font-size:13.5px;font-weight:700;color:var(--text)}
+.sms-setting-txt span{font-size:12px;color:var(--muted);line-height:1.5}
 .cmd-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
 .cmd-filter{padding:7px 15px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s}
 .cmd-filter.active{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
@@ -77,6 +81,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cmd-btn-ready:hover{background:#15803d;border-color:#15803d;color:#fff}
 .cmd-btn-undo{margin-left:auto;border:none;background:none;color:var(--muted);font-weight:600;font-size:12px}
 .cmd-btn-undo:hover{color:var(--blue)}
+.cmd-notif-tag{display:inline-flex;align-items:center;gap:4px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px}
+.cmd-notif-tag::before{content:'✉';font-size:11px}
+.cmd-notif-tag.sms{background:#dbeafe;color:#1d4ed8}
+.cmd-notif-tag.sms::before{content:'✆'}
 .cmd-done-tag{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:var(--green);font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px}
 
 .cmd-empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:14px}
@@ -425,6 +433,17 @@ textarea{resize:vertical;min-height:72px}
       <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-ca" style="color:var(--green)">—</div><div class="cmd-stat-l">CA du jour</div></div>
     </div>
 
+    <div class="sms-setting" id="sms-setting">
+      <div class="sms-setting-txt">
+        <strong>Récapitulatif SMS</strong>
+        <span>En plus de l'email, envoyer un SMS au client dès qu'il valide sa commande</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="sms-actif-toggle" checked onchange="toggleSmsActif()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
     <div class="cmd-toolbar">
       <button class="cmd-filter active" data-cmd-filter="attente">À préparer<span class="n" id="f-n-attente"></span></button>
       <button class="cmd-filter" data-cmd-filter="jour">Aujourd'hui<span class="n" id="f-n-jour"></span></button>
@@ -643,6 +662,10 @@ async function loadFromSupabase(){
         cfg.pharmacy.adresse      = d.adresse || '';
         cfg.pharmacy.adresse_maps = d.adresse_maps || '';
         cfg.pharmacy.lat          = d.lat ?? null;
+
+        // État du réglage SMS
+        const smsToggle = document.getElementById('sms-actif-toggle');
+        if(smsToggle) smsToggle.checked = d.sms_actif !== false;
         cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
@@ -730,6 +753,10 @@ function applyPlanRestrictions(){
   if(cmdContent) cmdContent.style.display = isPaid ? 'block' : 'none';
   const cmdTab = document.getElementById('tab-btn-commandes');
   if(cmdTab) cmdTab.style.display = isPaid ? 'flex' : 'none';
+
+  // Réglage SMS : offre Max uniquement
+  const smsSetting = document.getElementById('sms-setting');
+  if(smsSetting) smsSetting.style.display = isMax ? 'flex' : 'none';
 
   // Bouton "ajouter un article" visible pour Max seulement
   const addWrap=document.getElementById('add-promo-wrap');
@@ -1456,6 +1483,7 @@ function renderCommandes(){
       +     '<div class="cmd-num">'+esc(numero)+'</div>'
       +     '<div class="cmd-client">'+esc(client)+'</div>'
       +     (tel ? '<div class="cmd-tel"><a href="tel:'+telClean+'">'+esc(tel)+'</a></div>' : '')
+      +     (cmd.client_email ? '<div class="cmd-tel"><a href="mailto:'+esc(cmd.client_email)+'">'+esc(cmd.client_email)+'</a></div>' : '')
       +   '</div>'
       +   '<div class="cmd-when">'
       +     '<span class="cmd-slot'+(passed?' passed':'')+'">'
@@ -1468,6 +1496,8 @@ function renderCommandes(){
       +   '<div class="cmd-total"><span>Total</span><span>'+total.toFixed(2).replace('.',',')+' €</span></div>'
       + '</div>'
       + '<div class="cmd-actions">'
+      +   (cmd.email_confirm_at ? '<span class="cmd-notif-tag">Email</span>' : '')
+      +   (cmd.sms_confirm_at   ? '<span class="cmd-notif-tag sms">SMS</span>' : '')
       +   (prete
           ? '<span class="cmd-done-tag">✓ Préparée</span>'
             + '<button class="cmd-btn cmd-btn-undo" onclick="setCmdStatut(\''+cmd.id+'\',null)">Annuler</button>'
@@ -1498,6 +1528,7 @@ async function setCmdStatut(id, statut){
 
     const cmd = allCommandes.find(c => String(c.id) === String(id));
     if(cmd) cmd.statut = statut;
+
     updateCmdStats();
     renderCommandes();
     flashSaved();
@@ -1506,6 +1537,28 @@ async function setCmdStatut(id, statut){
   }
 }
 window.setCmdStatut = setCmdStatut;
+
+async function toggleSmsActif(){
+  const actif = document.getElementById('sms-actif-toggle').checked;
+  try{
+    const res = await fetch(SUPABASE_REST+'pharmacies?slug=eq.'+SLUG, {
+      method:'PATCH',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':'Bearer '+SUPABASE_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body: JSON.stringify({ sms_actif: actif })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    flashSaved();
+  }catch(e){
+    alert('Erreur : '+e.message);
+    document.getElementById('sms-actif-toggle').checked = !actif;
+  }
+}
+window.toggleSmsActif = toggleSmsActif;
 
 function setCmdFilter(f, btn){
   cmdFilter = f;
