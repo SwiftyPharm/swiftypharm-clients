@@ -1262,6 +1262,7 @@ async function submitOrder() {
     // 1. Sauvegarder dans Supabase
     await supabaseClient.from('commandes').insert({
       pharmacie_slug: SLUG,
+      numero: numero,
       client_nom: nom, client_prenom: prenom, client_tel: tel,
       heure_debut: debut, heure_fin: fin,
       articles: Object.entries(cart).map(([id,i]) => ({id,nom:i.nom,qty:i.qty,prix:i.prix}))
