@@ -537,8 +537,8 @@ textarea{resize:vertical;min-height:72px}
   <div class="section-title">Promotions</div>
   <div id="promo-plan-notice" style="display:none">
     <div class="plan-lock">
-      <strong>🔒 Réservé aux membres Pro</strong>
-      <p>Vous consultez le contenu mais les articles sont désactivés. Passez à l'offre Pro pour activer vos promotions.</p>
+      <strong>🔒 Réservé aux membres Pro et Max</strong>
+      <p>Vous consultez le contenu mais les articles sont désactivés. Passez à l'offre Pro ou Max pour activer vos promotions.</p>
     </div>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
@@ -556,8 +556,8 @@ textarea{resize:vertical;min-height:72px}
   <div class="section-title">Notifications push</div>
   <div id="notif-plan-notice" style="display:none">
     <div class="plan-lock">
-      <strong>🔒 Réservé aux membres Pro</strong>
-      <p>Passez à l'offre Pro pour envoyer des notifications push à vos clients.</p>
+      <strong>🔒 Réservé aux membres Max</strong>
+      <p>Passez à l'offre Max pour envoyer des notifications push à vos clients.</p>
     </div>
   </div>
   <div id="notif-content">
@@ -1492,10 +1492,10 @@ const PLANS = {
 
 // Liens Stripe — mêmes valeurs que dans signup.html
 const STRIPE_LINKS = {
-  pro_monthly: 'https://buy.stripe.com/6oUaEXaAt6s3b3BbkXabK07',
-  pro_yearly:  'https://buy.stripe.com/cNi00jdMF5nZ3B9cp1abK08',
-  max_monthly: 'https://buy.stripe.com/cNi5kDeQJaIj9Zx9cPabK05',
-  max_yearly:  'https://buy.stripe.com/9B63cveQJ3fR5Jh74HabK06',
+  pro_monthly: 'https://buy.stripe.com/REMPLACE_PRO_MENSUEL',
+  pro_yearly:  'https://buy.stripe.com/REMPLACE_PRO_ANNUEL',
+  max_monthly: 'https://buy.stripe.com/REMPLACE_MAX_MENSUEL',
+  max_yearly:  'https://buy.stripe.com/REMPLACE_MAX_ANNUEL',
 };
 
 let offreData = null;
@@ -1629,11 +1629,11 @@ function renderOffre(){
     if(estActuel){
       bouton = '<button class="plan-c-btn plan-c-btn-cur" disabled>Votre formule</button>';
     } else if(k === 'basic'){
-      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail()">Rétrograder</button>';
+      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail(\'cancel\')">Revenir à Basic</button>';
     } else if(estSup){
       bouton = '<button class="plan-c-btn plan-c-btn-up" onclick="changerOffre(\''+k+'\')">Passer à '+esc(p.nom)+'</button>';
     } else {
-      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail()">Choisir '+esc(p.nom)+'</button>';
+      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="changerOffre(\''+k+'\')">Choisir '+esc(p.nom)+'</button>';
     }
 
     return '<div class="plan-c'+(estActuel?' current':'')+'">'
@@ -1654,19 +1654,19 @@ function renderOffre(){
   if(payant){
     actions = '<div class="offre-section-t">Gérer mon abonnement</div>'
       + '<div class="offre-actions">'
-      + '<button class="offre-act" onclick="ouvrirPortail()">'
+      + '<button class="offre-act" onclick="ouvrirPortail(\'payment\')">'
       +   '<div class="offre-act-ico">💳</div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">Moyen de paiement</div>'
       +     '<div class="offre-act-d">Modifier votre carte bancaire ou vos coordonnées de facturation</div></div>'
       +   '<span class="offre-act-fl">→</span>'
       + '</button>'
-      + '<button class="offre-act" onclick="ouvrirPortail()">'
+      + '<button class="offre-act" onclick="ouvrirPortail(\'portal\')">'
       +   '<div class="offre-act-ico">📄</div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">Mes factures</div>'
       +     '<div class="offre-act-d">Consulter et télécharger l\'historique de vos paiements</div></div>'
       +   '<span class="offre-act-fl">→</span>'
       + '</button>'
-      + '<button class="offre-act" onclick="ouvrirPortail()">'
+      + '<button class="offre-act" onclick="'+(d.resiliation_prevue ? 'reactiverAbonnement()' : 'ouvrirPortail(\'cancel\')')+'">'
       +   '<div class="offre-act-ico">'+(d.resiliation_prevue ? '↩️' : '⏸️')+'</div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">'+(d.resiliation_prevue ? 'Réactiver mon abonnement' : 'Résilier mon abonnement')+'</div>'
       +     '<div class="offre-act-d">'+(d.resiliation_prevue
@@ -1686,13 +1686,20 @@ function renderOffre(){
   document.getElementById('offre-body').innerHTML = alerte + hero + usage + comparatif + actions;
 }
 
-// ── Ouvrir le portail Stripe ──
-async function ouvrirPortail(){
+// ── Ouvrir le portail Stripe sur un flux précis ──
+// action : 'update' (changer de formule) · 'cancel' (résilier)
+//          'payment' (carte bancaire) · 'portal' (accueil, factures)
+async function ouvrirPortail(action, plan, periode){
   try{
     const res = await fetch('/api/stripe-portal', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ slug: SLUG, action:'portal' })
+      body: JSON.stringify({
+        slug: SLUG,
+        action: action || 'portal',
+        plan: plan || null,
+        periode: periode || null
+      })
     });
     const data = await res.json();
 
@@ -1701,7 +1708,7 @@ async function ouvrirPortail(){
     } else if(data.error === 'aucun_abonnement'){
       alert("Vous n'avez pas encore d'abonnement payant. Choisissez une formule ci-dessous pour commencer.");
     } else {
-      alert('Impossible d\'ouvrir la gestion de l\'abonnement : '+(data.error||'erreur inconnue'));
+      alert("Impossible d'ouvrir la gestion de l'abonnement : "+(data.error||'erreur inconnue'));
     }
   }catch(e){
     alert('Erreur : '+e.message);
@@ -1709,26 +1716,48 @@ async function ouvrirPortail(){
 }
 window.ouvrirPortail = ouvrirPortail;
 
-// ── Passer à une offre supérieure ──
+// ── Réactiver un abonnement dont la résiliation est programmée ──
+async function reactiverAbonnement(){
+  if(!confirm("Annuler la résiliation et poursuivre votre abonnement ?")) return;
+  try{
+    const res = await fetch('/api/stripe-portal', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ slug: SLUG, action:'reactivate' })
+    });
+    const data = await res.json();
+    if(data.ok){
+      flashSaved();
+      chargerOffre();
+    } else {
+      alert('Erreur : '+(data.error||'inconnue'));
+    }
+  }catch(e){
+    alert('Erreur : '+e.message);
+  }
+}
+window.reactiverAbonnement = reactiverAbonnement;
+
+// ── Changer de formule ──
 function changerOffre(plan){
   const d = offreData || {};
+  const periode = d.periodicite === 'yearly' ? 'yearly' : 'monthly';
 
-  // Abonnement déjà actif : le changement passe par le portail Stripe,
-  // qui gère le prorata automatiquement.
-  if(d.statut === 'active' && d.plan !== 'basic'){
-    ouvrirPortail();
+  // Abonnement Stripe existant : le portail gère le prorata automatiquement.
+  // On l'ouvre directement sur la formule visée, sans passer par l'accueil.
+  const aUnAbonnement = d.a_un_client_stripe && d.statut !== 'canceled' && d.plan !== 'basic';
+
+  if(aUnAbonnement){
+    ouvrirPortail('update', plan, periode);
     return;
   }
 
   // Première souscription : lien de paiement direct
-  const periode = d.periodicite === 'yearly' ? 'yearly' : 'monthly';
   const lien = STRIPE_LINKS[plan+'_'+periode];
-
   if(!lien || lien.includes('REMPLACE')){
-    alert('Le lien de paiement n\'est pas encore configuré. Contactez le support.');
+    alert("Le lien de paiement n'est pas encore configuré. Contactez le support.");
     return;
   }
-
   window.location.href = lien + '?client_reference_id=' + encodeURIComponent(SLUG);
 }
 window.changerOffre = changerOffre;
