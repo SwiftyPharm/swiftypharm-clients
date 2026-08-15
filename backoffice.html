@@ -1626,10 +1626,10 @@ function renderOffre(){
     ).join('');
 
     let bouton;
-    if(estActuel){
+   if(estActuel){
       bouton = '<button class="plan-c-btn plan-c-btn-cur" disabled>Votre formule</button>';
     } else if(k === 'basic'){
-      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail(\'cancel\')">Revenir à Basic</button>';
+      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail(\'cancel\')">Résilier mon abonnement</button>';
     } else if(estSup){
       bouton = '<button class="plan-c-btn plan-c-btn-up" onclick="changerOffre(\''+k+'\')">Passer à '+esc(p.nom)+'</button>';
     } else {
