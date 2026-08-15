@@ -26,6 +26,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/api/stripe-portal"
+  to = "/.netlify/functions/stripe-portal"
+  status = 200
+  force = true
+
 # ── Pages statiques ──
 [[redirects]]
   from = "/index.html"
