@@ -94,6 +94,13 @@ body{font-family:'Inter',sans-serif;min-height:100vh;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .err-msg{font-size:11px;color:#dc2626;margin-top:4px;display:none;}
 
+.legal-consent{display:flex;align-items:flex-start;gap:9px;padding:13px 15px;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;cursor:pointer;margin-top:16px;transition:border-color .2s,background .2s;}
+.legal-consent:hover{border-color:#c7d2fe;background:#f5f8ff;}
+.legal-consent input{width:16px;height:16px;accent-color:#1753FF;cursor:pointer;flex-shrink:0;margin-top:2px;}
+.legal-consent span{font-size:12.5px;color:#374151;line-height:1.55;}
+.legal-consent a{color:#1753FF;font-weight:600;text-decoration:none;}
+.legal-consent a:hover{text-decoration:underline;}
+
 .pw-wrap{position:relative;}
 .pw-wrap .field-input{padding-right:44px;}
 .pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:3px;display:flex;align-items:center;color:#9ca3af;transition:color .2s;}
@@ -308,6 +315,18 @@ body{font-family:'Inter',sans-serif;min-height:100vh;}
           <label class="field-label">Téléphone</label>
           <input class="field-input" type="tel" id="s2-tel" placeholder="+33 1 23 45 67 89">
         </div>
+
+        <label class="legal-consent">
+          <input type="checkbox" id="s2-legal-consent">
+          <span>
+            J'ai pris connaissance et j'accepte les
+            <a href="/terms.html" target="_blank">conditions générales d'utilisation</a>,
+            la <a href="/privacy.html" target="_blank">politique de confidentialité</a>
+            et l'<a href="/dpa.html" target="_blank">accord de sous-traitance des données</a>.
+          </span>
+        </label>
+        <div class="err-msg" id="err-legal"></div>
+
         <button class="btn-primary" id="btn-submit"><span id="btn-submit-label">Créer mon espace 🚀</span></button>
         <button class="btn-ghost" id="btn-back-1">← Retour</button>
       </div>
@@ -485,8 +504,14 @@ async function submitSignup(){
   const pw    = document.getElementById('s1-pw').value;
   const baseSlug = updateSlug();
 
-  showErr('err-name','');
+  showErr('err-name',''); showErr('err-legal','');
   if (!name) { showErr('err-name','Nom requis.'); return; }
+
+  const legalConsent = document.getElementById('s2-legal-consent').checked;
+  if (!legalConsent) {
+    showErr('err-legal', "Vous devez accepter les CGU, la politique de confidentialité et l'accord de sous-traitance pour continuer.");
+    return;
+  }
 
   const btn   = document.getElementById('btn-submit');
   const label = document.getElementById('btn-submit-label');
@@ -522,7 +547,9 @@ async function submitSignup(){
       soustitre: city ? 'Votre pharmacie de confiance à ' + city : 'Votre pharmacie de confiance',
       telephone: tel || '', horaires: {}, reseaux: {},
       plan: 'basic',
-      subscription_status: selectedPlan === 'basic' ? 'none' : 'pending'
+      subscription_status: selectedPlan === 'basic' ? 'none' : 'pending',
+      cgu_accepted_at: new Date().toISOString(),
+      cgu_version: '1.0'
     });
     if (dbErr) throw new Error(dbErr.message);
 
