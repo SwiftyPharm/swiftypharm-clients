@@ -894,12 +894,57 @@ async function initAuth(){
   if(session){
     const {data}=await sb.from('pharmacies').select('slug,plan').eq('user_id',session.user.id).single();
     if(data){SLUG=data.slug;currentPlan=data.plan||'basic';localStorage.setItem('swiftlink_slug',SLUG);setStorageKey(SLUG);}
-    hideLogin();return;
+    hideLogin();
+    resyncAbonnementSilencieux();
+    return;
   }
   const local=sessionStorage.getItem(SESSION_KEY);
-  if(local==='ok'){hideLogin();return;}
+  if(local==='ok'){
+    hideLogin();
+    resyncAbonnementSilencieux();
+    return;
+  }
   document.getElementById('login-overlay').style.display='flex';
   document.getElementById('login-id').focus();
+}
+
+// ══════════════════════════════════════
+//  RESYNCHRONISATION SILENCIEUSE — abonnement Stripe
+// ══════════════════════════════════════
+// Recale currentPlan sur l'état réel de Stripe à chaque connexion,
+// sans attendre que le pharmacien consulte l'onglet Mon offre.
+// Corrige le cas où un webhook Stripe a échoué et n'a jamais
+// mis Supabase à jour (résiliation, échec de paiement, etc.)
+async function resyncAbonnementSilencieux(){
+  if(!SLUG) return;
+  try{
+    const res = await fetch('/api/stripe-portal', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ slug: SLUG, action:'details' })
+    });
+    if(!res.ok) return;
+    const d = await res.json();
+    if(!d || !d.plan) return;
+
+    const planAvant = currentPlan;
+    if(d.plan !== currentPlan){
+      currentPlan = d.plan;
+      applyPlanRestrictions();
+
+      // Si l'onglet Promotions est visible, reconstruire la grille
+      // avec les nouvelles limites (ex: Max → Pro fait retomber à 8 slots)
+      if(document.getElementById('section-promo')?.classList.contains('active')){
+        buildPromoGrid(getConfig());
+      }
+
+      console.log(`Abonnement resynchronisé : ${planAvant} → ${currentPlan}`);
+    }
+  }catch(e){
+    // Échec silencieux : on ne bloque jamais l'accès au backoffice
+    // pour un problème de resynchronisation en arrière-plan.
+    console.warn('Resynchronisation abonnement impossible :', e.message);
+  }
 }
 
 function doLogin(){
