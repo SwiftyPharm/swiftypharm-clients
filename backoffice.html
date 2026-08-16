@@ -109,6 +109,32 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 .offre-loading{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
 
+/* ══ ZONE RGPD ══ */
+.rgpd-zone{display:flex;align-items:center;gap:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px 18px;flex-wrap:wrap}
+.rgpd-txt{flex:1;min-width:220px}
+.rgpd-txt strong{display:block;font-size:13.5px;font-weight:700;color:#991b1b;margin-bottom:4px}
+.rgpd-txt p{font-size:12px;color:#7f1d1d;line-height:1.6;margin:0}
+.rgpd-btn{padding:10px 18px;border-radius:9px;border:none;background:var(--red);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.rgpd-btn:hover{background:#b91c1c}
+
+/* ══ MODALE SUPPRESSION COMPTE ══ */
+#rgpd-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.55);align-items:center;justify-content:center;padding:20px}
+#rgpd-modal.open{display:flex}
+.rgpd-modal-box{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.rgpd-modal-box h3{font-size:17px;font-weight:800;color:var(--text);margin-bottom:14px}
+.rgpd-warn{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:13px 15px;margin-bottom:16px;font-size:12.5px;color:#991b1b;line-height:1.65}
+.rgpd-warn strong{display:block;margin-bottom:5px}
+.rgpd-warn ul{margin:6px 0 0;padding-left:18px}
+.rgpd-field{margin-bottom:16px}
+.rgpd-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.rgpd-field input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:monospace;font-size:13px;outline:none}
+.rgpd-field input:focus{border-color:var(--red)}
+.rgpd-modal-actions{display:flex;gap:9px}
+.rgpd-btn-cancel{flex:1;padding:11px;border-radius:10px;background:#f1f5f9;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;color:var(--text)}
+.rgpd-btn-danger{flex:1;padding:11px;border-radius:10px;background:var(--red);border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;color:#fff;transition:all .2s}
+.rgpd-btn-danger:hover:not(:disabled){background:#b91c1c}
+.rgpd-btn-danger:disabled{opacity:.4;cursor:not-allowed}
+
 /* ══ COMMANDES ══ */
 .sms-setting{display:flex;align-items:center;gap:16px;background:var(--blue-l);border:1px solid rgba(23,83,255,.15);border-radius:12px;padding:14px 18px;margin-bottom:18px}
 .sms-setting-txt{flex:1}
@@ -1683,8 +1709,75 @@ function renderOffre(){
       + 'Vous êtes actuellement sur l\'offre gratuite. Aucun prélèvement n\'est en cours.</p>';
   }
 
-  document.getElementById('offre-body').innerHTML = alerte + hero + usage + comparatif + actions;
+  // ── Zone RGPD — suppression définitive du compte ──
+  const rgpd = '<div class="offre-section-t" style="margin-top:32px">Vos données</div>'
+    + '<div class="rgpd-zone">'
+    + '<div class="rgpd-txt">'
+    +   '<strong>Supprimer définitivement mon compte</strong>'
+    +   '<p>Cette action efface votre fiche pharmacie, vos commandes et vos promotions de nos systèmes, '
+    +   'résilie immédiatement votre abonnement en cours, et supprime votre accès de connexion. '
+    +   'L\'opération est irréversible.</p>'
+    + '</div>'
+    + '<button class="rgpd-btn" onclick="ouvrirSuppressionCompte()">Supprimer mon compte</button>'
+    + '</div>'
+    + '<p style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6">'
+    + 'Conformément au RGPD, vous pouvez également demander la rectification ou l\'export de vos données '
+    + 'à contact@swiftup.fr. Consultez notre <a href="/privacy.html" target="_blank" style="color:var(--blue)">politique de confidentialité</a>.</p>';
+
+  document.getElementById('offre-body').innerHTML = alerte + hero + usage + comparatif + actions + rgpd;
 }
+
+// ══════════════════════════════════════
+//  SUPPRESSION DE COMPTE — RGPD
+// ══════════════════════════════════════
+
+function ouvrirSuppressionCompte(){
+  document.getElementById('rgpd-modal-nom').textContent = (getConfig().pharmacy?.name) || SLUG;
+  document.getElementById('rgpd-modal-slug').textContent = SLUG;
+  document.getElementById('rgpd-confirm-input').value = '';
+  document.getElementById('rgpd-btn-confirm').disabled = true;
+  document.getElementById('rgpd-modal').classList.add('open');
+}
+window.ouvrirSuppressionCompte = ouvrirSuppressionCompte;
+
+function fermerSuppressionCompte(){
+  document.getElementById('rgpd-modal').classList.remove('open');
+}
+window.fermerSuppressionCompte = fermerSuppressionCompte;
+
+async function confirmerSuppressionCompte(){
+  const btn = document.getElementById('rgpd-btn-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Suppression en cours…';
+
+  try{
+    const res = await fetch('/api/delete-account', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ slug: SLUG, confirmation: SLUG, motif:'demande_utilisateur', initiateur:'pharmacien' })
+    });
+    const data = await res.json();
+
+    if(data.ok){
+      localStorage.clear();
+      sessionStorage.clear();
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Inter,sans-serif">'
+        + '<div><div style="font-size:40px;margin-bottom:16px">✓</div>'
+        + '<div style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px">Compte supprimé</div>'
+        + '<p style="font-size:14px;color:#64748b;max-width:340px;line-height:1.6">Votre compte et l\u2019ensemble de vos données ont été supprimés. Un email de confirmation vous a été envoyé.</p>'
+        + '</div></div>';
+    } else {
+      alert('Erreur : '+(data.error||'inconnue'));
+      btn.disabled = false;
+      btn.textContent = 'Supprimer définitivement';
+    }
+  }catch(e){
+    alert('Erreur : '+e.message);
+    btn.disabled = false;
+    btn.textContent = 'Supprimer définitivement';
+  }
+}
+window.confirmerSuppressionCompte = confirmerSuppressionCompte;
 
 // ── Ouvrir le portail Stripe sur un flux précis ──
 // action : 'update' (changer de formule) · 'cancel' (résilier)
@@ -2094,6 +2187,21 @@ window.updateLivePreviews=updateLivePreviews;window.onAdresseInput=onAdresseInpu
 window.onAvisInput=onAvisInput;window.selectAdresse=selectAdresse;window.hoverAdresse=hoverAdresse;window.onAdresseKey=onAdresseKey;window.selectAvis=selectAvis;
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Modale de suppression de compte — validation par saisie du slug
+  const rgpdInput = document.getElementById('rgpd-confirm-input');
+  if(rgpdInput){
+    rgpdInput.addEventListener('input', function(){
+      document.getElementById('rgpd-btn-confirm').disabled = (this.value.trim() !== SLUG);
+    });
+    rgpdInput.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && this.value.trim() === SLUG) confirmerSuppressionCompte();
+    });
+  }
+  const rgpdModal = document.getElementById('rgpd-modal');
+  if(rgpdModal){
+    rgpdModal.addEventListener('click', function(e){ if(e.target === this) fermerSuppressionCompte(); });
+  }
+
   // Wire buttons via addEventListener — no global scope dependency
   const btnLogin    = document.getElementById('btn-do-login');
   const btnLogout   = document.getElementById('btn-do-logout');
@@ -2161,5 +2269,30 @@ document.addEventListener('DOMContentLoaded', function() {
   initAuth();
 });
 </script>
+<!-- MODALE SUPPRESSION DE COMPTE -->
+<div id="rgpd-modal">
+  <div class="rgpd-modal-box">
+    <h3>Supprimer définitivement mon compte</h3>
+    <div class="rgpd-warn">
+      <strong>⚠ Vous vous apprêtez à supprimer :</strong>
+      <span id="rgpd-modal-nom" style="font-weight:700"></span>
+      <ul>
+        <li>Votre fiche pharmacie et votre page publique</li>
+        <li>Vos commandes et vos articles en promotion</li>
+        <li>Votre abonnement — résilié immédiatement</li>
+        <li>Votre accès de connexion à SwiftyPharm</li>
+      </ul>
+    </div>
+    <div class="rgpd-field">
+      <label>Tapez <strong id="rgpd-modal-slug"></strong> pour confirmer</label>
+      <input type="text" id="rgpd-confirm-input" placeholder="slug-de-la-pharmacie" autocomplete="off">
+    </div>
+    <div class="rgpd-modal-actions">
+      <button class="rgpd-btn-cancel" onclick="fermerSuppressionCompte()">Annuler</button>
+      <button class="rgpd-btn-danger" id="rgpd-btn-confirm" disabled onclick="confirmerSuppressionCompte()">Supprimer définitivement</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
