@@ -161,6 +161,22 @@ nav{
 .t-role{font-size:12px;color:var(--grey);}
 .stars{font-size:14px;color:#fbbf24;margin-bottom:24px;}
 
+  /* ══ FAQ ══ */
+.faq-wrap { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+.faq-item {
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; cursor:pointer; transition:border-color .25s;
+}
+.faq-item:hover { border-color:rgba(28,181,224,.3); }
+.faq-item.open { border-color:rgba(28,181,224,.45); background:rgba(28,181,224,.04); }
+.faq-head { display:flex; align-items:center; gap:14px; padding:18px 20px; }
+.faq-q { flex:1; font-size:14.5px; font-weight:600; color:#fff; }
+.faq-chevron { font-size:12px; color:var(--grey); transition:transform .3s; flex-shrink:0; }
+.faq-item.open .faq-chevron { transform:rotate(180deg); color:var(--cyan); }
+.faq-body { max-height:0; overflow:hidden; transition:max-height .35s cubic-bezier(.25,1,.5,1), padding .3s; padding:0 20px; }
+.faq-item.open .faq-body { max-height:200px; padding:0 20px 20px; }
+.faq-body p { font-size:13.5px; color:var(--grey); line-height:1.7; }
+
 /* ══ CTA FINAL ══ */
 .cta-section{
   padding:96px 24px;text-align:center;
@@ -541,6 +557,75 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
   </div>
 </section>
 
+<!-- ══ FAQ ══ -->
+<section class="section" id="faq">
+  <div class="section-center">
+    <div class="section-tag">Questions fréquentes</div>
+    <h2 class="section-title">Vous avez des questions ?</h2>
+    <p class="section-sub">Voici les réponses aux questions que vous pourriez vous posez. </p>
+  </div>
+
+  <div class="faq-wrap">
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Combien de temps faut-il pour que ma pharmacie soit en ligne ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Comptez moins de 5 minutes entre votre inscription et la mise en ligne de votre page. La création du compte prend environ 3 minutes, le reste est automatique.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Dois-je avoir des compétences techniques pour utiliser SwiftyPharm ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Aucune. Votre back office fonctionne comme un formulaire simple : vous remplissez vos informations, elles apparaissent automatiquement sur votre page. Aucune ligne de code, aucune installation.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Comment mes patients m'envoient-ils leur ordonnance ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Depuis votre page, ils photographient leur ordonnance et l'envoient en quelques secondes. Vous recevez immédiatement un email avec le document, leur nom et leur téléphone.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Puis-je changer d'offre ou résilier à tout moment ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Oui, sans engagement. Vous gérez votre abonnement directement depuis votre back office : changement de formule, mise à jour de carte, résiliation en un clic.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Mes données et celles de mes patients sont-elles sécurisées ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p> Les ordonnances envoyées par vos patients transitent directement vers votre boîte mail et ne sont jamais stockées sur nos serveurs. Vos données professionnelles (compte, coordonnées, commandes) sont hébergées en Europe, chiffrées et sécurisé.  Les paiements sont traités par Stripe, qui ne nous transmet jamais vos données bancaires.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">Que se passe-t-il si je ne renouvelle pas mon abonnement ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Votre page reste en ligne en formule Basic gratuite. Vous perdez uniquement les fonctionnalités liées à votre ancienne offre, rien n'est jamais supprimé.</p></div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-head">
+        <div class="faq-q">La plaque NFC est-elle obligatoire pour utiliser SwiftyPharm ?</div>
+        <div class="faq-chevron">▾</div>
+      </div>
+      <div class="faq-body"><p>Oui. Même si votre page fonctionne indépendamment de la plaque, elle est un accessoire optionnel qui facilite l'accès pour vos patients au comptoir, via NFC (sans contact) ou QR code. Elle offre également un accés instantané Wi-Fi.</p></div>
+    </div>
+
+  </div>
+</section>
+
 <!-- ══ CTA FINAL ══ -->
 <section class="cta-section">
   <div class="section-tag" style="margin-bottom:16px;">Rejoignez SwiftyPharm</div>
@@ -613,6 +698,12 @@ function lpSetBilling(mode) {
 function toggleAcc(el) {
   const wasOpen = el.classList.contains('open');
   document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+// FAQ
+function toggleFaq(el) {
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
 
