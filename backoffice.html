@@ -6,19 +6,82 @@
 <title>SwiftyPharm — Back Office</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════════════════════════════
+   SwiftyPharm — Back Office
+   Direction : Clinique Suisse (Minimalism & Swiss Style)
+   Marque    : navy #000046 · cyan #1cb5e0 · typographie Inter
+   ══════════════════════════════════════════════════════════════ */
 :root{
-  --blue:#1753ff;--blue-d:#1040d8;--blue-l:#eef2ff;--blue-ll:#f5f7ff;
-  --text:#0f172a;--muted:#64748b;--border:#e2e8f0;--bg:#f8fafc;--card:#fff;
-  --green:#16a34a;--red:#dc2626;--amber:#d97706;
-  --radius:14px;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04);
-  --shadow-md:0 4px 12px rgba(0,0,0,.1),0 1px 4px rgba(0,0,0,.06);
+  /* Marque */
+  --navy:#000046; --navy-600:#0a1a6b; --navy-050:#eef1fa;
+  --cyan:#1cb5e0; --cyan-050:#e8f7fc;
+
+  /* Encre & surfaces */
+  --ink:#0f172a; --ink-soft:#55617a; --ink-faint:#8b95a8;
+  --paper:#f7f8fc; --line:#e4e8f0; --line-soft:#eef1f6;
+
+  /* Sémantique */
+  --ok:#15803d; --ok-bg:#eaf6ee;
+  --warn:#b45309; --warn-bg:#fdf6e7;
+  --danger:#be123c; --danger-bg:#fdeef1;
+
+  /* Alias de compatibilité — les 49 var(--blue) du fichier continuent
+     de fonctionner, mais pointent désormais sur la marque. */
+  --blue:var(--navy); --blue-d:var(--navy-600);
+  --blue-l:var(--navy-050); --blue-ll:#f6f8fd;
+  --text:var(--ink); --muted:var(--ink-soft);
+  --border:var(--line); --bg:var(--paper); --card:#fff;
+  --green:var(--ok); --red:var(--danger); --amber:var(--warn);
+
+  /* Le Swiss s'appuie sur le filet et le blanc, pas sur l'ombre portée. */
+  --radius:12px;
+  --shadow:0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 2px 8px rgba(15,23,42,.06);
+
+  /* Rythme 4px */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+body{
+  font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);
+  min-height:100vh;font-size:14px;
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;      /* chiffres alignés partout */
+}
+
+/* ── ICÔNES SVG ── */
+.ico{
+  width:20px;height:20px;flex-shrink:0;
+  stroke:currentColor;stroke-width:1.5;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;
+  display:inline-block;vertical-align:-4px;
+}
+.ico-sm{width:16px;height:16px;vertical-align:-3px}
+.ico-lg{width:24px;height:24px}
+
+/* ── UTILITAIRES (remplacent les style="…" en ligne) ── */
+.row{display:flex;align-items:center;gap:var(--s3)}
+.row-end{display:flex;justify-content:flex-end}
+.row-center{display:flex;justify-content:center;width:100%}
+.grow{flex:1;min-width:0}
+.push{margin-left:auto}
+.mt-1{margin-top:var(--s1)}.mt-2{margin-top:var(--s2)}.mt-3{margin-top:var(--s3)}
+.mt-4{margin-top:var(--s4)}.mt-5{margin-top:var(--s5)}.mt-6{margin-top:var(--s6)}
+.mb-3{margin-bottom:var(--s3)}.mb-4{margin-bottom:var(--s4)}.mb-5{margin-bottom:var(--s5)}
+.w-full{width:100%}
+.muted-note{font-size:11.5px;color:var(--ink-soft);line-height:1.6}
+.center-txt{text-align:center}
+
+/* Accessibilité : anneau de focus visible et cohérent */
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:4px}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
 
 /* ── LOGIN ── */
-#login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#f0f4ff 0%,#fff 60%);z-index:9999;display:flex;align-items:center;justify-content:center}
-.login-box{width:380px;padding:40px 36px;border-radius:20px;box-shadow:0 8px 40px rgba(23,83,255,.12),0 1px 3px rgba(0,0,0,.06);background:#fff;text-align:center;border:1px solid rgba(23,83,255,.08)}
+#login-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#eef1fa 0%,#fff 55%);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{width:380px;padding:40px 36px;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,70,.12),0 1px 3px rgba(0,0,0,.06);background:#fff;text-align:center;border:1px solid rgba(0,0,70,.08)}
 .login-logo{margin-bottom:24px}.login-logo img{height:36px;object-fit:contain}
 .login-box h2{font-size:18px;font-weight:700;margin-bottom:4px;color:var(--text)}
 .login-box p{color:var(--muted);font-size:13px;margin-bottom:28px}
@@ -48,7 +111,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .st-active{background:rgba(255,255,255,.18);color:#fff}
 .st-active::before{content:'';width:7px;height:7px;border-radius:50%;background:#4ade80}
 .st-warn{background:rgba(251,191,36,.22);color:#fde68a}
-.st-warn::before{content:'⚠'}
+.st-warn::before{content:'';display:inline-block;width:12px;height:12px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M10.3%203.9%201.8%2018a2%202%200%200%200%201.7%203h17a2%202%200%200%200%201.7-3L13.7%203.9a2%202%200%200%200-3.4%200Z'%2F%3E%3Cpath%20d%3D'M12%209v4M12%2017h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M10.3%203.9%201.8%2018a2%202%200%200%200%201.7%203h17a2%202%200%200%200%201.7-3L13.7%203.9a2%202%200%200%200-3.4%200Z'%2F%3E%3Cpath%20d%3D'M12%209v4M12%2017h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;flex-shrink:0}
 .st-none{background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
 
 .offre-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.14);border-radius:12px;overflow:hidden;margin-top:20px;position:relative;z-index:2}
@@ -77,12 +140,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .plan-c-alt{font-size:11px;color:var(--muted)}
 .plan-c-list{list-style:none;margin:16px 0 18px;display:flex;flex-direction:column;gap:7px}
 .plan-c-list li{font-size:12.5px;color:var(--text);display:flex;gap:8px;align-items:flex-start;line-height:1.45}
-.plan-c-list li::before{content:'✓';color:var(--green);font-weight:800;flex-shrink:0}
+.plan-c-list li::before{content:'';display:inline-block;width:14px;height:14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm20%206-11%2011-5-5'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm20%206-11%2011-5-5'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;flex-shrink:0;color:var(--ok);margin-top:2px}
 .plan-c-list li.off{color:#cbd5e1}
-.plan-c-list li.off::before{content:'—';color:#e2e8f0}
+.plan-c-list li.off::before{content:'';display:inline-block;width:14px;height:14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M5%2012h14'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M5%2012h14'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;flex-shrink:0;color:#d7dde8;margin-top:2px}
 .plan-c-btn{width:100%;padding:11px;border-radius:10px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center}
 .plan-c-btn-up{background:var(--blue);color:#fff}
-.plan-c-btn-up:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 6px 18px rgba(23,83,255,.28)}
+.plan-c-btn-up:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,70,.22)}
 .plan-c-btn-cur{background:#f1f5f9;color:var(--muted);cursor:default}
 .plan-c-btn-down{background:#fff;border:1.5px solid var(--border);color:var(--muted)}
 .plan-c-btn-down:hover{border-color:var(--blue);color:var(--blue)}
@@ -136,7 +199,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .rgpd-btn-danger:disabled{opacity:.4;cursor:not-allowed}
 
 /* ══ COMMANDES ══ */
-.sms-setting{display:flex;align-items:center;gap:16px;background:var(--blue-l);border:1px solid rgba(23,83,255,.15);border-radius:12px;padding:14px 18px;margin-bottom:18px}
+.sms-setting{display:flex;align-items:center;gap:16px;background:var(--blue-l);border:1px solid rgba(0,0,70,.15);border-radius:12px;padding:14px 18px;margin-bottom:18px}
 .sms-setting-txt{flex:1}
 .sms-setting-txt strong{display:block;font-size:13.5px;font-weight:700;color:var(--text)}
 .sms-setting-txt span{font-size:12px;color:var(--muted);line-height:1.5}
@@ -182,9 +245,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cmd-btn-undo{margin-left:auto;border:none;background:none;color:var(--muted);font-weight:600;font-size:12px}
 .cmd-btn-undo:hover{color:var(--blue)}
 .cmd-notif-tag{display:inline-flex;align-items:center;gap:4px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px}
-.cmd-notif-tag::before{content:'✉';font-size:11px}
+.cmd-notif-tag::before{content:'';display:inline-block;width:12px;height:12px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Crect%20x%3D'2'%20y%3D'4'%20width%3D'20'%20height%3D'16'%20rx%3D'2'%2F%3E%3Cpath%20d%3D'm22%207-10%206L2%207'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Crect%20x%3D'2'%20y%3D'4'%20width%3D'20'%20height%3D'16'%20rx%3D'2'%2F%3E%3Cpath%20d%3D'm22%207-10%206L2%207'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;flex-shrink:0}
 .cmd-notif-tag.sms{background:#dbeafe;color:#1d4ed8}
-.cmd-notif-tag.sms::before{content:'✆'}
+.cmd-notif-tag.sms::before{content:'';display:inline-block;width:12px;height:12px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Crect%20x%3D'5'%20y%3D'2'%20width%3D'14'%20height%3D'20'%20rx%3D'2'%2F%3E%3Cpath%20d%3D'M12%2018h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Crect%20x%3D'5'%20y%3D'2'%20width%3D'14'%20height%3D'20'%20rx%3D'2'%2F%3E%3Cpath%20d%3D'M12%2018h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;flex-shrink:0}
 .cmd-done-tag{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:var(--green);font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px}
 
 .cmd-empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:14px}
@@ -209,7 +272,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ── FORM ── */
 label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
 input[type=text],input[type=url],input[type=tel],input[type=password],input[type=number],input[type=email],input[type=time],textarea,select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
-input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,83,255,.08)}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,0,70,.08)}
 textarea{resize:vertical;min-height:72px}
 .field{margin-bottom:14px}
 .field:last-child{margin-bottom:0}
@@ -219,14 +282,14 @@ textarea{resize:vertical;min-height:72px}
 
 /* ── INPUT PREFIX ── */
 .input-prefix-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;background:#fff;transition:border-color .2s,box-shadow .2s}
-.input-prefix-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,83,255,.08)}
+.input-prefix-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,0,70,.08)}
 .input-prefix{padding:9px 10px;font-size:13px;color:var(--muted);background:#f8fafc;border-right:1px solid var(--border);white-space:nowrap;user-select:none;display:flex;align-items:center}
 .input-prefix-wrap input{border:none;border-radius:0;flex:1;box-shadow:none}
 .input-prefix-wrap input:focus{border:none;box-shadow:none}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 4px 12px rgba(23,83,255,.3)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,70,.24)}
 .btn-secondary{background:#f1f5f9;color:var(--text)}.btn-secondary:hover{background:#e2e8f0}
 .btn-danger{background:#fef2f2;color:var(--red)}.btn-danger:hover{background:#fee2e2}
 .btn-sm{padding:6px 12px;font-size:12px}
@@ -274,7 +337,7 @@ textarea{resize:vertical;min-height:72px}
 .plan-lock strong{color:var(--blue)}
 
 /* ── SECTION 3 — Notifs ── */
-.subscribers-bar{display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--blue-l);border-radius:12px;margin-bottom:16px;border:1px solid rgba(23,83,255,.1)}
+.subscribers-bar{display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--blue-l);border-radius:12px;margin-bottom:16px;border:1px solid rgba(0,0,70,.10)}
 .subscribers-count{font-size:28px;font-weight:800;color:var(--blue)}
 .subscribers-label{font-size:13px;color:var(--blue);font-weight:500}
 .subscribers-sub{font-size:11px;color:var(--muted)}
@@ -337,16 +400,152 @@ textarea{resize:vertical;min-height:72px}
 .img-preview-box{width:72px;height:52px;border-radius:8px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg);flex-shrink:0;cursor:pointer}
 .img-preview-box .img-placeholder{font-size:18px;color:#cbd5e1}
 
+/* ══════════════════════════════════════════════════════════════
+   COUCHE CLINIQUE SUISSE
+   Placée en fin de feuille : affine les composants existants
+   sans toucher à leur structure ni à leurs sélecteurs.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Alignement des icônes dans leurs contextes ── */
+.social-toggle span,
+.plan-lock strong,
+.rgpd-warn strong,
+.cmd-done-tag,
+.cmd-btn,
+.btn{display:inline-flex;align-items:center;gap:8px}
+/* flex (et non inline-flex) : le filet de séparation doit courir
+   sur toute la largeur de la carte, pas seulement sous le texte. */
+.card-title{display:flex;align-items:center;gap:9px}
+.social-toggle span .ico{color:var(--ink-soft)}
+.social-row:focus-within .social-toggle span .ico,
+.social-toggle input:checked ~ span .ico{color:var(--navy)}
+.offre-act-ico .ico{width:19px;height:19px;color:var(--navy)}
+.offre-alert-ico .ico{width:18px;height:18px}
+.cmd-empty-emoji{opacity:.35;color:var(--ink-soft);font-size:0}
+.cmd-empty-emoji .ico{width:38px;height:38px;stroke-width:1.2}
+.logo-preview-box .img-placeholder,
+.img-preview-box .img-placeholder{font-size:0;color:#c3cbd9;display:flex}
+#save-indicator .ico{color:var(--ok)}
+.rgpd-done-ico{display:flex;justify-content:center}
+
+/* ── Typographie : échelle stricte + chiffres tabulaires ── */
+.section-title{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.card-title{
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-soft);padding-bottom:12px;margin-bottom:16px;
+  border-bottom:1px solid var(--line-soft);
+}
+label{font-size:11px;letter-spacing:.05em;color:var(--ink-soft)}
+.stat-num,.cmd-stat-n,.usage-n,.subscribers-count,.offre-prix-val,.offre-nom,
+.plan-c-prix,.cmd-total,.cmd-num,.cmd-art-qty{font-variant-numeric:tabular-nums}
+
+/* ── Surfaces : le filet et le blanc portent la hiérarchie ── */
+.card{
+  border:1px solid var(--line);box-shadow:none;
+  border-radius:var(--radius);padding:22px;
+}
+.cmd-card,.cmd-stat,.usage-c,.plan-c{box-shadow:none;border-color:var(--line)}
+.plan-c{border-width:1px}
+.plan-c.current{border-color:var(--navy);border-width:1.5px;background:linear-gradient(180deg,var(--navy-050),#fff 55%)}
+.plan-c-tag{background:var(--navy);letter-spacing:.06em}
+.plan-c-prix{color:var(--navy)}
+
+/* ── Navigation ── */
+#nav{background:rgba(255,255,255,.92);border-bottom:1px solid var(--line)}
+.nav-tab{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.nav-tab.active{color:var(--navy);border-bottom-width:2px}
+.btn-view-page{font-weight:600}
+
+/* ── Champs ── */
+input[type=text],input[type=url],input[type=tel],input[type=password],
+input[type=number],input[type=email],input[type=time],textarea,select{
+  border-radius:8px;border-color:var(--line);
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,0,70,.09);
+}
+.input-prefix-wrap{border-radius:8px;border-color:var(--line)}
+.input-prefix-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,0,70,.09)}
+.input-prefix{background:var(--paper);color:var(--ink-soft)}
+
+/* ── Boutons ── */
+.btn{border-radius:8px;letter-spacing:-.01em}
+.btn-primary{background:var(--navy)}
+.btn-primary:hover{background:var(--navy-600);box-shadow:0 4px 12px rgba(0,0,70,.22)}
+.plan-c-btn,.cmd-btn,.rgpd-btn,.img-file-btn,.btn-nav-primary{border-radius:8px}
+.plan-c-btn-up{background:var(--navy)}
+.plan-c-btn-up:hover{background:var(--navy-600);box-shadow:0 6px 18px rgba(0,0,70,.2)}
+
+/* ── Bandeau abonnement : seul endroit où le dégradé de marque a du sens ── */
+.offre-hero{border-radius:var(--radius)}
+.offre-nom{letter-spacing:-.03em}
+
+/* ── États sémantiques ── */
+.stock-ok{background:var(--ok-bg);color:var(--ok)}
+.stock-low{background:var(--warn-bg);color:var(--warn)}
+.stock-out{background:var(--danger-bg);color:var(--danger)}
+.cmd-slot{background:var(--navy-050);color:var(--navy)}
+.cmd-btn-ready{background:var(--ok);border-color:var(--ok)}
+.cmd-btn-ready:hover{background:#126b33;border-color:#126b33}
+.cmd-done-tag{background:var(--ok-bg);color:var(--ok)}
+
+/* ── Écran de connexion ── */
+.login-box{border-radius:16px;border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,70,.10)}
+.login-box h2{font-size:19px;letter-spacing:-.02em}
+
+/* ── Verrous d'offre ── */
+.plan-lock{border-style:solid;border-color:var(--line);background:var(--navy-050);border-radius:var(--radius)}
+.plan-lock strong{color:var(--navy)}
+
+
+.notif-status.ok::before{content:'';display:inline-block;width:14px;height:14px;background:currentColor;vertical-align:-2px;margin-right:6px;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm20%206-11%2011-5-5'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm20%206-11%2011-5-5'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+.notif-status.err::before{content:'';display:inline-block;width:14px;height:14px;background:currentColor;vertical-align:-2px;margin-right:6px;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M10.3%203.9%201.8%2018a2%202%200%200%200%201.7%203h17a2%202%200%200%200%201.7-3L13.7%203.9a2%202%200%200%200-3.4%200Z'%2F%3E%3Cpath%20d%3D'M12%209v4M12%2017h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M10.3%203.9%201.8%2018a2%202%200%200%200%201.7%203h17a2%202%200%200%200%201.7-3L13.7%203.9a2%202%200%200%200-3.4%200Z'%2F%3E%3Cpath%20d%3D'M12%209v4M12%2017h.01'%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+
 /* ── MOBILE NAV ── */
 @media(max-width:480px){
   #nav{padding:0 12px}
   .nav-logo img{height:22px}
   .nav-tab{padding:0 10px;font-size:11px}
   .section{padding:18px 12px 40px}
+  .card{padding:16px}
+  /* Sans cela, "Voir ma page" se casse sur trois lignes à 390px */
+  .btn-view-page,.btn-logout{white-space:nowrap;padding:6px 10px;font-size:11.5px}
+  .nav-right{gap:6px}
+  #save-indicator{display:none}
 }
 </style>
 </head>
 <body>
+
+<!-- ══ SPRITE D'ICÔNES · trait 1.5 · hérite de currentColor ══ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.8a2 2 0 0 1 1.7 2Z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1Z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-8v18l-18-8v-2Z"/><path d="M11.6 16.8A3 3 0 1 1 6.5 14"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.6-4.6a2 2 0 0 0-2.8 0L3 21"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7L12.3 19"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.1-9.4L3 7"/></symbol>
+  <symbol id="i-road" viewBox="0 0 24 24"><path d="M4 22 8 2M20 22 16 2M12 6v3M12 13v3M12 20v1"/></symbol>
+  <symbol id="i-city" viewBox="0 0 24 24"><path d="M3 21h18M5 21V5h6v16M15 21V11h4v10"/><path d="M8 9h.01M8 13h.01M8 17h.01"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></symbol>
+</svg>
 
 <!-- LOGIN -->
 <div id="login-overlay">
@@ -380,7 +579,7 @@ textarea{resize:vertical;min-height:72px}
     <button class="nav-tab" id="tab-btn-offre">Mon offre</button>
   </div>
   <div class="nav-right">
-    <span id="save-indicator">Sauvegardé ✓</span>
+    <span id="save-indicator"><svg class="ico ico-sm"><use href="#i-check"/></svg> Sauvegardé</span>
     <a id="btn-view-page" class="btn-view-page" href="#" target="_blank">Voir ma page</a>
     <button class="btn-logout" id="btn-do-logout">Déconnexion</button>
   </div>
@@ -399,12 +598,12 @@ textarea{resize:vertical;min-height:72px}
   <div class="logo-upload-row">
     <div>
       <div class="logo-preview-box" id="logo-preview-box">
-        <span class="img-placeholder">🏥</span>
+        <span class="img-placeholder"><svg class="ico ico-lg"><use href="#i-building"/></svg></span>
         <img id="logo-preview-img" src="" alt="">
       </div>
       <button type="button" id="btn-clear-logo" onclick="clearLogo()"
         style="margin-top:6px;padding:4px 10px;border-radius:7px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#dc2626;display:none;width:100%">
-        ✕ Supprimer
+        <svg class="ico ico-sm"><use href="#i-trash"/></svg> Supprimer
       </button>
     </div>
     <div>
@@ -463,7 +662,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="social-row">
       <label class="social-toggle">
         <input type="checkbox" id="soc-insta-active" checked onchange="autoSave()">
-        <span>📸 Instagram</span>
+        <span><svg class="ico"><use href="#i-instagram"/></svg> Instagram</span>
       </label>
       <div class="input-prefix-wrap" style="flex:1">
         <span class="input-prefix">instagram.com/</span>
@@ -476,7 +675,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="social-row">
       <label class="social-toggle">
         <input type="checkbox" id="soc-fb-active" onchange="autoSave()">
-        <span>📘 Facebook</span>
+        <span><svg class="ico"><use href="#i-facebook"/></svg> Facebook</span>
       </label>
       <div class="input-prefix-wrap" style="flex:1">
         <span class="input-prefix">facebook.com/</span>
@@ -488,7 +687,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="social-row">
       <label class="social-toggle">
         <input type="checkbox" id="soc-avis-active" checked onchange="autoSave()">
-        <span>⭐ Google Avis</span>
+        <span><svg class="ico"><use href="#i-star"/></svg> Google Avis</span>
       </label>
       <div style="flex:1">
         <div class="autocomplete-wrap">
@@ -503,7 +702,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="social-row">
       <label class="social-toggle">
         <input type="checkbox" id="soc-web-active" onchange="autoSave()">
-        <span>🌐 Site Web</span>
+        <span><svg class="ico"><use href="#i-globe"/></svg> Site Web</span>
       </label>
       <input type="url" id="soc-web-val" placeholder="https://votre-pharmacie.fr" oninput="autoSave()" style="flex:1">
     </div>
@@ -511,7 +710,7 @@ textarea{resize:vertical;min-height:72px}
 
   <!-- Horaires -->
   <div class="card">
-    <div class="card-title">🕐 Horaires d'ouverture</div>
+    <div class="card-title"><svg class="ico"><use href="#i-clock"/></svg> Horaires d'ouverture</div>
     <div class="horaires-grid" id="horaires-grid"></div>
   </div>
 </div>
@@ -522,7 +721,7 @@ textarea{resize:vertical;min-height:72px}
 
   <div id="cmd-plan-notice" style="display:none">
     <div class="plan-lock">
-      <strong>🔒 Réservé aux membres Pro et Max</strong>
+      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Pro et Max</strong>
       <p>Le click &amp; collect nécessite une offre Pro ou Max pour recevoir des commandes.</p>
     </div>
   </div>
@@ -563,7 +762,7 @@ textarea{resize:vertical;min-height:72px}
   <div class="section-title">Promotions</div>
   <div id="promo-plan-notice" style="display:none">
     <div class="plan-lock">
-      <strong>🔒 Réservé aux membres Pro et Max</strong>
+      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Pro et Max</strong>
       <p>Vous consultez le contenu mais les articles sont désactivés. Passez à l'offre Pro ou Max pour activer vos promotions.</p>
     </div>
   </div>
@@ -582,7 +781,7 @@ textarea{resize:vertical;min-height:72px}
   <div class="section-title">Notifications push</div>
   <div id="notif-plan-notice" style="display:none">
     <div class="plan-lock">
-      <strong>🔒 Réservé aux membres Max</strong>
+      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Max</strong>
       <p>Passez à l'offre Max pour envoyer des notifications push à vos clients.</p>
     </div>
   </div>
@@ -620,7 +819,7 @@ textarea{resize:vertical;min-height:72px}
         <label>Message</label>
         <textarea id="notif-body" placeholder="Découvrez nos offres exclusives…"></textarea>
       </div>
-      <button class="btn btn-primary" id="btn-send-notif">📣 Envoyer</button>
+      <button class="btn btn-primary" id="btn-send-notif"><svg class="ico ico-sm"><use href="#i-megaphone"/></svg> Envoyer</button>
       <p class="notif-status" id="notif-status"></p>
     </div>
     <div class="card">
@@ -1135,9 +1334,9 @@ function renderAdresses(requete){
     // Ligne secondaire : code postal + commune
     const secondaire = [pr.postcode, pr.city].filter(Boolean).join(' ');
 
-    const icone = type === 'housenumber' ? '🏠'
-                : type === 'street'      ? '🛣️'
-                : type === 'municipality'? '🏙️' : '📍';
+    const icone = type === 'housenumber' ? '<svg class="ico ico-sm"><use href="#i-pin"/></svg>'
+                : type === 'street'      ? '<svg class="ico ico-sm"><use href="#i-road"/></svg>'
+                : type === 'municipality'? '<svg class="ico ico-sm"><use href="#i-city"/></svg>' : '<svg class="ico ico-sm"><use href="#i-pin"/></svg>';
 
     return `<div class="autocomplete-item${i === _addrIndex ? ' active' : ''}"
         data-idx="${i}" onclick="selectAdresse(${i})" onmouseenter="hoverAdresse(${i})">
@@ -1217,7 +1416,7 @@ function selectAdresse(i){
   autoSave();
 
   document.getElementById('adresse-hint').innerHTML =
-    '📍 <a href="' + mapsUrlCoords + '" target="_blank" style="color:var(--blue);font-weight:600">'
+    '<svg class="ico ico-sm"><use href="#i-pin"/></svg> <a href="' + mapsUrlCoords + '" target="_blank" style="color:var(--blue);font-weight:600">'
     + 'Vérifier sur Google Maps →</a>'
     + '<span style="color:#94a3b8;margin-left:8px">' + lat.toFixed(5) + ', ' + lon.toFixed(5) + '</span>';
 }
@@ -1271,7 +1470,7 @@ function selectAvis(name){
 function updateLivePreviews(){
   const insta=document.getElementById('soc-insta-val')?.value.trim();
   const instaEl=document.getElementById('insta-link-preview');
-  if(instaEl) instaEl.innerHTML=insta?'🔗 <a href="https://instagram.com/'+insta+'" target="_blank" style="color:var(--blue)">instagram.com/'+insta+'</a>':'';
+  if(instaEl) instaEl.innerHTML=insta?'<svg class="ico ico-sm"><use href="#i-link"/></svg> <a href="https://instagram.com/'+insta+'" target="_blank" style="color:var(--blue)">instagram.com/'+insta+'</a>':'';
   updateAvisPreview();
   // View page btn
   if(SLUG){
@@ -1288,7 +1487,7 @@ function updateAvisPreview(){
   if(name){
     const q=encodeURIComponent(name+' avis google');
     const url='https://www.google.com/search?q='+q+'&tbm=lcl';
-    el.innerHTML='🔗 <a href="'+url+'" target="_blank" style="color:var(--blue)">Voir les avis Google →</a>';
+    el.innerHTML='<svg class="ico ico-sm"><use href="#i-link"/></svg> <a href="'+url+'" target="_blank" style="color:var(--blue)">Voir les avis Google →</a>';
     // Auto-save the URL
     const cfg=getConfig();
     if(!cfg.pharmacy.reseaux) cfg.pharmacy.reseaux={};
@@ -1329,7 +1528,7 @@ function fillInfo(cfg){
   if(p.adresse_maps){
     const coords = (p.lat && p.lon) ? p.lat.toFixed(5)+', '+p.lon.toFixed(5) : '';
     document.getElementById('adresse-hint').innerHTML =
-      '📍 <a href="'+p.adresse_maps+'" target="_blank" style="color:var(--blue);font-weight:600">Vérifier sur Google Maps →</a>'
+      '<svg class="ico ico-sm"><use href="#i-pin"/></svg> <a href="'+p.adresse_maps+'" target="_blank" style="color:var(--blue);font-weight:600">Vérifier sur Google Maps →</a>'
       + (coords ? '<span style="color:#94a3b8;margin-left:8px">'+coords+'</span>' : '');
   }
   updateLivePreviews();
@@ -1426,7 +1625,7 @@ function buildPromoGrid(cfg){
     const stockBadge=stock===0?'<span class="stock-badge stock-out">Rupture</span>':stock<=5?'<span class="stock-badge stock-low">Peu de stock</span>':'<span class="stock-badge stock-ok">En stock</span>';
     card.innerHTML=`
       <div class="promo-header">
-        <span class="promo-num">ARTICLE ${i+1}${currentPlan==='max' && cfg.promos.length>1 ? ` <button onclick="removePromoSlot(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;padding:0 4px" title="Supprimer">✕</button>` : ''}</span>
+        <span class="promo-num">ARTICLE ${i+1}${currentPlan==='max' && cfg.promos.length>1 ? ` <button onclick="removePromoSlot(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;padding:0 4px" title="Supprimer"><svg class="ico ico-sm"><use href="#i-x"/></svg></button>` : ''}</span>
         <div class="toggle-wrap">
           <span class="toggle-label-txt">Actif</span>
           <label class="toggle">
@@ -1440,7 +1639,7 @@ function buildPromoGrid(cfg){
           <label>Image du produit</label>
           <div class="img-upload-row">
             <div class="img-preview-box" id="promo-thumb-${i}" data-imgdata="${esc(imgSrc)}" onclick="document.getElementById('promo-file-${i}').click()">
-              ${imgSrc?`<img src="${esc(imgSrc)}" style="display:block;width:100%;height:100%;object-fit:cover">`:'<span class="img-placeholder">🖼</span>'}
+              ${imgSrc?`<img src="${esc(imgSrc)}" style="display:block;width:100%;height:100%;object-fit:cover">`:'<span class="img-placeholder"><svg class="ico ico-lg"><use href="#i-image"/></svg></span>'}
             </div>
             <div style="flex:1">
               <label class="img-file-btn" style="margin-bottom:5px;display:inline-flex">＋ Joindre<input type="file" id="promo-file-${i}" accept="image/*" onchange="handlePromoImg(${i},event)" style="display:none"></label>
@@ -1491,7 +1690,7 @@ function handlePromoImg(i,e){
 }
 function updatePromoThumb(i,src){
   const box=document.getElementById('promo-thumb-'+i);
-  box.innerHTML=src?`<img src="${src}" style="display:block;width:100%;height:100%;object-fit:cover">`:'<span class="img-placeholder">🖼</span>';
+  box.innerHTML=src?`<img src="${src}" style="display:block;width:100%;height:100%;object-fit:cover">`:'<span class="img-placeholder"><svg class="ico ico-lg"><use href="#i-image"/></svg></span>';
   box.dataset.imgdata=src;
 }
 function onPromoImgUrl(i){updatePromoThumb(i,document.getElementById('promo-img-'+i).value);autoSave();}
@@ -1653,7 +1852,7 @@ function renderOffre(){
   let alerte = '';
   if(d.statut === 'past_due'){
     alerte = '<div class="offre-alert offre-alert-danger">'
-      + '<span class="offre-alert-ico">⚠</span>'
+      + '<span class="offre-alert-ico"><svg class="ico"><use href="#i-alert"/></svg></span>'
       + '<div><strong>Votre dernier paiement a échoué</strong>'
       + 'Mettez à jour votre moyen de paiement pour conserver l\'accès à vos fonctionnalités. '
       + 'Stripe réessaiera automatiquement dans les prochains jours.</div></div>';
@@ -1726,19 +1925,19 @@ function renderOffre(){
     actions = '<div class="offre-section-t">Gérer mon abonnement</div>'
       + '<div class="offre-actions">'
       + '<button class="offre-act" onclick="ouvrirPortail(\'payment\')">'
-      +   '<div class="offre-act-ico">💳</div>'
+      +   '<div class="offre-act-ico"><svg class="ico"><use href="#i-card"/></svg></div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">Moyen de paiement</div>'
       +     '<div class="offre-act-d">Modifier votre carte bancaire ou vos coordonnées de facturation</div></div>'
       +   '<span class="offre-act-fl">→</span>'
       + '</button>'
       + '<button class="offre-act" onclick="ouvrirPortail(\'portal\')">'
-      +   '<div class="offre-act-ico">📄</div>'
+      +   '<div class="offre-act-ico"><svg class="ico"><use href="#i-doc"/></svg></div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">Mes factures</div>'
       +     '<div class="offre-act-d">Consulter et télécharger l\'historique de vos paiements</div></div>'
       +   '<span class="offre-act-fl">→</span>'
       + '</button>'
       + '<button class="offre-act" onclick="'+(d.resiliation_prevue ? 'reactiverAbonnement()' : 'ouvrirPortail(\'cancel\')')+'">'
-      +   '<div class="offre-act-ico">'+(d.resiliation_prevue ? '↩️' : '⏸️')+'</div>'
+      +   '<div class="offre-act-ico">'+(d.resiliation_prevue ? '<svg class="ico"><use href="#i-undo"/></svg>' : '<svg class="ico"><use href="#i-pause"/></svg>')+'</div>'
       +   '<div class="offre-act-txt"><div class="offre-act-t">'+(d.resiliation_prevue ? 'Réactiver mon abonnement' : 'Résilier mon abonnement')+'</div>'
       +     '<div class="offre-act-d">'+(d.resiliation_prevue
             ? 'Annuler la résiliation et poursuivre votre abonnement'
@@ -1807,7 +2006,9 @@ async function confirmerSuppressionCompte(){
       localStorage.clear();
       sessionStorage.clear();
       document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Inter,sans-serif">'
-        + '<div><div style="font-size:40px;margin-bottom:16px">✓</div>'
+        // Cet écran remplace tout le <body> : le sprite d'icônes disparaît,
+        // le SVG doit donc être autonome (pas de <use href="#…">).
+        + '<div><div style="margin-bottom:16px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></div>'
         + '<div style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px">Compte supprimé</div>'
         + '<p style="font-size:14px;color:#64748b;max-width:340px;line-height:1.6">Votre compte et l\u2019ensemble de vos données ont été supprimés. Un email de confirmation vous a été envoyé.</p>'
         + '</div></div>';
@@ -1992,7 +2193,7 @@ function renderCommandes(){
       : cmdFilter === 'jour'
         ? 'Aucune commande aujourd\'hui.'
         : 'Aucune commande pour le moment.';
-    wrap.innerHTML = '<div class="cmd-empty"><div class="cmd-empty-emoji">📦</div>'+msg+'</div>';
+    wrap.innerHTML = '<div class="cmd-empty"><div class="cmd-empty-emoji"><svg class="ico ico-lg"><use href="#i-box"/></svg></div>'+msg+'</div>';
     return;
   }
 
@@ -2021,7 +2222,7 @@ function renderCommandes(){
       +   '</div>'
       +   '<div class="cmd-when">'
       +     '<span class="cmd-slot'+(passed?' passed':'')+'">'
-      +       (passed ? '⚠ ' : '')+esc(cmd.heure_debut||'')+' – '+esc(cmd.heure_fin||'')
+      +       (passed ? '<svg class="ico ico-sm"><use href="#i-alert"/></svg> ' : '')+esc(cmd.heure_debut||'')+' – '+esc(cmd.heure_fin||'')
       +     '</span>'
       +     '<div class="cmd-ago">'+timeAgo(cmd.created_at)+'</div>'
       +   '</div>'
@@ -2033,9 +2234,9 @@ function renderCommandes(){
       +   (cmd.email_confirm_at ? '<span class="cmd-notif-tag">Email</span>' : '')
       +   (cmd.sms_confirm_at   ? '<span class="cmd-notif-tag sms">SMS</span>' : '')
       +   (prete
-          ? '<span class="cmd-done-tag">✓ Préparée</span>'
+          ? '<span class="cmd-done-tag"><svg class="ico ico-sm"><use href="#i-check"/></svg> Préparée</span>'
             + '<button class="cmd-btn cmd-btn-undo" onclick="setCmdStatut(\''+cmd.id+'\',null)">Annuler</button>'
-          : '<button class="cmd-btn cmd-btn-ready" onclick="setCmdStatut(\''+cmd.id+'\',\'prete\')">✓ Marquer préparée</button>'
+          : '<button class="cmd-btn cmd-btn-ready" onclick="setCmdStatut(\''+cmd.id+'\',\'prete\')"><svg class="ico ico-sm"><use href="#i-check"/></svg> Marquer préparée</button>'
             + (tel ? '<a class="cmd-btn" href="tel:'+telClean+'">Appeler</a>' : '')
          )
       + '</div>'
@@ -2131,7 +2332,7 @@ function renderHistory(history){
   el.innerHTML=[...history].reverse().slice(0,5).map(h=>`
     <div class="notif-item">
       <div><div class="notif-item-title">${h.title}</div><div class="notif-item-date">${h.date}</div></div>
-      <span style="font-size:11px;color:${h.ok?'var(--green)':'var(--red)'}">${h.ok?'✓ Envoyé':'✗ Échoué'}</span>
+      <span style="font-size:11px;color:${h.ok?'var(--green)':'var(--red)'}">${h.ok?'<svg class="ico ico-sm"><use href="#i-check"/></svg> Envoyé':'<svg class="ico ico-sm"><use href="#i-x"/></svg> Échoué'}</span>
     </div>`).join('');
 }
 
@@ -2142,17 +2343,17 @@ async function sendNotification(){
   const title=document.getElementById('notif-title').value.trim();
   const body=document.getElementById('notif-body').value.trim();
   const status=document.getElementById('notif-status');
-  if(!appid||!apikey){status.className='notif-status err';status.textContent='⚠ Configurez OneSignal.';return;}
-  if(!title||!body){status.className='notif-status err';status.textContent='⚠ Titre et message requis.';return;}
+  if(!appid||!apikey){status.className='notif-status err';status.textContent='Configurez OneSignal.';return;}
+  if(!title||!body){status.className='notif-status err';status.textContent='Titre et message requis.';return;}
   status.className='notif-status';status.textContent='Envoi…';status.style.display='block';
   let ok=false;
   try{
     const res=await fetch('https://onesignal.com/api/v1/notifications',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Basic '+apikey},body:JSON.stringify({app_id:appid,included_segments:['Subscribed Users'],headings:{fr:title},contents:{fr:body}})});
     ok=res.ok;
     const data=await res.json();
-    if(data.errors){ok=false;status.textContent='✗ '+JSON.stringify(data.errors);}
-    else status.textContent='✓ Notification envoyée !';
-  }catch(e){status.textContent='✗ Erreur : '+e.message;}
+    if(data.errors){ok=false;status.textContent=JSON.stringify(data.errors);}
+    else status.textContent='Notification envoyée.';
+  }catch(e){status.textContent='Erreur : '+e.message;}
   status.className='notif-status '+(ok?'ok':'err');
   const entry={title,date:new Date().toLocaleString('fr-FR'),ok};
   cfg.notifHistory=cfg.notifHistory||[];cfg.notifHistory.push(entry);
@@ -2319,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="rgpd-modal-box">
     <h3>Supprimer définitivement mon compte</h3>
     <div class="rgpd-warn">
-      <strong>⚠ Vous vous apprêtez à supprimer :</strong>
+      <strong><svg class="ico ico-sm"><use href="#i-alert"/></svg> Vous vous apprêtez à supprimer :</strong>
       <span id="rgpd-modal-nom" style="font-weight:700"></span>
       <ul>
         <li>Votre fiche pharmacie et votre page publique</li>
