@@ -173,6 +173,11 @@ body{
 .offre-loading{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
 
 /* ══ ZONE RGPD ══ */
+.acces-banner{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#f0f9ff,#fff);border:1.5px solid #bae6fd;border-radius:12px;padding:16px 18px;flex-wrap:wrap;margin-top:26px}
+.acces-banner-txt{flex:1;min-width:220px}
+.acces-banner-txt strong{display:block;font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px}
+.acces-banner-txt span{font-size:12px;color:var(--muted);line-height:1.6}
+.acces-badge{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;background:#dcfce7;color:#15803d;border-radius:20px;padding:6px 14px;white-space:nowrap;flex-shrink:0}
 .rgpd-zone{display:flex;align-items:center;gap:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px 18px;flex-wrap:wrap}
 .rgpd-txt{flex:1;min-width:220px}
 .rgpd-txt strong{display:block;font-size:13.5px;font-weight:700;color:#991b1b;margin-bottom:4px}
@@ -199,10 +204,6 @@ body{
 .rgpd-btn-danger:disabled{opacity:.4;cursor:not-allowed}
 
 /* ══ COMMANDES ══ */
-.sms-setting{display:flex;align-items:center;gap:16px;background:var(--blue-l);border:1px solid rgba(0,0,70,.15);border-radius:12px;padding:14px 18px;margin-bottom:18px}
-.sms-setting-txt{flex:1}
-.sms-setting-txt strong{display:block;font-size:13.5px;font-weight:700;color:var(--text)}
-.sms-setting-txt span{font-size:12px;color:var(--muted);line-height:1.5}
 .cmd-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
 .cmd-filter{padding:7px 15px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s}
 .cmd-filter.active{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
@@ -719,8 +720,6 @@ input:focus,textarea:focus,select:focus{
     <button class="nav-tab active" id="tab-btn-info"><svg class="ico tab-ico"><use href="#i-user"/></svg><span class="tab-lbl">Mes infos</span></button>
     <button class="nav-tab" id="tab-btn-commandes"><svg class="ico tab-ico"><use href="#i-box"/></svg><span class="tab-lbl">Commandes</span><span class="tab-badge" id="cmd-badge">0</span></button>
     <button class="nav-tab" id="tab-btn-promo"><svg class="ico tab-ico"><use href="#i-tag"/></svg><span class="tab-lbl">Promotions</span></button>
-    <button class="nav-tab" id="tab-btn-notif"><svg class="ico tab-ico"><use href="#i-bell"/></svg><span class="tab-lbl">Notifications</span></button>
-    <button class="nav-tab" id="tab-btn-offre"><svg class="ico tab-ico"><use href="#i-card"/></svg><span class="tab-lbl">Mon offre</span></button>
   </div>
   <div class="nav-right">
     <span id="save-indicator"><svg class="ico ico-sm"><use href="#i-check"/></svg> Sauvegardé</span>
@@ -867,20 +866,39 @@ input:focus,textarea:focus,select:focus{
     <div class="card-title"><svg class="ico"><use href="#i-clock"/></svg> Horaires d'ouverture</div>
     <div class="horaires-grid" id="horaires-grid"></div>
   </div>
+
+  <!-- Mon compte — accès à vie + suppression RGPD -->
+  <div class="acces-banner">
+    <div class="acces-banner-txt">
+      <strong>Accès à vie · SwiftyPharm</strong>
+      <span>Toutes les fonctionnalités sont débloquées, sans abonnement ni renouvellement.
+      Aucun prélèvement ne sera jamais effectué sur votre compte.</span>
+    </div>
+    <span class="acces-badge">Actif à vie</span>
+  </div>
+
+  <div class="offre-section-t" style="margin-top:26px">Vos données</div>
+  <div class="rgpd-zone">
+    <div class="rgpd-txt">
+      <strong>Supprimer définitivement mon compte</strong>
+      <p>Cette action efface votre fiche pharmacie, vos commandes et vos promotions de nos
+      systèmes, et supprime votre accès de connexion. L'opération est irréversible.</p>
+    </div>
+    <button class="rgpd-btn" onclick="ouvrirSuppressionCompte()">Supprimer mon compte</button>
+  </div>
+  <p style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6">
+    Conformément au RGPD, vous pouvez également demander la rectification ou l'export de vos
+    données à contact@swiftup.fr. Consultez notre
+    <a href="/privacy.html" target="_blank" style="color:var(--blue)">politique de confidentialité</a>.
+  </p>
 </div>
 
 <!-- SECTION — Commandes -->
 <div class="section" id="section-commandes">
   <div class="section-title">Commandes click &amp; collect</div>
 
-  <div id="cmd-plan-notice" style="display:none">
-    <div class="plan-lock">
-      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Pro et Max</strong>
-      <p>Le click &amp; collect nécessite une offre Pro ou Max pour recevoir des commandes.</p>
-    </div>
-  </div>
-
   <div id="cmd-content">
+
     <div class="cmd-stats">
       <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-attente" style="color:var(--amber)">—</div><div class="cmd-stat-l">À préparer</div></div>
       <div class="cmd-stat"><div class="cmd-stat-n" id="cmd-n-jour">—</div><div class="cmd-stat-l">Aujourd'hui</div></div>
@@ -903,16 +921,6 @@ input:focus,textarea:focus,select:focus{
       <div class="top-list" id="top-list"></div>
     </div>
 
-    <div class="sms-setting" id="sms-setting">
-      <div class="sms-setting-txt">
-        <strong>Récapitulatif SMS</strong>
-        <span>En plus de l'email, envoyer un SMS au client dès qu'il valide sa commande</span>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="sms-actif-toggle" checked onchange="toggleSmsActif()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
 
     <div class="cmd-toolbar">
       <button class="cmd-filter active" data-cmd-filter="attente">À préparer<span class="n" id="f-n-attente"></span></button>
@@ -930,12 +938,6 @@ input:focus,textarea:focus,select:focus{
 <!-- SECTION 2 — Promos -->
 <div class="section" id="section-promo">
   <div class="section-title">Promotions</div>
-  <div id="promo-plan-notice" style="display:none">
-    <div class="plan-lock">
-      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Pro et Max</strong>
-      <p>Vous consultez le contenu mais les articles sont désactivés. Passez à l'offre Pro ou Max pour activer vos promotions.</p>
-    </div>
-  </div>
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
     <a id="btn-view-promos" href="#" target="_blank" class="btn btn-outline btn-sm">Voir ma page promos</a>
   </div>
@@ -949,72 +951,12 @@ input:focus,textarea:focus,select:focus{
     </div>
   </div>
   <div class="promo-grid" id="promo-grid"></div>
-  <div id="add-promo-wrap" style="display:none;justify-content:center;margin-top:18px">
+  <div id="add-promo-wrap" style="display:flex;justify-content:center;margin-top:18px">
     <button class="btn btn-outline" id="btn-add-promo">＋ Ajouter un article</button>
   </div>
   <p id="promo-count-hint" style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px"></p>
 </div>
 
-<!-- SECTION 3 — Notifs -->
-<div class="section" id="section-notif">
-  <div class="section-title">Notifications push</div>
-  <div id="notif-plan-notice" style="display:none">
-    <div class="plan-lock">
-      <strong><svg class="ico ico-sm"><use href="#i-lock"/></svg> Réservé aux membres Max</strong>
-      <p>Passez à l'offre Max pour envoyer des notifications push à vos clients.</p>
-    </div>
-  </div>
-  <div id="notif-content">
-    <div class="subscribers-bar">
-      <div>
-        <div class="subscribers-count" id="sub-count">—</div>
-        <div class="subscribers-label">Abonnés aux notifications</div>
-        <div class="subscribers-sub" id="sub-updated">—</div>
-      </div>
-      <div style="margin-left:auto">
-        <button class="btn btn-secondary btn-sm" id="btn-fetch-subs">Actualiser</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Paramètres OneSignal</div>
-      <div class="field-row">
-        <div class="field">
-          <label>App ID OneSignal</label>
-          <input type="text" id="os-appid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="autoSave()">
-        </div>
-        <div class="field">
-          <label>Clé REST API</label>
-          <input type="text" id="os-apikey" placeholder="REST API Key" oninput="autoSave()">
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Envoyer une notification</div>
-      <div class="field">
-        <label>Titre</label>
-        <input type="text" id="notif-title" placeholder="Promotion du jour !">
-      </div>
-      <div class="field">
-        <label>Message</label>
-        <textarea id="notif-body" placeholder="Découvrez nos offres exclusives…"></textarea>
-      </div>
-      <button class="btn btn-primary" id="btn-send-notif"><svg class="ico ico-sm"><use href="#i-megaphone"/></svg> Envoyer</button>
-      <p class="notif-status" id="notif-status"></p>
-    </div>
-    <div class="card">
-      <div class="card-title">Historique (5 dernières)</div>
-      <div id="notif-history"></div>
-    </div>
-  </div>
-</div>
-
-<!-- SECTION — Mon offre -->
-<div class="section" id="section-offre">
-  <div class="section-title">Mon offre</div>
-  <div id="offre-body">
-    <div class="offre-loading">Chargement de votre abonnement…</div>
-  </div>
-</div>
 
 </div><!-- /app -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1037,7 +979,7 @@ const sb = supabase.createClient(SUPABASE_URL_BASE, SUPABASE_KEY);
 
 const params = new URLSearchParams(window.location.search);
 let SLUG = params.get('slug') || localStorage.getItem('swiftlink_slug') || '';
-let currentPlan = 'basic';
+// Accès à vie : plus aucune notion d'offre ni de restriction.
 setStorageKey(SLUG);
 
 const DEFAULTS = {
@@ -1045,7 +987,7 @@ const DEFAULTS = {
     reseaux:{ instagram:{actif:true,url:''}, facebook:{actif:false,url:''}, google:{actif:true,url:''}, website:{actif:false,url:''} },
     horairesSemaine:{}, logoData:'', logo:''},
   promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
-  onesignal:{appid:'',apikey:''}, notifHistory:[], credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
+  credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
 };
 
 // ═══════════════════════════════
@@ -1057,7 +999,6 @@ function loadConfig(){
     if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
     const cfg=JSON.parse(raw);
     while(cfg.promos.length<8) cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
-    if(currentPlan!=='max' && cfg.promos.length>8) cfg.promos=cfg.promos.slice(0,8);
     if(!cfg.credentials) cfg.credentials={id:DEFAULT_ID,pw:DEFAULT_PW};
     return cfg;
   }catch(e){return JSON.parse(JSON.stringify(DEFAULTS));}
@@ -1135,7 +1076,6 @@ async function loadFromSupabase(){
       const rows=await res.json();
       if(rows&&rows.length>0){
         const d=rows[0];
-        currentPlan=d.plan||'basic';
 
         // Supabase fait autorité — on repart des valeurs par défaut
         const cfg=JSON.parse(JSON.stringify(DEFAULTS));
@@ -1151,9 +1091,6 @@ async function loadFromSupabase(){
         cfg.pharmacy.adresse_maps = d.adresse_maps || '';
         cfg.pharmacy.lat          = d.lat ?? null;
 
-        // État du réglage SMS
-        const smsToggle = document.getElementById('sms-actif-toggle');
-        if(smsToggle) smsToggle.checked = d.sms_actif !== false;
         cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
@@ -1202,7 +1139,6 @@ async function loadFromSupabase(){
         localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
         fillInfo(cfg);
         buildHorairesGrid(cfg.pharmacy.horairesSemaine||{});
-        applyPlanRestrictions();
         buildPromoGrid(cfg);
         _appReady = true;   // les sauvegardes peuvent démarrer
       }
@@ -1213,50 +1149,10 @@ async function loadFromSupabase(){
   }
 }
 
-function applyPlanRestrictions(){
-  const isPaid = currentPlan==='pro' || currentPlan==='max';
-  const isMax  = currentPlan==='max';
 
-  // Promotions : Pro et Max y ont droit
-  const promoNotice=document.getElementById('promo-plan-notice');
-  if(promoNotice) promoNotice.style.display=isPaid?'none':'block';
-  const promoBtnWrap=document.getElementById('btn-view-promos-wrap');
-  if(promoBtnWrap) promoBtnWrap.style.display=isPaid?'flex':'none';
 
-  // Notifications : Max uniquement
-  const notifNotice=document.getElementById('notif-plan-notice');
-  const notifContent=document.getElementById('notif-content');
-  if(notifNotice) notifNotice.style.display=isMax?'none':'block';
-  if(notifContent) notifContent.style.display=isMax?'block':'none';
-
-  // Toggles promos désactivés pour Basic
-  if(!isPaid){
-    document.querySelectorAll('[id^="promo-active-"]').forEach(el=>{el.disabled=true;});
-  }
-
-  // Commandes : Pro et Max
-  const cmdNotice  = document.getElementById('cmd-plan-notice');
-  const cmdContent = document.getElementById('cmd-content');
-  if(cmdNotice)  cmdNotice.style.display  = isPaid ? 'none' : 'block';
-  if(cmdContent) cmdContent.style.display = isPaid ? 'block' : 'none';
-  const cmdTab = document.getElementById('tab-btn-commandes');
-  if(cmdTab) cmdTab.style.display = isPaid ? 'flex' : 'none';
-
-  // Réglage SMS : offre Max uniquement
-  const smsSetting = document.getElementById('sms-setting');
-  if(smsSetting) smsSetting.style.display = isMax ? 'flex' : 'none';
-
-  // Bouton "ajouter un article" visible pour Max seulement
-  const addWrap=document.getElementById('add-promo-wrap');
-  if(addWrap) addWrap.style.display=isMax?'flex':'none';
-}
-
-// Nombre d'articles autorisés selon l'offre
-function maxPromoSlots(){
-  if(currentPlan==='max') return 999;   // illimité
-  if(currentPlan==='pro') return 8;
-  return 8;                              // Basic : visibles mais désactivés
-}
+// Articles en promotion : illimités pour tout le monde.
+function maxPromoSlots(){ return 999; }
 
 // ═══════════════════════════════
 //  AUTH
@@ -1271,60 +1167,20 @@ async function initAuth(){
   // …le reste du code existant
   const {data:{session}}=await sb.auth.getSession();
   if(session){
-    const {data}=await sb.from('pharmacies').select('slug,plan').eq('user_id',session.user.id).single();
-    if(data){SLUG=data.slug;currentPlan=data.plan||'basic';localStorage.setItem('swiftlink_slug',SLUG);setStorageKey(SLUG);}
+    const {data}=await sb.from('pharmacies').select('slug').eq('user_id',session.user.id).single();
+    if(data){SLUG=data.slug;localStorage.setItem('swiftlink_slug',SLUG);setStorageKey(SLUG);}
     hideLogin();
-    resyncAbonnementSilencieux();
     return;
   }
   const local=sessionStorage.getItem(SESSION_KEY);
   if(local==='ok'){
     hideLogin();
-    resyncAbonnementSilencieux();
     return;
   }
   document.getElementById('login-overlay').style.display='flex';
   document.getElementById('login-id').focus();
 }
 
-// ══════════════════════════════════════
-//  RESYNCHRONISATION SILENCIEUSE — abonnement Stripe
-// ══════════════════════════════════════
-// Recale currentPlan sur l'état réel de Stripe à chaque connexion,
-// sans attendre que le pharmacien consulte l'onglet Mon offre.
-// Corrige le cas où un webhook Stripe a échoué et n'a jamais
-// mis Supabase à jour (résiliation, échec de paiement, etc.)
-async function resyncAbonnementSilencieux(){
-  if(!SLUG) return;
-  try{
-    const res = await fetch('/api/stripe-portal', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ slug: SLUG, action:'details' })
-    });
-    if(!res.ok) return;
-    const d = await res.json();
-    if(!d || !d.plan) return;
-
-    const planAvant = currentPlan;
-    if(d.plan !== currentPlan){
-      currentPlan = d.plan;
-      applyPlanRestrictions();
-
-      // Si l'onglet Promotions est visible, reconstruire la grille
-      // avec les nouvelles limites (ex: Max → Pro fait retomber à 8 slots)
-      if(document.getElementById('section-promo')?.classList.contains('active')){
-        buildPromoGrid(getConfig());
-      }
-
-      console.log(`Abonnement resynchronisé : ${planAvant} → ${currentPlan}`);
-    }
-  }catch(e){
-    // Échec silencieux : on ne bloque jamais l'accès au backoffice
-    // pour un problème de resynchronisation en arrière-plan.
-    console.warn('Resynchronisation abonnement impossible :', e.message);
-  }
-}
 
 function doLogin(){
   const cfg=getConfig();
@@ -1359,9 +1215,7 @@ function showTab(name,btn){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('section-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='notif') fetchSubscribers();
   if(name==='commandes') fetchCommandes();
-  if(name==='offre')     chargerOffre();
 }
 
 // ═══════════════════════════════
@@ -1793,11 +1647,8 @@ function buildPromoGrid(cfg){
   if(cfg.promos.length>limit) cfg.promos=cfg.promos.slice(0,limit);
   const hint=document.getElementById('promo-count-hint');
   if(hint){
-    hint.textContent = currentPlan==='max'
-      ? cfg.promos.length+' article'+(cfg.promos.length>1?'s':'')+' · illimité avec l\'offre Max'
-      : cfg.promos.length+' / 8 articles';
+    hint.textContent = cfg.promos.length+' article'+(cfg.promos.length>1?'s':'')+' · illimité';
   }
-  const isPro=currentPlan==='pro';
   cfg.promos.forEach((p,i)=>{
     const card=document.createElement('div');
     card.className='promo-card';card.id='promo-card-'+i;
@@ -1806,16 +1657,16 @@ function buildPromoGrid(cfg){
     const stockBadge=stock===0?'<span class="stock-badge stock-out">Rupture</span>':stock<=5?'<span class="stock-badge stock-low">Peu de stock</span>':'<span class="stock-badge stock-ok">En stock</span>';
     card.innerHTML=`
       <div class="promo-header">
-        <span class="promo-num">ARTICLE ${i+1}${currentPlan==='max' && cfg.promos.length>1 ? ` <button onclick="removePromoSlot(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;padding:0 4px" title="Supprimer"><svg class="ico ico-sm"><use href="#i-x"/></svg></button>` : ''}</span>
+        <span class="promo-num">ARTICLE ${i+1}${cfg.promos.length>1 ? ` <button onclick="removePromoSlot(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;padding:0 4px" title="Supprimer"><svg class="ico ico-sm"><use href="#i-x"/></svg></button>` : ''}</span>
         <div class="toggle-wrap">
           <span class="toggle-label-txt">Actif</span>
           <label class="toggle">
-            <input type="checkbox" id="promo-active-${i}" ${p.active?'checked':''} ${!isPro?'disabled':''} onchange="onPromoToggle(${i})">
+            <input type="checkbox" id="promo-active-${i}" ${p.active?'checked':''} onchange="onPromoToggle(${i})">
             <span class="toggle-slider"></span>
           </label>
         </div>
       </div>
-      <div id="promo-body-${i}" class="${p.active&&isPro?'':'promo-inactive'}">
+      <div id="promo-body-${i}" class="${p.active?'':'promo-inactive'}">
         <div class="field">
           <label>Image du produit</label>
           <div class="img-upload-row">
@@ -1903,255 +1754,6 @@ function collectPromos(){
   });
 }
 
-// ═══════════════════════════════
-//  MON OFFRE
-// ═══════════════════════════════
-const PLANS = {
-  basic: {
-    nom:'Basic', prixMois:0, prixAn:0,
-    features:[
-      ['Page vitrine personnalisée', true],
-      ['Coordonnées, horaires, itinéraire', true],
-      ['Réseaux sociaux et avis Google', true],
-      ['Envoi d\'ordonnances', false],
-      ['Promotions click & collect', false],
-      ['SMS clients', false],
-    ]
-  },
-  pro: {
-    nom:'Pro', prixMois:4.90, prixAn:49.90,
-    features:[
-      ['Tout ce qu\'inclut Basic', true],
-      ['Envoi d\'ordonnances par email', true],
-      ['Promotions click & collect', true],
-      ['Email de confirmation client', true],
-      ['Support sous 48h', true],
-      ['SMS clients', false],
-    ]
-  },
-  max: {
-    nom:'Max', prixMois:12.90, prixAn:129,
-    features:[
-      ['Tout ce qu\'inclut Pro', true],
-      ['Articles en promotion illimités', true],
-      ['SMS de confirmation client', true],
-      ['Notifications push', true],
-      ['Support prioritaire sous 24h', true],
-      ['Statistiques avancées', true],
-    ]
-  }
-};
-
-// Liens Stripe — mêmes valeurs que dans signup.html
-const STRIPE_LINKS = {
-  pro_monthly: 'https://buy.stripe.com/REMPLACE_PRO_MENSUEL',
-  pro_yearly:  'https://buy.stripe.com/REMPLACE_PRO_ANNUEL',
-  max_monthly: 'https://buy.stripe.com/REMPLACE_MAX_MENSUEL',
-  max_yearly:  'https://buy.stripe.com/REMPLACE_MAX_ANNUEL',
-};
-
-let offreData = null;
-
-function fmtDate(iso){
-  if(!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-}
-function fmtEuro(n){
-  if(n == null) return '—';
-  return Number(n).toFixed(2).replace('.',',')+' €';
-}
-
-async function chargerOffre(){
-  const box = document.getElementById('offre-body');
-  if(!SLUG){ box.innerHTML = '<div class="offre-loading">Pharmacie non identifiée.</div>'; return; }
-
-  box.innerHTML = '<div class="offre-loading">Chargement de votre abonnement…</div>';
-
-  try{
-    const res = await fetch('/api/stripe-portal', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ slug: SLUG, action:'details' })
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    offreData = await res.json();
-  }catch(e){
-    console.warn('Détails Stripe indisponibles :', e);
-    // Repli sur les données locales
-    offreData = { plan: currentPlan || 'basic', statut:'none' };
-  }
-
-  renderOffre();
-}
-
-function renderOffre(){
-  const d       = offreData || {};
-  const plan    = d.plan || 'basic';
-  const info    = PLANS[plan] || PLANS.basic;
-  const annuel  = d.periodicite === 'yearly';
-  const payant  = plan !== 'basic';
-
-  // ── Bandeau ──
-  let statutHtml = '';
-  if(d.statut === 'active' && d.resiliation_prevue){
-    statutHtml = '<span class="offre-statut st-warn">Résiliation programmée</span>';
-  } else if(d.statut === 'active'){
-    statutHtml = '<span class="offre-statut st-active">Abonnement actif</span>';
-  } else if(d.statut === 'past_due'){
-    statutHtml = '<span class="offre-statut st-warn">Paiement en attente</span>';
-  } else if(d.statut === 'canceled'){
-    statutHtml = '<span class="offre-statut st-none">Abonnement résilié</span>';
-  } else {
-    statutHtml = '<span class="offre-statut st-none">Offre gratuite</span>';
-  }
-
-  const prixAffiche = payant
-    ? (d.montant != null ? fmtEuro(d.montant) : fmtEuro(annuel ? info.prixAn : info.prixMois))
-    : 'Gratuit';
-  const perAffiche = payant ? (annuel ? 'par an' : 'par mois') : 'pour toujours';
-
-  let metaHtml = '';
-  if(payant){
-    metaHtml = '<div class="offre-meta">'
-      + '<div class="offre-meta-i"><div class="offre-meta-l">Abonné depuis</div><div class="offre-meta-v">'+fmtDate(d.abonne_depuis)+'</div></div>'
-      + '<div class="offre-meta-i"><div class="offre-meta-l">'+(d.resiliation_prevue ? 'Accès jusqu\'au' : 'Prochaine échéance')+'</div><div class="offre-meta-v">'+fmtDate(d.resiliation_prevue ? (d.fin_periode||d.prochaine_echeance) : d.prochaine_echeance)+'</div></div>'
-      + '<div class="offre-meta-i"><div class="offre-meta-l">Moyen de paiement</div><div class="offre-meta-v">'
-      +   (d.carte ? esc(d.carte.marque.toUpperCase())+' •••• '+esc(d.carte.fin) : '—')
-      + '</div></div>'
-      + '</div>';
-  }
-
-  const hero = '<div class="offre-hero">'
-    + '<div class="offre-hero-top">'
-    +   '<div><div class="offre-label">Votre formule</div><div class="offre-nom">'+esc(info.nom)+'</div></div>'
-    +   '<div class="offre-prix"><div class="offre-prix-val">'+prixAffiche+'</div><div class="offre-prix-per">'+perAffiche+'</div></div>'
-    + '</div>'
-    + statutHtml
-    + metaHtml
-    + '</div>';
-
-  // ── Alertes ──
-  let alerte = '';
-  if(d.statut === 'past_due'){
-    alerte = '<div class="offre-alert offre-alert-danger">'
-      + '<span class="offre-alert-ico"><svg class="ico"><use href="#i-alert"/></svg></span>'
-      + '<div><strong>Votre dernier paiement a échoué</strong>'
-      + 'Mettez à jour votre moyen de paiement pour conserver l\'accès à vos fonctionnalités. '
-      + 'Stripe réessaiera automatiquement dans les prochains jours.</div></div>';
-  } else if(d.resiliation_prevue){
-    alerte = '<div class="offre-alert offre-alert-warn">'
-      + '<span class="offre-alert-ico">⏳</span>'
-      + '<div><strong>Résiliation programmée</strong>'
-      + 'Vous conservez l\'accès à toutes vos fonctionnalités jusqu\'au '+fmtDate(d.fin_periode||d.prochaine_echeance)
-      + '. Vous pouvez réactiver votre abonnement à tout moment.</div></div>';
-  }
-
-  // ── Consommation ──
-  let usage = '';
-  if(payant){
-    const cfg = getConfig();
-    const nbPromos = (cfg.promos||[]).filter(p => p.active && p.name && p.name.trim()).length;
-    const maxPromos = plan === 'max' ? '∞' : '8';
-    const pctPromos = plan === 'max' ? 0 : Math.min(100, (nbPromos/8)*100);
-    const nbCmd = (typeof allCommandes !== 'undefined') ? allCommandes.length : 0;
-
-    usage = '<div class="offre-section-t">Votre consommation</div>'
-      + '<div class="offre-usage">'
-      + '<div class="usage-c"><div class="usage-n">'+nbPromos+' / '+maxPromos+'</div><div class="usage-l">Articles en promotion</div>'
-      +   (plan !== 'max' ? '<div class="usage-bar"><div class="usage-fill'+(pctPromos>=100?' full':pctPromos>=75?' high':'')+'" style="width:'+pctPromos+'%"></div></div>' : '')
-      + '</div>'
-      + '<div class="usage-c"><div class="usage-n">'+nbCmd+'</div><div class="usage-l">Commandes reçues</div></div>'
-      + '<div class="usage-c"><div class="usage-n">'+(plan==='max'?'Oui':'Non')+'</div><div class="usage-l">SMS clients</div></div>'
-      + '</div>';
-  }
-
-  // ── Comparatif des formules ──
-  const ordre = ['basic','pro','max'];
-  const rang  = { basic:0, pro:1, max:2 };
-  const cartes = ordre.map(k => {
-    const p = PLANS[k];
-    const estActuel = k === plan;
-    const estSup    = rang[k] > rang[plan];
-
-    const feats = p.features.map(([t,on]) =>
-      '<li class="'+(on?'':'off')+'">'+esc(t)+'</li>'
-    ).join('');
-
-    let bouton;
-   if(estActuel){
-      bouton = '<button class="plan-c-btn plan-c-btn-cur" disabled>Votre formule</button>';
-    } else if(k === 'basic'){
-      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="ouvrirPortail(\'cancel\')">Résilier mon abonnement</button>';
-    } else if(estSup){
-      bouton = '<button class="plan-c-btn plan-c-btn-up" onclick="changerOffre(\''+k+'\')">Passer à '+esc(p.nom)+'</button>';
-    } else {
-      bouton = '<button class="plan-c-btn plan-c-btn-down" onclick="changerOffre(\''+k+'\')">Choisir '+esc(p.nom)+'</button>';
-    }
-
-    return '<div class="plan-c'+(estActuel?' current':'')+'">'
-      + (estActuel ? '<span class="plan-c-tag">FORMULE ACTUELLE</span>' : '')
-      + '<div class="plan-c-nom">'+esc(p.nom)+'</div>'
-      + '<div class="plan-c-prix">'+(p.prixMois ? fmtEuro(p.prixMois) : 'Gratuit')+(p.prixMois?'<small> /mois</small>':'')+'</div>'
-      + (p.prixAn ? '<div class="plan-c-alt">ou '+fmtEuro(p.prixAn)+' par an — 2 mois offerts</div>' : '<div class="plan-c-alt">sans engagement</div>')
-      + '<ul class="plan-c-list">'+feats+'</ul>'
-      + bouton
-      + '</div>';
-  }).join('');
-
-  const comparatif = '<div class="offre-section-t">Changer de formule</div>'
-    + '<div class="plans-cmp">'+cartes+'</div>';
-
-  // ── Actions de gestion ──
-  let actions = '';
-  if(payant){
-    actions = '<div class="offre-section-t">Gérer mon abonnement</div>'
-      + '<div class="offre-actions">'
-      + '<button class="offre-act" onclick="ouvrirPortail(\'payment\')">'
-      +   '<div class="offre-act-ico"><svg class="ico"><use href="#i-card"/></svg></div>'
-      +   '<div class="offre-act-txt"><div class="offre-act-t">Moyen de paiement</div>'
-      +     '<div class="offre-act-d">Modifier votre carte bancaire ou vos coordonnées de facturation</div></div>'
-      +   '<span class="offre-act-fl">→</span>'
-      + '</button>'
-      + '<button class="offre-act" onclick="ouvrirPortail(\'portal\')">'
-      +   '<div class="offre-act-ico"><svg class="ico"><use href="#i-doc"/></svg></div>'
-      +   '<div class="offre-act-txt"><div class="offre-act-t">Mes factures</div>'
-      +     '<div class="offre-act-d">Consulter et télécharger l\'historique de vos paiements</div></div>'
-      +   '<span class="offre-act-fl">→</span>'
-      + '</button>'
-      + '<button class="offre-act" onclick="'+(d.resiliation_prevue ? 'reactiverAbonnement()' : 'ouvrirPortail(\'cancel\')')+'">'
-      +   '<div class="offre-act-ico">'+(d.resiliation_prevue ? '<svg class="ico"><use href="#i-undo"/></svg>' : '<svg class="ico"><use href="#i-pause"/></svg>')+'</div>'
-      +   '<div class="offre-act-txt"><div class="offre-act-t">'+(d.resiliation_prevue ? 'Réactiver mon abonnement' : 'Résilier mon abonnement')+'</div>'
-      +     '<div class="offre-act-d">'+(d.resiliation_prevue
-            ? 'Annuler la résiliation et poursuivre votre abonnement'
-            : 'Arrêter les prélèvements. Vous gardez l\'accès jusqu\'à la fin de la période payée.')+'</div></div>'
-      +   '<span class="offre-act-fl">→</span>'
-      + '</button>'
-      + '</div>'
-      + '<p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.6">'
-      + 'La gestion de votre abonnement est assurée par Stripe, notre prestataire de paiement. '
-      + 'Vos données bancaires ne transitent jamais par SwiftyPharm.</p>';
-  } else {
-    actions = '<p style="font-size:12.5px;color:var(--muted);margin-top:18px;line-height:1.6">'
-      + 'Vous êtes actuellement sur l\'offre gratuite. Aucun prélèvement n\'est en cours.</p>';
-  }
-
-  // ── Zone RGPD — suppression définitive du compte ──
-  const rgpd = '<div class="offre-section-t" style="margin-top:32px">Vos données</div>'
-    + '<div class="rgpd-zone">'
-    + '<div class="rgpd-txt">'
-    +   '<strong>Supprimer définitivement mon compte</strong>'
-    +   '<p>Cette action efface votre fiche pharmacie, vos commandes et vos promotions de nos systèmes, '
-    +   'résilie immédiatement votre abonnement en cours, et supprime votre accès de connexion. '
-    +   'L\'opération est irréversible.</p>'
-    + '</div>'
-    + '<button class="rgpd-btn" onclick="ouvrirSuppressionCompte()">Supprimer mon compte</button>'
-    + '</div>'
-    + '<p style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6">'
-    + 'Conformément au RGPD, vous pouvez également demander la rectification ou l\'export de vos données '
-    + 'à contact@swiftup.fr. Consultez notre <a href="/privacy.html" target="_blank" style="color:var(--blue)">politique de confidentialité</a>.</p>';
-
-  document.getElementById('offre-body').innerHTML = alerte + hero + usage + comparatif + actions + rgpd;
-}
 
 // ══════════════════════════════════════
 //  SUPPRESSION DE COMPTE — RGPD
@@ -2207,81 +1809,6 @@ async function confirmerSuppressionCompte(){
 }
 window.confirmerSuppressionCompte = confirmerSuppressionCompte;
 
-// ── Ouvrir le portail Stripe sur un flux précis ──
-// action : 'update' (changer de formule) · 'cancel' (résilier)
-//          'payment' (carte bancaire) · 'portal' (accueil, factures)
-async function ouvrirPortail(action, plan, periode){
-  try{
-    const res = await fetch('/api/stripe-portal', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        slug: SLUG,
-        action: action || 'portal',
-        plan: plan || null,
-        periode: periode || null
-      })
-    });
-    const data = await res.json();
-
-    if(data.url){
-      window.location.href = data.url;
-    } else if(data.error === 'aucun_abonnement'){
-      alert("Vous n'avez pas encore d'abonnement payant. Choisissez une formule ci-dessous pour commencer.");
-    } else {
-      alert("Impossible d'ouvrir la gestion de l'abonnement : "+(data.error||'erreur inconnue'));
-    }
-  }catch(e){
-    alert('Erreur : '+e.message);
-  }
-}
-window.ouvrirPortail = ouvrirPortail;
-
-// ── Réactiver un abonnement dont la résiliation est programmée ──
-async function reactiverAbonnement(){
-  if(!confirm("Annuler la résiliation et poursuivre votre abonnement ?")) return;
-  try{
-    const res = await fetch('/api/stripe-portal', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ slug: SLUG, action:'reactivate' })
-    });
-    const data = await res.json();
-    if(data.ok){
-      flashSaved();
-      chargerOffre();
-    } else {
-      alert('Erreur : '+(data.error||'inconnue'));
-    }
-  }catch(e){
-    alert('Erreur : '+e.message);
-  }
-}
-window.reactiverAbonnement = reactiverAbonnement;
-
-// ── Changer de formule ──
-function changerOffre(plan){
-  const d = offreData || {};
-  const periode = d.periodicite === 'yearly' ? 'yearly' : 'monthly';
-
-  // Abonnement Stripe existant : le portail gère le prorata automatiquement.
-  // On l'ouvre directement sur la formule visée, sans passer par l'accueil.
-  const aUnAbonnement = d.a_un_client_stripe && d.statut !== 'canceled' && d.plan !== 'basic';
-
-  if(aUnAbonnement){
-    ouvrirPortail('update', plan, periode);
-    return;
-  }
-
-  // Première souscription : lien de paiement direct
-  const lien = STRIPE_LINKS[plan+'_'+periode];
-  if(!lien || lien.includes('REMPLACE')){
-    alert("Le lien de paiement n'est pas encore configuré. Contactez le support.");
-    return;
-  }
-  window.location.href = lien + '?client_reference_id=' + encodeURIComponent(SLUG);
-}
-window.changerOffre = changerOffre;
 
 // ═══════════════════════════════
 //  COMMANDES CLICK & COLLECT
@@ -2416,7 +1943,6 @@ function renderCommandes(){
       + '</div>'
       + '<div class="cmd-actions">'
       +   (cmd.email_confirm_at ? '<span class="cmd-notif-tag">Email</span>' : '')
-      +   (cmd.sms_confirm_at   ? '<span class="cmd-notif-tag sms">SMS</span>' : '')
       +   (prete
           ? '<span class="cmd-done-tag"><svg class="ico ico-sm"><use href="#i-check"/></svg> Préparée</span>'
             + '<button class="cmd-btn cmd-btn-undo" onclick="setCmdStatut(\''+cmd.id+'\',null)">Annuler</button>'
@@ -2457,27 +1983,6 @@ async function setCmdStatut(id, statut){
 }
 window.setCmdStatut = setCmdStatut;
 
-async function toggleSmsActif(){
-  const actif = document.getElementById('sms-actif-toggle').checked;
-  try{
-    const res = await fetch(SUPABASE_REST+'pharmacies?slug=eq.'+SLUG, {
-      method:'PATCH',
-      headers:{
-        'apikey':SUPABASE_KEY,
-        'Authorization':'Bearer '+SUPABASE_KEY,
-        'Content-Type':'application/json',
-        'Prefer':'return=minimal'
-      },
-      body: JSON.stringify({ sms_actif: actif })
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    flashSaved();
-  }catch(e){
-    alert('Erreur : '+e.message);
-    document.getElementById('sms-actif-toggle').checked = !actif;
-  }
-}
-window.toggleSmsActif = toggleSmsActif;
 
 function setCmdFilter(f, btn){
   cmdFilter = f;
@@ -2486,67 +1991,6 @@ function setCmdFilter(f, btn){
   renderCommandes();
 }
 
-// ═══════════════════════════════
-//  NOTIFS
-// ═══════════════════════════════
-async function fetchSubscribers(){
-  const cfg=getConfig();
-  const appid=cfg.onesignal?.appid||document.getElementById('os-appid')?.value;
-  const apikey=cfg.onesignal?.apikey||document.getElementById('os-apikey')?.value;
-  const countEl=document.getElementById('sub-count');
-  const updEl=document.getElementById('sub-updated');
-  if(!appid||!apikey){countEl.textContent='—';return;}
-  countEl.textContent='…';
-  try{
-    const res=await fetch('https://onesignal.com/api/v1/apps/'+appid,{headers:{'Authorization':'Basic '+apikey}});
-    if(res.ok){const data=await res.json();countEl.textContent=(data.players||0).toLocaleString('fr-FR');updEl.textContent='Mis à jour : '+new Date().toLocaleTimeString('fr-FR');}
-    else countEl.textContent='—';
-  }catch(e){countEl.textContent='—';}
-}
-
-function fillNotif(cfg){
-  document.getElementById('os-appid').value=cfg.onesignal?.appid||'';
-  document.getElementById('os-apikey').value=cfg.onesignal?.apikey||'';
-  renderHistory(cfg.notifHistory||[]);
-}
-
-function renderHistory(history){
-  const el=document.getElementById('notif-history');
-  if(!history.length){el.innerHTML='<p class="notif-empty">Aucune notification envoyée.</p>';return;}
-  el.innerHTML=[...history].reverse().slice(0,5).map(h=>`
-    <div class="notif-item">
-      <div><div class="notif-item-title">${h.title}</div><div class="notif-item-date">${h.date}</div></div>
-      <span style="font-size:11px;color:${h.ok?'var(--green)':'var(--red)'}">${h.ok?'<svg class="ico ico-sm"><use href="#i-check"/></svg> Envoyé':'<svg class="ico ico-sm"><use href="#i-x"/></svg> Échoué'}</span>
-    </div>`).join('');
-}
-
-async function sendNotification(){
-  const cfg=getConfig();
-  const appid=document.getElementById('os-appid').value.trim();
-  const apikey=document.getElementById('os-apikey').value.trim();
-  const title=document.getElementById('notif-title').value.trim();
-  const body=document.getElementById('notif-body').value.trim();
-  const status=document.getElementById('notif-status');
-  if(!appid||!apikey){status.className='notif-status err';status.textContent='Configurez OneSignal.';return;}
-  if(!title||!body){status.className='notif-status err';status.textContent='Titre et message requis.';return;}
-  status.className='notif-status';status.textContent='Envoi…';status.style.display='block';
-  let ok=false;
-  try{
-    const res=await fetch('https://onesignal.com/api/v1/notifications',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Basic '+apikey},body:JSON.stringify({app_id:appid,included_segments:['Subscribed Users'],headings:{fr:title},contents:{fr:body}})});
-    ok=res.ok;
-    const data=await res.json();
-    if(data.errors){ok=false;status.textContent=JSON.stringify(data.errors);}
-    else status.textContent='Notification envoyée.';
-  }catch(e){status.textContent='Erreur : '+e.message;}
-  status.className='notif-status '+(ok?'ok':'err');
-  const entry={title,date:new Date().toLocaleString('fr-FR'),ok};
-  cfg.notifHistory=cfg.notifHistory||[];cfg.notifHistory.push(entry);
-  if(cfg.notifHistory.length>10) cfg.notifHistory.shift();
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
-  renderHistory(cfg.notifHistory);
-}
-
-function collectOnesignal(){return{appid:document.getElementById('os-appid').value,apikey:document.getElementById('os-apikey').value};}
 
 // ═══════════════════════════════
 //  TABLEAU DE BORD
@@ -2725,24 +2169,18 @@ function collectAll(){
   const cfg=getConfig();
   cfg.pharmacy=collectInfo();
   cfg.promos=collectPromos();
-  cfg.onesignal=collectOnesignal();
   return cfg;
 }
 
 // ═══════════════════════════════
 //  INIT
 // ═══════════════════════════════
-// ══ AJOUT / SUPPRESSION D'ARTICLES (offre Max) ══
+// ══ AJOUT / SUPPRESSION D'ARTICLES — illimité ══
 function addPromoSlot(){
   const cfg=collectAll();
-  if(cfg.promos.length>=maxPromoSlots()){
-    alert('Limite atteinte pour votre offre.');
-    return;
-  }
-  cfg.promos.push({active:false,name:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
+  cfg.promos.push({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0});
   localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
   buildPromoGrid(cfg);
-  applyPlanRestrictions();
   autoSave();
 }
 
@@ -2753,7 +2191,6 @@ function removePromoSlot(i){
   cfg.promos.splice(i,1);
   localStorage.setItem(STORAGE_KEY,JSON.stringify(cfg));
   buildPromoGrid(cfg);
-  applyPlanRestrictions();
   autoSave();
 }
 window.removePromoSlot=removePromoSlot;
@@ -2763,17 +2200,13 @@ function initApp(){
   fillInfo(cfg);
   buildHorairesGrid(cfg.pharmacy?.horairesSemaine||{});
   buildPromoGrid(cfg);
-  fillNotif(cfg);
-  applyPlanRestrictions();
   loadFromSupabase();
 
   // Compteur de commandes en attente dès le chargement
   setTimeout(fetchCommandes, 1200);
 
   // Rafraîchissement automatique toutes les 90 secondes
-  setInterval(function(){
-    if(currentPlan === 'pro' || currentPlan === 'max') fetchCommandes();
-  }, 90000);
+  setInterval(fetchCommandes, 90000);
 }
 
 // Global window exports
@@ -2807,18 +2240,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnLogout   = document.getElementById('btn-do-logout');
   const tabInfo     = document.getElementById('tab-btn-info');
   const tabPromo    = document.getElementById('tab-btn-promo');
-  const tabNotif    = document.getElementById('tab-btn-notif');
-  const btnFetchSub = document.getElementById('btn-fetch-subs');
-  const btnSendNotif= document.getElementById('btn-send-notif');
   const loginPwField= document.getElementById('login-pw-field');
 
   if(btnLogin)    btnLogin.addEventListener('click', doLogin);
   if(btnLogout)   btnLogout.addEventListener('click', doLogout);
   if(tabInfo)     tabInfo.addEventListener('click',  function(){ showTab('info', this); });
   if(tabPromo)    tabPromo.addEventListener('click',  function(){ showTab('promo', this); });
-  if(tabNotif)    tabNotif.addEventListener('click',  function(){ showTab('notif', this); });
-  if(btnFetchSub) btnFetchSub.addEventListener('click', fetchSubscribers);
-  if(btnSendNotif)btnSendNotif.addEventListener('click', sendNotification);
   const btnAddPromo=document.getElementById('btn-add-promo');
   if(btnAddPromo) btnAddPromo.addEventListener('click', addPromoSlot);
 
@@ -2826,14 +2253,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const tabCmd = document.getElementById('tab-btn-commandes');
   if(tabCmd) tabCmd.addEventListener('click', function(){ showTab('commandes', this); });
 
-  const tabOffre = document.getElementById('tab-btn-offre');
-  if(tabOffre) tabOffre.addEventListener('click', function(){ showTab('offre', this); });
-
-  // Ouverture directe sur l'onglet Offre au retour du portail Stripe
-  const tabParam = new URLSearchParams(window.location.search).get('tab');
-  if(tabParam === 'offre' && tabOffre){
-    setTimeout(function(){ tabOffre.click(); }, 400);
-  }
 
   const btnCmdRefresh = document.getElementById('btn-cmd-refresh');
   if(btnCmdRefresh) btnCmdRefresh.addEventListener('click', fetchCommandes);
@@ -2879,7 +2298,6 @@ document.addEventListener('DOMContentLoaded', function() {
       <ul>
         <li>Votre fiche pharmacie et votre page publique</li>
         <li>Vos commandes et vos articles en promotion</li>
-        <li>Votre abonnement — résilié immédiatement</li>
         <li>Votre accès de connexion à SwiftyPharm</li>
       </ul>
     </div>
