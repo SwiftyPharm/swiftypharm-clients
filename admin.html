@@ -87,8 +87,52 @@
   .act-btn-del { margin-left:auto; border-color:#fecaca; color:var(--red); background:#fef2f2; }
   .act-btn-del:hover { background:var(--red); color:#fff; border-color:var(--red); }
 
-  .plan-select { padding:6px 11px; border-radius:8px; border:1.5px solid var(--border); font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; outline:none; background:#fff; }
-  .plan-select:focus { border-color:var(--blue); }
+  /* ══ CRÉATION DE CLIENT ══ */
+  .creer-bloc{background:linear-gradient(135deg,#000046,#1cb5e0);border-radius:14px;padding:20px 22px;margin-bottom:18px;color:#fff}
+  .creer-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .creer-titre{font-size:16px;font-weight:800;letter-spacing:-.3px}
+  .creer-desc{font-size:12.5px;color:rgba(255,255,255,.62);line-height:1.6;margin-bottom:16px;max-width:640px}
+  .creer-grid{display:grid;grid-template-columns:1.4fr 1fr 1.4fr auto;gap:10px;align-items:end}
+  @media(max-width:860px){.creer-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.creer-grid{grid-template-columns:1fr}}
+  .creer-f label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:5px}
+  .creer-f input{width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:13.5px;outline:none;transition:border-color .2s}
+  .creer-f input::placeholder{color:rgba(255,255,255,.35)}
+  .creer-f input:focus{border-color:#fff;background:rgba(255,255,255,.16)}
+  .creer-btn{padding:11px 20px;border-radius:9px;border:none;background:#fff;color:#000046;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s}
+  .creer-btn:hover:not(:disabled){background:#dbeafe;transform:translateY(-1px)}
+  .creer-btn:disabled{opacity:.55;cursor:not-allowed}
+  .creer-opt{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:rgba(255,255,255,.75);cursor:pointer}
+  .creer-opt input{width:16px;height:16px;cursor:pointer;accent-color:#1cb5e0}
+
+  /* ══ RÉSULTAT : LIEN GÉNÉRÉ ══ */
+  .lien-box{display:none;margin-top:16px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:14px 16px}
+  .lien-box.show{display:block}
+  .lien-label{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+  .lien-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .lien-url{flex:1;min-width:220px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#fff;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:9px 11px;word-break:break-all}
+  .lien-copy{padding:9px 16px;border-radius:7px;border:none;background:#1cb5e0;color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .lien-copy:hover{background:#0ea5cf}
+  .lien-hint{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:9px;line-height:1.6}
+
+  /* ══ INVITATIONS EN ATTENTE ══ */
+  .inv-section{margin-bottom:20px}
+  .inv-head{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .inv-titre{font-size:14px;font-weight:800;color:var(--text)}
+  .inv-count{font-size:11px;font-weight:700;background:#fef3c7;color:#92400e;border-radius:20px;padding:3px 10px}
+  .inv-list{display:flex;flex-direction:column;gap:8px}
+  .inv-card{display:flex;align-items:center;gap:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:11px;padding:12px 16px;flex-wrap:wrap}
+  .inv-ident{flex:1;min-width:180px}
+  .inv-nom{font-size:13.5px;font-weight:700;color:var(--text)}
+  .inv-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .inv-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .inv-btn{font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center}
+  .inv-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .inv-btn-del:hover{border-color:#dc2626;color:#dc2626}
+  .inv-empty{font-size:12.5px;color:var(--muted);padding:14px 16px;background:#f8fafc;border-radius:11px;text-align:center}
+
+  .badge-life{background:#dcfce7;color:#15803d}
+
 
   .empty-state { text-align:center; padding:56px 20px; color:var(--muted); font-size:14px; background:#fff; border-radius:var(--radius); border:1px solid var(--border); }
 
@@ -204,9 +248,57 @@
 <!-- APP -->
 <div id="app" style="display:none">
 
-  <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#1e40af;line-height:1.6">
-    <strong>Templates EmailJS globaux</strong> — Ordonnances : <code>template_hlj4f0g</code> · Commandes : <code>template_a15fvjn</code><br>
-    Aucune configuration par pharmacie n'est nécessaire. Vérifiez simplement que chaque pharmacie a renseigné son email de contact.
+  <!-- ══ CRÉER UN CLIENT (DÉMARCHAGE) ══ -->
+  <div class="creer-bloc">
+    <div class="creer-head">
+      <div class="creer-titre">Créer un client</div>
+    </div>
+    <p class="creer-desc">
+      Pour une pharmacie démarchée qui vous a déjà réglé les 7,90 €. Renseignez ses trois
+      informations : vous obtenez un lien personnel qu'elle utilise pour créer son compte
+      elle-même, sans rien repayer. Le lien est valable 90 jours et ne fonctionne qu'une fois.
+    </p>
+    <div class="creer-grid">
+      <div class="creer-f">
+        <label>Nom de la pharmacie</label>
+        <input type="text" id="new-nom" placeholder="Pharmacie Centrale">
+      </div>
+      <div class="creer-f">
+        <label>Ville</label>
+        <input type="text" id="new-ville" placeholder="Savigny-sur-Orge">
+      </div>
+      <div class="creer-f">
+        <label>Email</label>
+        <input type="email" id="new-email" placeholder="contact@pharmacie.fr">
+      </div>
+      <div class="creer-f">
+        <button class="creer-btn" id="btn-creer-client">Générer le lien</button>
+      </div>
+    </div>
+    <label class="creer-opt">
+      <input type="checkbox" id="new-envoi-mail" checked>
+      Envoyer aussi le lien par email à la pharmacie
+    </label>
+
+    <div class="lien-box" id="lien-box">
+      <div class="lien-label">Lien d'inscription — à transmettre au pharmacien</div>
+      <div class="lien-row">
+        <div class="lien-url" id="lien-url"></div>
+        <button class="lien-copy" id="btn-copier-lien">Copier</button>
+      </div>
+      <div class="lien-hint" id="lien-hint"></div>
+    </div>
+  </div>
+
+  <!-- ══ INVITATIONS EN ATTENTE ══ -->
+  <div class="inv-section">
+    <div class="inv-head">
+      <span class="inv-titre">Invitations en attente</span>
+      <span class="inv-count" id="inv-count">0</span>
+    </div>
+    <div class="inv-list" id="inv-list">
+      <div class="inv-empty">Chargement…</div>
+    </div>
   </div>
 
   <div class="stats-row">
@@ -214,6 +306,7 @@
     <div class="stat-card"><div class="stat-num" id="stat-active" style="color:var(--green)">—</div><div class="stat-label">Prêtes à recevoir</div></div>
     <div class="stat-card"><div class="stat-num" id="stat-pending" style="color:var(--amber)">—</div><div class="stat-label">Email ou avis manquant</div></div>
     <div class="stat-card"><div class="stat-num" id="stat-today" style="color:#7c3aed">—</div><div class="stat-label">Inscrites aujourd'hui</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-ca" style="color:var(--green)">—</div><div class="stat-label">Chiffre d'affaires accès</div></div>
   </div>
 
   <div class="filters">
@@ -272,10 +365,13 @@ const EMAILJS_SERVICE_ID  = 'service_ehw7pcv';
 const TPL_ORDONNANCES     = 'template_hlj4f0g';  // global
 const TPL_COMMANDES       = 'template_a15fvjn';  // global
 const ADMIN_PW = '23543';
+const PRIX_ACCES = 7.90;                       // prix unique, accès à vie
+const BASE_URL   = 'https://swiftypharm.fr';
 const ADMIN_BO_KEY = 'swifty-admin-2026';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allPharmacies = [];
+let allInvitations = [];
 let currentFilter = 'all';
 let pendingDeleteSlug = null;
 
@@ -306,7 +402,7 @@ function toast(msg, isErr) {
 // ══ LOAD ══
 async function loadPharmacies() {
   const { data, error } = await sb.from('pharmacies')
-    .select('slug,nom,soustitre,telephone,email_contact,plan,subscription_status,created_at,horaires,reseaux')
+    .select('slug,nom,soustitre,telephone,email_contact,ville,canal_acquisition,montant_paye,created_at,horaires,reseaux')
     .order('created_at', { ascending:false });
 
   if (error) {
@@ -316,7 +412,134 @@ async function loadPharmacies() {
   allPharmacies = data || [];
   updateStats();
   filterList();
+  loadInvitations();
   document.getElementById('last-refresh').textContent = 'Mis à jour : '+new Date().toLocaleTimeString('fr-FR');
+}
+
+// ══ INVITATIONS ══
+async function loadInvitations() {
+  const list = document.getElementById('inv-list');
+  try {
+    const res = await fetch('/api/invitations', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'list', admin_pw: ADMIN_PW })
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    allInvitations = data.invitations || [];
+  } catch(e) {
+    list.innerHTML = '<div class="inv-empty">Invitations indisponibles ('+e.message+')</div>';
+    document.getElementById('inv-count').textContent = '—';
+    return;
+  }
+  renderInvitations();
+}
+
+function renderInvitations() {
+  const list  = document.getElementById('inv-list');
+  const count = document.getElementById('inv-count');
+  count.textContent = allInvitations.length;
+
+  if (!allInvitations.length) {
+    list.innerHTML = '<div class="inv-empty">Aucune invitation en attente. '
+      + 'Toutes les pharmacies invitées ont créé leur compte.</div>';
+    return;
+  }
+
+  list.innerHTML = allInvitations.map(inv => {
+    const lien = BASE_URL + '/signup.html?invite=' + inv.token;
+    const cree = inv.created_at
+      ? new Date(inv.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
+      : '—';
+    const exp  = inv.expires_at ? new Date(inv.expires_at) : null;
+    const jours = exp ? Math.ceil((exp - new Date()) / 86400000) : null;
+    const envoye = inv.email_envoye_at ? ' · email envoyé' : ' · email non envoyé';
+
+    return `
+      <div class="inv-card">
+        <div class="inv-ident">
+          <div class="inv-nom">${esc(inv.nom_pharmacie)} — ${esc(inv.ville||'')}</div>
+          <div class="inv-meta">${esc(inv.email)} · créée le ${cree}`
+          + (jours !== null ? ` · expire dans ${jours} j` : '') + envoye + `</div>
+        </div>
+        <div class="inv-actions">
+          <button class="inv-btn" data-lien="${esc(lien)}" data-action="copy-inv">Copier le lien</button>
+          <button class="inv-btn" data-token="${esc(inv.token)}" data-action="resend-inv">Renvoyer l'email</button>
+          <button class="inv-btn inv-btn-del" data-token="${esc(inv.token)}" data-action="del-inv">Annuler</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ══ CRÉATION D'UN CLIENT DÉMARCHÉ ══
+async function creerClient() {
+  const nom   = document.getElementById('new-nom').value.trim();
+  const ville = document.getElementById('new-ville').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const envoi = document.getElementById('new-envoi-mail').checked;
+  const btn   = document.getElementById('btn-creer-client');
+
+  if (!nom)   { toast('Le nom de la pharmacie est requis', true); return; }
+  if (!ville) { toast('La ville est requise', true); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Adresse email invalide', true); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Création…';
+
+  try {
+    const res = await fetch('/api/invitations', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:'create', admin_pw: ADMIN_PW,
+        nom_pharmacie: nom, ville, email,
+        envoyer_email: envoi, canal:'demarchage', montant_paye: PRIX_ACCES
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur inconnue');
+
+    const lien = BASE_URL + '/signup.html?invite=' + data.token;
+    document.getElementById('lien-url').textContent = lien;
+    document.getElementById('lien-hint').textContent = data.email_envoye
+      ? 'Email envoyé à ' + email + '. Vous pouvez aussi copier le lien pour le transmettre autrement.'
+      : "Email non envoyé — transmettez le lien manuellement (SMS, WhatsApp, de vive voix).";
+    document.getElementById('lien-box').classList.add('show');
+
+    document.getElementById('new-nom').value = '';
+    document.getElementById('new-ville').value = '';
+    document.getElementById('new-email').value = '';
+
+    toast('Client créé · lien généré');
+    loadInvitations();
+  } catch(err) {
+    toast('Erreur : ' + err.message, true);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Générer le lien';
+}
+
+async function actionInvitation(action, token) {
+  try {
+    const res = await fetch('/api/invitations', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action, token, admin_pw: ADMIN_PW })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur');
+    toast(action === 'resend' ? 'Email renvoyé' : 'Invitation annulée');
+    loadInvitations();
+  } catch(err) {
+    toast('Erreur : ' + err.message, true);
+  }
+}
+
+function copierTexte(txt) {
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Lien copié'))
+    .catch(() => toast('Copie impossible — sélectionnez le lien manuellement', true));
 }
 
 // ══ STATS ══
@@ -335,6 +558,12 @@ function updateStats() {
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-pending').textContent = total-active;
   document.getElementById('stat-today').textContent = today;
+
+  // Chiffre d'affaires : somme des accès vendus
+  const ca = allPharmacies.reduce((s,p) => s + (Number(p.montant_paye) || 0), 0);
+  document.getElementById('stat-ca').textContent =
+    ca.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' €';
+
   document.getElementById('nav-count').textContent = total+' pharmacie'+(total>1?'s':'');
 }
 
@@ -354,20 +583,15 @@ function renderList(list) {
       ? '<span class="badge badge-ok"><span class="dot dot-ok"></span>Configurée</span>'
       : '<span class="badge badge-warn"><span class="dot dot-warn"></span>À configurer</span>';
 
-    const sub = p.subscription_status;
-    let subBadge = '';
-    if (sub === 'active')   subBadge = '<span class="badge badge-ok">💳 Abonné</span>';
-    else if (sub === 'past_due') subBadge = '<span class="badge badge-err">⚠ Impayé</span>';
-    else if (sub === 'pending')  subBadge = '<span class="badge badge-warn">⏳ Paiement en attente</span>';
-    else if (sub === 'canceled') subBadge = '<span class="badge badge-err">✕ Annulé</span>';
+    const accesBadge = '<span class="badge badge-life">♾️ Accès à vie</span>';
 
-    const planVal = p.plan || 'basic';
-    const planSelect =
-      '<select class="plan-select" data-slug="'+esc(p.slug)+'" data-action="plan">'
-      + '<option value="basic"'+(planVal==='basic'?' selected':'')+'>Basic</option>'
-      + '<option value="pro"'+(planVal==='pro'?' selected':'')+'>Pro</option>'
-      + '<option value="max"'+(planVal==='max'?' selected':'')+'>Max ⭐</option>'
-      + '</select>';
+    const canaux = {
+      shopify:      '<span class="badge">🛒 Shopify</span>',
+      demarchage:   '<span class="badge">🤝 Démarchage</span>',
+      signup_direct:'<span class="badge">✍️ Inscription directe</span>',
+      historique:   '<span class="badge">📦 Historique</span>',
+    };
+    const canalBadge = canaux[p.canal_acquisition] || '';
 
     const date = p.created_at
       ? new Date(p.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})
@@ -386,8 +610,8 @@ function renderList(list) {
           </div>
           <div class="pharma-meta">
             ${badge}
-            ${subBadge}
-            ${planSelect}
+            ${accesBadge}
+            ${canalBadge}
           </div>
         </div>
 
@@ -423,15 +647,6 @@ function renderList(list) {
 }
 
 // ══ SAUVEGARDES ══
-async function savePlan(slug, plan) {
-  const { error } = await sb.from('pharmacies').update({ plan }).eq('slug', slug);
-  if (error) { toast('Erreur : '+error.message, true); return; }
-  const p = allPharmacies.find(x=>x.slug===slug);
-  if (p) p.plan = plan;
-  updateStats();
-  toast('Offre mise à jour');
-}
-
 async function saveEmail(slug) {
   const input = document.getElementById('mail-'+slug);
   const value = input.value.trim();
@@ -548,8 +763,10 @@ function showDetail(slug) {
     ['Sous-titre', p.soustitre||'—'],
     ['Téléphone', p.telephone||'—'],
     ['Email contact', p.email_contact||'—'],
-    ['Offre', p.plan||'basic'],
-    ['Abonnement', p.subscription_status||'none'],
+    ['Accès', 'À vie — aucun abonnement'],
+    ['Canal', p.canal_acquisition || '—'],
+    ['Montant payé', p.montant_paye != null ? Number(p.montant_paye).toFixed(2)+' €' : '—'],
+    ['Ville', p.ville || '—'],
     ['Template ordonnances', TPL_ORDONNANCES + ' (global)'],
     ['Template commandes',   TPL_COMMANDES + ' (global)'],
     ['Google Avis', soc.google?.url||'—'],
@@ -578,6 +795,28 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('filter-ok').addEventListener('click', function(){ setFilter('ok', this); });
   document.getElementById('filter-pending').addEventListener('click', function(){ setFilter('pending', this); });
   document.getElementById('btn-close-detail').addEventListener('click', closeDetail);
+
+  // Création de client + invitations
+  document.getElementById('btn-creer-client').addEventListener('click', creerClient);
+  document.getElementById('btn-copier-lien').addEventListener('click', function(){
+    copierTexte(document.getElementById('lien-url').textContent);
+  });
+  ['new-nom','new-ville','new-email'].forEach(function(id){
+    document.getElementById(id).addEventListener('keydown', function(e){
+      if (e.key === 'Enter') creerClient();
+    });
+  });
+  document.getElementById('inv-list').addEventListener('click', function(e){
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    if (el.dataset.action === 'copy-inv')   copierTexte(el.dataset.lien);
+    if (el.dataset.action === 'resend-inv') actionInvitation('resend', el.dataset.token);
+    if (el.dataset.action === 'del-inv') {
+      if (confirm("Annuler cette invitation ? Le lien deviendra inutilisable.")) {
+        actionInvitation('cancel', el.dataset.token);
+      }
+    }
+  });
   document.getElementById('modal-detail').addEventListener('click', function(e){ if(e.target===this) closeDetail(); });
 
   // Password
@@ -613,10 +852,6 @@ document.addEventListener('DOMContentLoaded', function(){
       case 'detail':    showDetail(slug);   break;
       case 'delete':    askDelete(slug);    break;
     }
-  });
-  document.getElementById('pharma-list').addEventListener('change', function(e){
-    const el = e.target.closest('[data-action="plan"]');
-    if (el) savePlan(el.dataset.slug, el.value);
   });
   document.getElementById('pharma-list').addEventListener('keydown', function(e){
     const el = e.target.closest('[data-action]');
