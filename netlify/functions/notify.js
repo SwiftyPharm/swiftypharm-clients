@@ -147,30 +147,22 @@ function quotaDepasse(cle, plafond) {
 }
 
 // ── Gabarit d'email ──
-function gabarit({ titre, sousTitre, corps, accent = '#000046' }) {
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f4f6fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:28px 14px;"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,70,.07);">
-  <tr><td style="background:${accent};padding:26px 32px;">
-    <div style="color:#fff;font-size:19px;font-weight:800;letter-spacing:-.3px;">${titre}</div>
-    <div style="color:rgba(255,255,255,.7);font-size:13px;margin-top:4px;">${sousTitre}</div>
-  </td></tr>
-  <tr><td style="padding:28px 32px;">${corps}</td></tr>
-  <tr><td style="padding:18px 32px;background:#f8fafc;border-top:1px solid #e8edf5;">
-    <p style="font-size:11.5px;color:#94a3b8;line-height:1.6;margin:0;">
-      Message automatique envoyé via SwiftyPharm — une solution Swiftup.<br>
-      Ce message peut contenir des données de santé : ne le transférez pas.
-    </p>
-  </td></tr>
-</table></td></tr></table></body></html>`;
+// Email volontairement sobre : texte simple, sans logo ni couleur.
+
+// Gabarit d'email volontairement sobre : texte simple, sans logo, sans
+// couleur, sans encadré. Reproduit le rendu d'un email personnel classique.
+// Reste en HTML minimal pour un affichage propre et compatible partout.
+function gabarit({ corps }) {
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:16px;background:#ffffff;color:#202124;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;">
+${corps}
+</body></html>`;
 }
 
-const ligne = (label, valeur) => `
-  <tr>
-    <td style="padding:9px 0;font-size:13px;color:#64748b;width:38%;">${esc(label)}</td>
-    <td style="padding:9px 0;font-size:14px;color:#0f172a;font-weight:600;">${esc(valeur)}</td>
-  </tr>`;
+// Ligne de liste à puce, style simple
+const puce = (label, valeur) =>
+  `<li style="margin:6px 0;"><strong>${esc(label)} :</strong> ${esc(valeur)}</li>`;
 
 // ═══════════════════════════════════════════════════════════
 //  HANDLER
@@ -244,38 +236,23 @@ exports.handler = async (event) => {
       }
 
       const corps = `
-        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-          Une nouvelle ordonnance vient de vous être transmise depuis votre page SwiftyPharm.
-        </p>
-        <table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:20px;">
-          ${ligne('Patient', nom)}
-          ${ligne('Téléphone', tel)}
-          ${email ? ligne('Email', email) : ''}
-          ${ligne('Reçue le', new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }))}
-          ${ligne('Pièces jointes', attachments.length + ' fichier' + (attachments.length > 1 ? 's' : ''))}
-        </table>
-        ${message ? `<div style="background:#f8fafc;border-left:3px solid #1cb5e0;border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-          <p style="font-size:12px;font-weight:700;color:#64748b;margin:0 0 6px;text-transform:uppercase;letter-spacing:.4px;">Message du patient</p>
-          <p style="font-size:14px;color:#334155;line-height:1.7;margin:0;">${esc(message)}</p>
-        </div>` : ''}
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:13px 15px;">
-          <p style="font-size:12.5px;color:#92400e;line-height:1.6;margin:0;">
-            L'ordonnance est en pièce jointe. Contactez le patient au <strong>${esc(tel)}</strong>
-            pour confirmer la disponibilité et l'heure de retrait.
-          </p>
-        </div>`;
+        <p>Bonjour, un fichier vient de vous être envoyé !</p>
+        <ul style="padding-left:20px;margin:16px 0;">
+          ${puce("Nom de l'expéditeur", nom)}
+          ${puce('Numéro de téléphone', tel)}
+          ${email ? puce('Email', email) : ''}
+          ${puce('Nom du fichier joint', attachments.map(a => a.name).join(', '))}
+        </ul>
+        ${message ? `<p><strong>Message du patient :</strong> ${esc(message)}</p>` : ''}
+        <p>Vous la trouverez ci-joint en pièce jointe à cet e-mail.</p>
+        <p>Bon courage !</p>`;
 
       await envoyerEmail({
         to: pharma.email_contact,
         toName: pharma.nom,
         replyTo: email || undefined,
-        subject: `Ordonnance — ${nom}`,
-        html: gabarit({
-          titre: 'Nouvelle ordonnance',
-          sousTitre: pharma.nom,
-          corps,
-          accent: '#0f766e',
-        }),
+        subject: `Ordonnance de : ${nom}`,
+        html: gabarit({ corps }),
         attachments,
       });
 
@@ -302,48 +279,31 @@ exports.handler = async (event) => {
 
       if (!numero || !client) return json(400, { error: 'Commande incomplète.' });
 
-      const lignesArticles = articles.map(a => `
-        <tr>
-          <td style="padding:8px 0;font-size:14px;color:#0f172a;border-bottom:1px solid #f1f5f9;">
-            ${esc(a.nom)} <span style="color:#94a3b8;">× ${Number(a.qte) || 1}</span>
-          </td>
-          <td style="padding:8px 0;font-size:14px;color:#0f172a;font-weight:600;text-align:right;border-bottom:1px solid #f1f5f9;">
-            ${(Number(a.prix) || 0).toFixed(2)} €
-          </td>
-        </tr>`).join('');
+      const lignesArticles = articles.map(a =>
+        `<li style="margin:6px 0;">${esc(a.nom)} × ${Number(a.qte) || 1} — ${(Number(a.prix) || 0).toFixed(2)} €</li>`
+      ).join('');
 
       const corps = `
-        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-          Nouvelle commande à préparer.
-        </p>
-        <table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:20px;">
-          ${ligne('N° de commande', numero)}
-          ${ligne('Client', client)}
-          ${tel ? ligne('Téléphone', tel) : ''}
-          ${creneau ? ligne('Retrait souhaité', creneau) : ''}
-        </table>
-        <table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:14px;">
+        <p>Bonjour, une nouvelle commande vient de vous être passée !</p>
+        <ul style="padding-left:20px;margin:16px 0;">
+          ${puce('N° de commande', numero)}
+          ${puce('Client', client)}
+          ${tel ? puce('Numéro de téléphone', tel) : ''}
+          ${creneau ? puce('Retrait souhaité', creneau) : ''}
+        </ul>
+        <p><strong>Articles commandés :</strong></p>
+        <ul style="padding-left:20px;margin:8px 0;">
           ${lignesArticles}
-          <tr>
-            <td style="padding:12px 0 0;font-size:15px;font-weight:800;color:#0f172a;">Total</td>
-            <td style="padding:12px 0 0;font-size:15px;font-weight:800;color:#0f172a;text-align:right;">${total.toFixed(2)} €</td>
-          </tr>
-        </table>
-        <p style="font-size:13px;color:#64748b;line-height:1.6;margin:18px 0 0;">
-          Retrouvez cette commande dans l'onglet <strong>Commandes</strong> de votre back office
-          pour la marquer comme prête.
-        </p>`;
+        </ul>
+        <p><strong>Total : ${total.toFixed(2)} €</strong></p>
+        <p>Retrouvez cette commande dans l'onglet Commandes de votre back office pour la marquer comme prête.</p>
+        <p>Bon courage !</p>`;
 
       await envoyerEmail({
         to: pharma.email_contact,
         toName: pharma.nom,
         subject: `Commande ${numero} — ${client}`,
-        html: gabarit({
-          titre: 'Nouvelle commande',
-          sousTitre: pharma.nom,
-          corps,
-          accent: '#000046',
-        }),
+        html: gabarit({ corps }),
       });
 
       // ── SMS de confirmation au client ──
