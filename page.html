@@ -792,8 +792,14 @@
         })
       });
     }).then(async function(res){
-      const data = await res.json().catch(function(){ return {}; });
-      if (!res.ok) throw new Error(data.error || "Envoi impossible");
+      const brut = await res.text();
+      let data = {};
+      try { data = JSON.parse(brut); } catch (e) { /* réponse non-JSON */ }
+      if (!res.ok) {
+        // On expose le code HTTP et le message réel pour un diagnostic clair
+        const detail = data.error || brut.slice(0, 120) || 'réponse vide';
+        throw new Error('[' + res.status + '] ' + detail);
+      }
       trackSend();
       playSound('success');
       formContent.style.display = 'none';
