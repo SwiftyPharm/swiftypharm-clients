@@ -487,7 +487,31 @@ async function submitSignup(){
 
     if (!userId) {
       const { data:authData, error:authErr } = await sb.auth.signUp({ email, password: pw });
-      if (authErr) throw new Error(authErr.message);
+      if (authErr) {
+        // Compte déjà existant pour cette adresse : on le dit clairement,
+        // en français, avec la marche à suivre plutôt qu'une erreur technique.
+        const m = (authErr.message || '').toLowerCase();
+        if (m.includes('already') || m.includes('registered') || authErr.status === 422) {
+          showAlert(
+            "Un compte existe déjà avec cette adresse email. "
+            + "Connectez-vous plutôt à votre espace ; si vous avez oublié votre mot de passe, "
+            + "utilisez « mot de passe oublié » sur la page de connexion.",
+            'err'
+          );
+          btn.disabled = false;
+          label.textContent = 'Créer mon espace 🚀';
+          // Raccourci direct vers la connexion
+          const zone = document.getElementById('global-alert');
+          if (zone && !document.getElementById('lien-connexion')) {
+            zone.insertAdjacentHTML('afterend',
+              '<a id="lien-connexion" href="login.html" '
+              + 'style="display:inline-block;margin:10px 0 0;font-size:13.5px;font-weight:700;color:var(--blue,#1cb5e0);text-decoration:none">'
+              + '→ Aller à la page de connexion</a>');
+          }
+          return;
+        }
+        throw new Error(authErr.message);
+      }
       userId = authData.user?.id;
       if (!userId) throw new Error('Erreur lors de la création du compte.');
       userEmail = email;
