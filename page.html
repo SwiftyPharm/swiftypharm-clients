@@ -16,10 +16,7 @@
     function trackSend() { gtag('event', 'ordonnance_envoyee'); }
   </script>
 
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function(){ emailjs.init("Apzn8FzYNZlXAQTs-"); })();
-  </script>
+  <!-- EmailJS retiré : les ordonnances passent par /api/notify (Brevo, RGPD) -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -83,6 +80,18 @@
 
     .profile-section { opacity: 0; transition: opacity .3s ease; }
     .profile-section.loaded { opacity: 1; }
+
+    /* Écran gris au chargement : tout le contenu est masqué tant que
+       les données ne sont pas arrivées, puis révélé d'un seul coup.
+       Évite tout flash d'icônes ou de contenu de démonstration. */
+    body { background: #f1f5f9; }
+    body > *:not(#page-splash) { opacity: 0; transition: opacity .25s ease; }
+    body.page-ready > *:not(#page-splash) { opacity: 1; }
+    #page-splash {
+      position: fixed; inset: 0; background: #f1f5f9; z-index: 9999;
+      transition: opacity .25s ease;
+    }
+    body.page-ready #page-splash { opacity: 0; pointer-events: none; }
     
     .profile-avatar {
       width: 96px;
@@ -452,6 +461,8 @@
   </style>
 </head>
 <body>
+  <!-- Écran gris affiché jusqu'à ce que les données soient chargées -->
+  <div id="page-splash"></div>
 
   <!-- ══ BANNIÈRE ══ -->
   <div class="banniere">
@@ -460,7 +471,7 @@
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.src='/logo_pharmacie_general.jpg'">
+    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.src=LOGO_DEFAUT">
     <div class="profile-name" id="profile-name-display"></div>
     <div class="profile-sub" id="profile-sub-display"></div>
 
@@ -491,15 +502,8 @@
 
   <!-- ══ LIENS SOCIAUX DYNAMIQUES (MID ICONS) ══ -->
   <div class="dynamic-social-container" id="dynamic-social-links">
-    <!-- Rempli automatiquement par JavaScript (Supabase) -->
-    <a href="https://reviewthis.biz/PHA-NHEAN" class="social-card-item">
-      <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img">
-      <div class="social-card-txt">Notez nous sur <br>Google !</div>
-    </a>
-    <a href="https://www.instagram.com/swiftup_fr" target="_blank" class="social-card-item">
-      <img src="instagram-icon.png" alt="Instagram" class="social-card-img">
-      <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
-    </a>
+    <!-- Volontairement vide : rempli par JavaScript depuis Supabase.
+         Aucune carte en dur, pour ne pas afficher de faux réseaux au chargement. -->
   </div>
 
   <!-- ══ BENTO ══ -->
@@ -772,37 +776,67 @@
     btnSend.textContent = "Envoi en cours...";
     btnSend.style.opacity = "0.6";
     btnSend.disabled = true;
-    const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
-    reader.onload = function() {
-      const templateParams = {
-        name_sender:  senderName,
-        phone_sender: senderPhone || "Non renseigné",
-        file_name:    selectedFile.name,
-        my_file:      reader.result,
-        sent_at:      new Date().toLocaleString('fr-FR')
-      };
-      emailjs.send(window.PHARMACY_EMAILJS_SERVICE||'service_ehw7pcv', window.PHARMACY_EMAILJS_TEMPLATE||'', {...templateParams, to_email: window.PHARMACY_EMAIL||''})
-        .then(function() {
-          trackSend();
-          playSound('success');
-          formContent.style.display = 'none';
-          successOverlay.style.display = 'flex';
-        }, function(error) {
-          console.error("Échec EmailJS :", error);
-          playSound('error');
-          alert("Erreur lors de l'envoi. Veuillez réessayer.");
-          btnSend.textContent = "Envoyer à la pharmacie";
-          btnSend.style.opacity = "1";
-          btnSend.disabled = false;
-        });
-    };
-    reader.onerror = function() {
-      alert("Impossible de lire le fichier.");
+
+    // Ordonnance transmise via notify.js (Brevo, hébergement UE, RGPD).
+    // Le destinataire est résolu côté serveur à partir du slug : la page
+    // n'a jamais besoin de connaître l'email de la pharmacie.
+    compresserOrdo(selectedFile).then(function(fichier){
+      return fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ordonnance',
+          slug: PAGE_SLUG,
+          patient_nom: senderName,
+          patient_tel: senderPhone || '',
+          fichiers: [fichier]
+        })
+      });
+    }).then(async function(res){
+      const data = await res.json().catch(function(){ return {}; });
+      if (!res.ok) throw new Error(data.error || "Envoi impossible");
+      trackSend();
+      playSound('success');
+      formContent.style.display = 'none';
+      successOverlay.style.display = 'flex';
+    }).catch(function(error){
+      console.error("Échec envoi ordonnance :", error);
+      playSound('error');
+      alert(error.message || "Erreur lors de l'envoi. Veuillez réessayer.");
       btnSend.textContent = "Envoyer à la pharmacie";
       btnSend.style.opacity = "1";
       btnSend.disabled = false;
-    };
+    });
+  }
+
+  // Compresse une image avant envoi (les PDF passent tels quels).
+  // Renvoie { name, content } où content est du base64 sans préfixe.
+  function compresserOrdo(file, maxLargeur, qualite){
+    maxLargeur = maxLargeur || 1600; qualite = qualite || 0.75;
+    return new Promise(function(resolve, reject){
+      if (file.type === 'application/pdf') {
+        const r = new FileReader();
+        r.onload  = function(){ resolve({ name: file.name, content: r.result.split(',')[1] }); };
+        r.onerror = function(){ reject(new Error("Lecture du PDF impossible.")); };
+        r.readAsDataURL(file);
+        return;
+      }
+      const img = new Image();
+      img.onload = function(){
+        const ratio = Math.min(1, maxLargeur / img.width);
+        const cv = document.createElement('canvas');
+        cv.width  = Math.round(img.width  * ratio);
+        cv.height = Math.round(img.height * ratio);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        const data = cv.toDataURL('image/jpeg', qualite);
+        resolve({ name: file.name.replace(/\.[^.]+$/, '') + '.jpg', content: data.split(',')[1] });
+      };
+      img.onerror = function(){ reject(new Error("Image illisible.")); };
+      const rr = new FileReader();
+      rr.onload  = function(){ img.src = rr.result; };
+      rr.onerror = function(){ reject(new Error("Lecture du fichier impossible.")); };
+      rr.readAsDataURL(file);
+    });
   }
 
   document.getElementById('btn-back-home').addEventListener('click', function() {
@@ -936,6 +970,16 @@
   // ── Slug dynamique depuis l'URL ──
   const PAGE_SLUG = window.location.pathname.replace(/\//g, '').trim() || 'pharmacie-nhean';
 
+  // Logo par défaut — placeholder SVG affiché tant que le client n'a pas
+  // importé son propre logo. Encodé en data-URI : ne dépend d'aucun fichier,
+  // donc ne peut jamais « casser » comme une image manquante.
+  const LOGO_DEFAUT = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">'
+    + '<rect width="120" height="120" rx="24" fill="#eef2ff"/>'
+    + '<path d="M60 32v56M32 60h56" stroke="#1753FF" stroke-width="12" stroke-linecap="round"/>'
+    + '</svg>'
+  );
+
   document.getElementById('link-clock').addEventListener('click', async function(e) {
     e.preventDefault();
     await openHoraires();
@@ -1019,28 +1063,22 @@
         .eq('slug', PAGE_SLUG)
         .single();
 
-      if (error || !data) return;
+      if (error || !data) { document.body.classList.add('page-ready'); return; }
 
       // 1. Textes et Logo du Profil
       if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
       if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
       const _logo = data.logo_url || data.logo_base64;
-      if (_logo) document.getElementById('profile-avatar-img').src = _logo;
+      // Si le client n'a pas encore importé de logo, on garde le placeholder par défaut
+      document.getElementById('profile-avatar-img').src = _logo || LOGO_DEFAUT;
       if (data.banniere_base64) document.getElementById('banniere-img').src = data.banniere_base64;
-      // Plan — affichage conditionnel de la carte promo
+      // Carte promo — visible pour tous (accès à vie, plus de condition de plan)
       const cartePromo = document.getElementById('card-promo');
       if (cartePromo) {
-        if (data.plan === 'pro') {
-          cartePromo.style.display = 'block';
-          cartePromo.href = '/promos.html?slug=' + PAGE_SLUG;
-        } else {
-          cartePromo.style.display = 'none';
-        }
+        cartePromo.style.display = 'block';
+        cartePromo.href = '/promos.html?slug=' + PAGE_SLUG;
       }
-      // EmailJS dynamique
-      window.PHARMACY_EMAILJS_SERVICE  = data.emailjs_service_id  || 'service_ehw7pcv';
-      window.PHARMACY_EMAILJS_TEMPLATE = data.emailjs_template_id || '';
-      window.PHARMACY_EMAIL            = data.email_contact        || '';
+
 
       // Téléphone & Maps dynamiques
       if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
@@ -1123,10 +1161,16 @@
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
     }
     document.querySelector('.profile-section').classList.add('loaded');
+    // Révèle la page entière une fois le rendu terminé
+    document.body.classList.add('page-ready');
   }
 
   // Chargement des données au démarrage de la page
   document.addEventListener("DOMContentLoaded", initPharmacyProfile);
+
+  // Filet de sécurité : si Supabase ne répond pas sous 5 s, on révèle
+  // quand même la page pour ne jamais rester bloqué sur l'écran gris.
+  setTimeout(function(){ document.body.classList.add('page-ready'); }, 5000);
   </script>
 </body>
 </html>
