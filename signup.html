@@ -551,14 +551,25 @@ async function submitSignup(){
         .eq('token', invitation.token);
     }
 
-    // 5. Confirmation
+    // 5. Connexion immédiate — plus de confirmation d'email
+    // Le pharmacien a déjà prouvé qu'il possède cette adresse en
+    // recevant le lien d'invitation : inutile de la revérifier.
+    // On ouvre la session et on l'emmène directement dans son espace.
+    if (!session) {
+      await sb.auth.signInWithPassword({ email, password: pw });
+    }
+
     document.getElementById('success-msg').textContent =
-      'Votre espace est créé. Confirmez votre email pour y accéder.';
+      'Votre espace est prêt !';
     document.getElementById('success-info').innerHTML =
       '🌐 <strong>swiftypharm.fr/' + slug + '</strong><br>'
-      + '📧 Confirmation envoyée à <strong>' + userEmail + '</strong><br>'
-      + '♾️ Accès : <strong>à vie — aucun abonnement</strong>';
+      + '♾️ Accès : <strong>à vie — aucun abonnement</strong><br>'
+      + '<span style="color:var(--muted,#64748b)">Redirection vers votre espace…</span>';
     goScreen('screen-success');
+
+    setTimeout(function(){
+      window.location.href = 'https://swiftypharm.fr/backoffice.html';
+    }, 1400);
 
   } catch(err) {
     showAlert('Erreur : ' + err.message);
