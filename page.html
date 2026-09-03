@@ -81,14 +81,13 @@
     .profile-section { opacity: 0; transition: opacity .3s ease; }
     .profile-section.loaded { opacity: 1; }
 
-    /* Écran gris au chargement : tout le contenu est masqué tant que
+    /* Écran de chargement : tout le contenu est masqué tant que
        les données ne sont pas arrivées, puis révélé d'un seul coup.
-       Évite tout flash d'icônes ou de contenu de démonstration. */
-    body { background: #f1f5f9; }
+       Le splash reprend la couleur de fond d'origine de la page. */
     body > *:not(#page-splash) { opacity: 0; transition: opacity .25s ease; }
     body.page-ready > *:not(#page-splash) { opacity: 1; }
     #page-splash {
-      position: fixed; inset: 0; background: #f1f5f9; z-index: 9999;
+      position: fixed; inset: 0; background: #d2d2d2; z-index: 9999;
       transition: opacity .25s ease;
     }
     body.page-ready #page-splash { opacity: 0; pointer-events: none; }
