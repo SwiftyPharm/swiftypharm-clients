@@ -1,6 +1,6 @@
 // netlify/functions/notify.js
 //
-// Point d'entrée unique pour toutes les notifications SwiftyPharm :
+// Point d'entrée unique poour toutes les notifications SwiftyPharm :
 //
 //   action: 'ordonnance'  → la page publique transmet une ordonnance à l'officine
 //   action: 'commande'    → click & collect : email au pharmacien + SMS au client
