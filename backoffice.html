@@ -1645,28 +1645,28 @@ document.addEventListener('click', e => {
 //
 const RESEAUX_DEF = {
   instagram:{
-    label:'Instagram', img:'/icons/instagram_icon.png', svg:'i-instagram',
+    label:'Instagram', img:'/assets/instagram-icon.png', svg:'i-instagram',
     couleur:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)',
-    saisie:'pseudo', prefixe:'instagram.com/', exemple:'pharmacie_nhean',
+    saisie:'pseudo', prefixe:'instagram.com/', exemple:'pharmacie_centrale',
     construire:v=>'https://instagram.com/'+v.replace(/^@/,''),
     extraire:u=>(u||'').replace(/^https?:\/\/(www\.)?instagram\.com\//,'').replace(/\/$/,'').replace('@',''),
   },
   facebook:{
-    label:'Facebook', img:'/icons/facebook_icon.png', svg:'i-facebook',
+    label:'Facebook', img:'/assets/facebook-icon.png', svg:'i-facebook',
     couleur:'#1877F2',
     saisie:'pseudo', prefixe:'facebook.com/', exemple:'pharmacie.nhean',
     construire:v=>'https://www.facebook.com/'+v.replace(/\/+$/,''),
     extraire:u=>(u||'').replace(/^https?:\/\/(www\.)?facebook\.com\//,'').replace(/\?.*$/,'').replace(/\/+$/,''),
   },
   tiktok:{
-    label:'TikTok', img:'/icons/tiktok_icon.png', svg:'i-tiktok',
+    label:'TikTok', img:'/assets/tiktok-icon.png', svg:'i-tiktok',
     couleur:'#010101',
     saisie:'pseudo', prefixe:'tiktok.com/@', exemple:'pharmacie.nhean',
     construire:v=>'https://www.tiktok.com/@'+v.replace(/^@/,''),
     extraire:u=>(u||'').replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/,'').replace(/\/$/,''),
   },
   doctolib:{
-    label:'Doctolib', img:'/icons/doctolib_icon.png', svg:'i-doctolib',
+    label:'Doctolib', img:'/assets/doctolib-icon.png', svg:'i-doctolib',
     couleur:'#107ACA',
     saisie:'url', exemple:'https://www.doctolib.fr/pharmacie/…',
     aide:"Collez l'adresse de votre page Doctolib, ou lancez la recherche ci-dessous.",
@@ -1676,16 +1676,16 @@ const RESEAUX_DEF = {
     extraire:u=>u||'',
   },
   google:{
-    label:'Google Avis', img:'/icons/google_icon.png', svg:'i-star',
+    label:'Google Avis', img:'/assets/google-avis-icon.png', svg:'i-star',
     couleur:'linear-gradient(135deg,#4285F4,#EA4335)',
-    saisie:'nom', exemple:'Pharmacie NHEAN, Brunoy',
+    saisie:'nom', exemple:'Pharmacie Centrale, Paris',
     aide:"Saisissez le nom exact de votre pharmacie tel qu'il apparaît sur Google.",
     recherche:'google',
     construire:v=>'https://www.google.com/search?q='+encodeURIComponent(v+' avis google')+'&tbm=lcl',
     extraire:u=>'',
   },
   website:{
-    label:'Site Web', img:'/icons/website_icon.png', svg:'i-globe',
+    label:'Site Web', img:'/assets/website-icon.png', svg:'i-globe',
     couleur:'#0f172a',
     saisie:'url', exemple:'https://votre-pharmacie.fr',
     valider:v=>/^https?:\/\/.+\..+/.test(v) ? '' : "L'adresse doit commencer par https:// et contenir un nom de domaine.",
