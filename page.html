@@ -1187,7 +1187,7 @@
         let doctoUrl = doctoUrlVal.startsWith('http') ? doctoUrlVal : `https://${doctoUrlVal}`;
         container.innerHTML += `
           <a href="${doctoUrl}" target="_blank" class="social-card-item">
-            <img src="doctolib-icon.png" alt="Doctolib" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#107acc;color:#fff;\\'>📅</div>'">
+            <img src="/assets/doctolib-icon.png" alt="Doctolib" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#107acc;color:#fff;\\'>📅</div>'">
             <div class="social-card-txt">Prenez RDV<br>sur Doctolib !</div>
           </a>`;
       }
@@ -1202,7 +1202,7 @@
         let tiktokUrl = tiktokUrlVal.startsWith('http') ? tiktokUrlVal : `https://tiktok.com/@${cleanTk}`;
         container.innerHTML += `
           <a href="${tiktokUrl}" target="_blank" class="social-card-item">
-            <img src="tiktok-icon.png" alt="TikTok" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#000;color:#fff;\\'>🎵</div>'">
+            <img src="/assets/tiktok-icon.png" alt="TikTok" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#000;color:#fff;\\'>🎵</div>'">
             <div class="social-card-txt">Suivez nous sur<br>TikTok !</div>
           </a>`;
       }
