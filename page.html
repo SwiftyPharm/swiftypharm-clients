@@ -470,7 +470,7 @@
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-        <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="if(this.src.indexOf('logo_pharmacie_general')===-1){this.src='/assets/logo_pharmacie_general.jpg';}">
+    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="if(this.src.indexOf('logo_pharmacie_general')===-1){this.src='/assets/logo_pharmacie_general.jpg';}">
     <div class="profile-name" id="profile-name-display"></div>
     <div class="profile-sub" id="profile-sub-display"></div>
 
@@ -949,13 +949,15 @@
         <p>Pensez à mettre à jour votre carte au moins <strong>1 fois par an</strong> et après chaque changement de situation (déménagement, maternité, affection de longue durée). Une borne libre-service est à votre disposition.</p>
       </div>
 
-      <!-- 5. DOCTEUR EN PHARMACIE -->
-      <div class="infos-section-title">👨‍⚕️ Votre docteur en pharmacie</div>
-      <div class="docteur-box">
-        <div class="docteur-avatar" id="docteur-initiales">DR</div>
-        <div class="docteur-info">
-          <div class="docteur-nom" id="docteur-nom">Dr. Jean Dupont</div>
-          <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
+      <!-- 5. DOCTEUR EN PHARMACIE — masqué tant qu'aucun nom n'est renseigné -->
+      <div id="docteur-bloc" style="display:none;">
+        <div class="infos-section-title">👨‍⚕️ Votre docteur en pharmacie</div>
+        <div class="docteur-box">
+          <div class="docteur-avatar" id="docteur-initiales">DR</div>
+          <div class="docteur-info">
+            <div class="docteur-nom" id="docteur-nom"></div>
+            <div class="docteur-titre">Pharmacien Titulaire — Docteur en pharmacie</div>
+          </div>
         </div>
       </div>
 
@@ -1068,12 +1070,9 @@
       if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
       if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
       const _logo = data.logo_url || data.logo_base64;
-      // Si le client n'a pas encore importé de logo, on garde le placeholder par défaut
-      
-     // On ne remplace l'image que si le pharmacien a vraiment un logo.
+      // On ne remplace l'image que si le pharmacien a vraiment un logo.
       // Sinon on laisse le logo par défaut déjà présent dans le HTML.
       if (_logo) document.getElementById('profile-avatar-img').src = _logo;
-      
       if (data.banniere_base64) document.getElementById('banniere-img').src = data.banniere_base64;
       // Carte promo — visible pour tous (accès à vie, plus de condition de plan)
       const cartePromo = document.getElementById('card-promo');
@@ -1087,9 +1086,11 @@
       if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
       if (data.adresse_maps) document.getElementById('link-maps').href = data.adresse_maps;
 
-      if (data.docteur) {
+      if (data.docteur && data.docteur.trim()) {
         const docEl = document.getElementById('docteur-nom');
+        const blocEl = document.getElementById('docteur-bloc');
         if (docEl) docEl.textContent = data.docteur;
+        if (blocEl) blocEl.style.display = '';
       }
 
       // 2. On lit la colonne "reseaux" (ou "reseaux_sociaux" par sécurité)
@@ -1176,6 +1177,37 @@
             <div class="social-card-txt">Visitez notre<br>Site Web !</div>
           </a>`;
       }
+
+      // ── DOCTOLIB ── (prise de rendez-vous)
+      const doctoObj = soc.doctolib || soc.docto;
+      const doctoActif = doctoObj?.actif ?? doctoObj?.active;
+      const doctoUrlVal = doctoObj?.url || doctoObj?.val;
+
+      if (doctoObj && doctoActif && doctoUrlVal && doctoUrlVal.trim() !== '') {
+        let doctoUrl = doctoUrlVal.startsWith('http') ? doctoUrlVal : `https://${doctoUrlVal}`;
+        container.innerHTML += `
+          <a href="${doctoUrl}" target="_blank" class="social-card-item">
+            <img src="doctolib-icon.png" alt="Doctolib" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#107acc;color:#fff;\\'>📅</div>'">
+            <div class="social-card-txt">Prenez RDV<br>sur Doctolib !</div>
+          </a>`;
+      }
+
+      // ── TIKTOK ──
+      const tiktokObj = soc.tiktok || soc.tik;
+      const tiktokActif = tiktokObj?.actif ?? tiktokObj?.active;
+      const tiktokUrlVal = tiktokObj?.url || tiktokObj?.val;
+
+      if (tiktokObj && tiktokActif && tiktokUrlVal && tiktokUrlVal.trim() !== '') {
+        const cleanTk = tiktokUrlVal.replace(/.*tiktok\.com\//, '').replace(/\//g, '').replace('@', '');
+        let tiktokUrl = tiktokUrlVal.startsWith('http') ? tiktokUrlVal : `https://tiktok.com/@${cleanTk}`;
+        container.innerHTML += `
+          <a href="${tiktokUrl}" target="_blank" class="social-card-item">
+            <img src="tiktok-icon.png" alt="TikTok" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#000;color:#fff;\\'>🎵</div>'">
+            <div class="social-card-txt">Suivez nous sur<br>TikTok !</div>
+          </a>`;
+      }
+
+
 
     } catch (err) {
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
