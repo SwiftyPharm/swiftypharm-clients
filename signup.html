@@ -480,12 +480,25 @@ async function submitSignup(){
   label.textContent = 'Création en cours…';
 
   try {
-    // 1. Session active (Google) ou création via email
-    const { data:{ session } } = await sb.auth.getSession();
-    let userId = session?.user?.id;
-    let userEmail = session?.user?.email || email;
+    // 1. Déterminer le compte à lier à la pharmacie.
+    //    On ne réutilise la session existante QUE si l'utilisateur s'est
+    //    volontairement connecté via Google (googleUser est alors défini).
+    //    Sinon, on crée toujours un nouveau compte — même si une session
+    //    résiduelle traîne dans le navigateur (ex. création en série).
+    //    Sans cette distinction, toutes les pharmacies créées d'affilée se
+    //    liaient au même compte (celui resté connecté du test précédent).
+    let userId, userEmail;
 
-    if (!userId) {
+    if (googleUser) {
+      // Cas Google : la session EST celle du pharmacien, on la réutilise.
+      userId = googleUser.id;
+      userEmail = googleUser.email || email;
+    } else {
+      // Cas email : on crée le compte du pharmacien, quelle que soit la
+      // session en cours. On se déconnecte d'abord d'une éventuelle
+      // session résiduelle pour repartir propre.
+      await sb.auth.signOut();
+
       const { data:authData, error:authErr } = await sb.auth.signUp({ email, password: pw });
       if (authErr) {
         // Compte déjà existant pour cette adresse : on le dit clairement,
@@ -551,11 +564,12 @@ async function submitSignup(){
         .eq('token', invitation.token);
     }
 
-    // 5. Connexion immédiate — plus de confirmation d'email
+    // 5. Connexion immédiate — plus de confirmation d'email.
     // Le pharmacien a déjà prouvé qu'il possède cette adresse en
     // recevant le lien d'invitation : inutile de la revérifier.
-    // On ouvre la session et on l'emmène directement dans son espace.
-    if (!session) {
+    // En cas Google, la session est déjà ouverte ; en cas email, on
+    // ouvre la session avec les identifiants qu'il vient de choisir.
+    if (!googleUser) {
       await sb.auth.signInWithPassword({ email, password: pw });
     }
 
