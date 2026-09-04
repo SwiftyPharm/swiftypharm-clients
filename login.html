@@ -239,15 +239,31 @@ async function login(){
 
 async function redirectToDashboard(userId){
   try {
-    const { data, error } = await sb.from('pharmacies').select('slug').eq('user_id', userId).single();
-    if (error || !data) throw new Error('Pharmacie introuvable.');
+    const { data, error } = await sb.from('pharmacies').select('slug').eq('user_id', userId).maybeSingle();
+
+    // Diagnostic détaillé en console (invisible pour l'utilisateur)
+    if (error) {
+      console.error('[login] Erreur requête pharmacies :', error.code, error.message, error);
+    }
+
+    if (error) throw new Error('REQUETE');       // problème technique (RLS, réseau…)
+    if (!data)  throw new Error('SANS_PHARMACIE'); // requête OK mais aucune pharmacie
+
     localStorage.setItem('swiftlink_slug', data.slug);
     window.location.href = 'https://swiftypharm.fr/backoffice.html?slug=' + data.slug;
   } catch(err) {
     showLoader(false);
     const btn = document.getElementById('btn-login');
     if (btn) btn.disabled = false;
-    showAlert('Compte trouvé mais aucune pharmacie associée. Contactez le support.');
+
+    if (err.message === 'SANS_PHARMACIE') {
+      // Cas réellement anormal : compte sans officine (compte de test)
+      showAlert("Votre espace n'est pas encore configuré. Écrivez-nous et on s'en occupe.", 'info');
+    } else {
+      // Problème technique : on reste doux, sans jargon ni alarme
+      showAlert("Connexion réussie — un instant, on prépare votre espace…", 'info');
+      console.error('[login] Échec redirection :', err);
+    }
   }
 }
 
