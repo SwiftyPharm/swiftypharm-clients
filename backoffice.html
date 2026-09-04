@@ -1598,26 +1598,42 @@ function selectAdresse(i){
   document.getElementById('adresse-results').classList.remove('show');
   _addrIndex = -1;
 
-  // Lien Maps basé sur les coordonnées : bien plus précis que le texte seul
-  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
-    + encodeURIComponent(label)
-    + '&query_place_id=';
-  const mapsUrlCoords = 'https://www.google.com/maps/search/?api=1&query='
-    + lat + ',' + lon;
+  // Nom de la pharmacie déjà saisi (sert à viser la FICHE de l'établissement
+  // sur Google Maps, plutôt qu'un simple point GPS).
+  const nomPharma = (document.getElementById('ph-name')?.value || '').trim();
+
+  // Lien Maps : on combine le nom de la pharmacie et l'adresse. Google Maps
+  // résout alors vers la fiche de la pharmacie (avis, horaires, photos)
+  // au lieu d'afficher des coordonnées brutes. Aucune API payante.
+  const requeteMaps = nomPharma
+    ? `${nomPharma}, ${label}`
+    : label;
+  const mapsUrlLieu = 'https://www.google.com/maps/search/?api=1&query='
+    + encodeURIComponent(requeteMaps);
 
   const cfg = getConfig();
   cfg.pharmacy.adresse      = label;
-  cfg.pharmacy.adresse_maps = mapsUrlCoords;
+  cfg.pharmacy.adresse_maps = mapsUrlLieu;
   cfg.pharmacy.lat          = lat;
   cfg.pharmacy.lon          = lon;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
 
   autoSave();
 
-  document.getElementById('adresse-hint').innerHTML =
-    '<svg class="ico ico-sm"><use href="#i-pin"/></svg> <a href="' + mapsUrlCoords + '" target="_blank" style="color:var(--blue);font-weight:600">'
-    + 'Vérifier sur Google Maps →</a>'
-    + '<span style="color:#94a3b8;margin-left:8px">' + lat.toFixed(5) + ', ' + lon.toFixed(5) + '</span>';
+  // Lien de vérification : le pharmacien confirme que Google tombe bien
+  // sur SA pharmacie. S'il n'a pas encore saisi son nom, on le lui rappelle.
+  const hint = document.getElementById('adresse-hint');
+  if (nomPharma) {
+    hint.innerHTML =
+      '<svg class="ico ico-sm"><use href="#i-pin"/></svg> '
+      + '<a href="' + mapsUrlLieu + '" target="_blank" style="color:var(--blue);font-weight:600">'
+      + 'Vérifier ma pharmacie sur Google Maps →</a>'
+      + '<span style="color:#94a3b8;margin-left:8px">Est-ce bien votre officine ?</span>';
+  } else {
+    hint.innerHTML =
+      '<span style="color:#e11d48;font-weight:600">Renseignez d\'abord le nom de votre pharmacie ci-dessus</span>'
+      + '<span style="color:#94a3b8;margin-left:6px">pour un lien vers votre fiche Google.</span>';
+  }
 }
 
 // Fermer la liste au clic extérieur
