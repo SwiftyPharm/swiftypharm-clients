@@ -470,7 +470,7 @@
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.src=LOGO_DEFAUT">
+    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="this.onerror=null;this.style.visibility='hidden'">
     <div class="profile-name" id="profile-name-display"></div>
     <div class="profile-sub" id="profile-sub-display"></div>
 
@@ -569,7 +569,7 @@
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
           <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
-          <a href="https://reviewthis.biz/PHA-NHEAN" class="btn-google-review">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
+          <a href="#" id="btn-google-review" class="btn-google-review" target="_blank" rel="noopener" style="display:none;">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
         </div>
       </div>
       <img src="down-upload.png" alt="" onerror="this.style.display='none'"
@@ -973,17 +973,11 @@
   const JOUR_INDEX = ['dim','lun','mar','mer','jeu','ven','sam'];
 
   // ── Slug dynamique depuis l'URL ──
-  const PAGE_SLUG = window.location.pathname.replace(/\//g, '').trim() || 'pharmacie-nhean';
+  const PAGE_SLUG = window.location.pathname.replace(/\//g, '').trim();
 
-  // Logo par défaut — placeholder SVG affiché tant que le client n'a pas
-  // importé son propre logo. Encodé en data-URI : ne dépend d'aucun fichier,
-  // donc ne peut jamais « casser » comme une image manquante.
-  const LOGO_DEFAUT = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">'
-    + '<rect width="120" height="120" rx="24" fill="#eef2ff"/>'
-    + '<path d="M60 32v56M32 60h56" stroke="#1753FF" stroke-width="12" stroke-linecap="round"/>'
-    + '</svg>'
-  );
+  // Logo par défaut — image affichée tant que le client n'a pas
+  // importé son propre logo.
+  const LOGO_DEFAUT = '/assets/logo_pharmacie_general.jpg';
 
   document.getElementById('link-clock').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -1104,16 +1098,33 @@
       const googleActif = googleObj?.actif ?? googleObj?.active;
       const googleUrlVal = googleObj?.url || googleObj?.val;
       
-      if (googleObj && googleActif) {
-        let url = '#';
-        if (googleUrlVal && googleUrlVal.trim() !== '') {
-          url = googleUrlVal.startsWith('http') ? googleUrlVal : `https://www.google.com/search?q=${encodeURIComponent(googleUrlVal + ' avis google')}&tbm=lcl`;
-        }
+      // URL Google Avis calculée une fois, réutilisée pour la carte ET le
+      // bouton d'avis affiché après l'envoi d'une ordonnance.
+      let googleAvisUrl = '';
+      if (googleUrlVal && googleUrlVal.trim() !== '') {
+        googleAvisUrl = googleUrlVal.startsWith('http')
+          ? googleUrlVal
+          : `https://www.google.com/search?q=${encodeURIComponent(googleUrlVal + ' avis google')}&tbm=lcl`;
+      }
+
+      if (googleObj && googleActif && googleAvisUrl) {
         container.innerHTML += `
-          <a href="${url}" target="_blank" class="social-card-item">
+          <a href="${googleAvisUrl}" target="_blank" class="social-card-item">
             <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
             <div class="social-card-txt">Notez nous sur <br>Google !</div>
           </a>`;
+      }
+
+      // Bouton d'avis du pop-up post-ordonnance : activé uniquement si le
+      // pharmacien a renseigné un lien Google Avis. Sinon, pas de bouton.
+      const btnReview = document.getElementById('btn-google-review');
+      if (btnReview) {
+        if (googleAvisUrl) {
+          btnReview.href = googleAvisUrl;
+          btnReview.style.display = '';
+        } else {
+          btnReview.style.display = 'none';
+        }
       }
 
       // ── INSTAGRAM ── (cherche 'instagram' ou 'insta')
