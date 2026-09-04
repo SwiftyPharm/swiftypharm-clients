@@ -557,6 +557,20 @@ async function submitSignup(){
 
     localStorage.setItem('swiftlink_slug', slug);
 
+    // Alerte Telegram « nouveau compte » — non bloquante : un échec ici
+    // ne doit jamais empêcher la création du compte.
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'nouveau_compte',
+        nom: name,
+        ville: (invitation?.ville || ''),
+        email: userEmail || email,
+        slug: slug,
+      }),
+    }).catch(function(e){ console.warn('Alerte compte non envoyée :', e); });
+
     // 4. Consommer l'invitation — le lien devient inutilisable
     if (invitation?.token) {
       await sb.from('invitations')
