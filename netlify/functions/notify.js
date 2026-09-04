@@ -1,6 +1,6 @@
 // netlify/functions/notify.js
 //
-// Point d'entrée unique poour toutes les notifications SwiftyPharm :
+// Point d'entrée unique pour toutes les notifications SwiftyPharm :
 //
 //   action: 'ordonnance'  → la page publique transmet une ordonnance à l'officine
 //   action: 'commande'    → click & collect : email au pharmacien + SMS au client
@@ -176,6 +176,25 @@ exports.handler = async (event) => {
   let body;
   try { body = JSON.parse(event.body || '{}'); }
   catch { return json(400, { error: 'Requête invalide' }); }
+
+  // ═══════════════════════════════════════════
+  //  NOUVEAU COMPTE — alerte Telegram uniquement
+  //  (traité tôt : pas besoin d'une pharmacie déjà validée)
+  // ═══════════════════════════════════════════
+  if (body.action === 'nouveau_compte') {
+    const nom   = esc(body.nom || 'Sans nom');
+    const ville = esc(body.ville || '—');
+    const mail  = esc(body.email || '—');
+    const slugC = esc(body.slug || '—');
+    await alerte(
+      `🎉 <b>NOUVEAU COMPTE SWIFTYPHARM</b>\n\n`
+      + `Pharmacie : <b>${nom}</b>\n`
+      + `Ville : ${ville}\n`
+      + `Email : ${mail}\n`
+      + `Page : swiftypharm.fr/${slugC}`
+    );
+    return json(200, { ok: true });
+  }
 
   const slug = String(body.slug || '').trim().toLowerCase();
   if (!slug) return json(400, { error: 'Pharmacie non identifiée' });
