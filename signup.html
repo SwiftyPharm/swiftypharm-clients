@@ -571,11 +571,24 @@ async function submitSignup(){
       }),
     }).catch(function(e){ console.warn('Alerte compte non envoyée :', e); });
 
-    // 4. Consommer l'invitation — le lien devient inutilisable
+    // 4. Consommer l'invitation — le lien devient inutilisable.
+    // Fait via la fonction serveur (clé service role) : un update direct
+    // depuis le navigateur est bloqué par la RLS de la table invitations,
+    // ce qui laissait les invitations éternellement « en attente ».
     if (invitation?.token) {
-      await sb.from('invitations')
-        .update({ used_at: new Date().toISOString(), slug_cree: slug })
-        .eq('token', invitation.token);
+      try {
+        await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'consume',
+            token: invitation.token,
+            slug: slug,
+          }),
+        });
+      } catch (e) {
+        console.warn('Consommation invitation échouée :', e);
+      }
     }
 
     // 5. Connexion immédiate — plus de confirmation d'email.
