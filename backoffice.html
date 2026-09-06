@@ -2720,5 +2720,240 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════
+     CHAT SAV — assistance pharmacien
+     Réponses pré-écrites + escalade Telegram si non résolu
+     ═══════════════════════════════════════════════════ -->
+<style>
+  #sav-fab{position:fixed;bottom:22px;right:22px;width:58px;height:58px;border-radius:50%;
+    background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:26px;z-index:9000;
+    box-shadow:0 6px 20px rgba(0,0,70,.28);display:flex;align-items:center;justify-content:center;
+    transition:transform .15s}
+  #sav-fab:hover{transform:scale(1.06)}
+  #sav-panel{position:fixed;bottom:90px;right:22px;width:min(380px,calc(100vw - 44px));
+    max-height:min(560px,calc(100vh - 130px));background:#fff;border-radius:18px;z-index:9001;
+    box-shadow:0 12px 40px rgba(15,23,42,.22);display:none;flex-direction:column;overflow:hidden}
+  #sav-panel.open{display:flex}
+  .sav-head{background:var(--blue);color:#fff;padding:16px 18px}
+  .sav-head-t{font-size:15px;font-weight:800}
+  .sav-head-s{font-size:12px;opacity:.8;margin-top:2px}
+  .sav-body{flex:1;overflow-y:auto;padding:16px;background:#f6f8fd;display:flex;flex-direction:column;gap:10px}
+  .sav-msg{max-width:82%;padding:10px 13px;border-radius:13px;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+  .sav-msg.bot{background:#fff;color:#0f172a;align-self:flex-start;border:1px solid #e8edf5;border-bottom-left-radius:4px}
+  .sav-msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .sav-sugg{display:flex;flex-direction:column;gap:7px;padding:10px 16px 4px}
+  .sav-sugg-btn{text-align:left;background:#fff;border:1px solid #dbe3f0;color:var(--blue);
+    padding:9px 12px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s}
+  .sav-sugg-btn:hover{background:var(--blue-l);border-color:var(--blue)}
+  .sav-foot{padding:10px 16px 14px;border-top:1px solid #eef1f7;background:#fff}
+  .sav-escalade{width:100%;background:#fff;border:1px solid #e11d48;color:#e11d48;
+    padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;display:none}
+  .sav-escalade.show{display:block}
+  .sav-escalade:hover{background:#fff5f7}
+  .sav-input-row{display:flex;gap:8px;margin-top:8px}
+  .sav-input-row input{flex:1;border:1px solid #dbe3f0;border-radius:10px;padding:9px 12px;font-size:13px}
+  .sav-input-row button{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 15px;cursor:pointer;font-weight:700}
+  .sav-note{font-size:11px;color:#94a3b8;text-align:center;margin-top:8px}
+</style>
+
+<button id="sav-fab" onclick="savToggle()" title="Besoin d'aide ?">💬</button>
+
+<div id="sav-panel">
+  <div class="sav-head">
+    <div class="sav-head-t">Assistance SwiftyPharm</div>
+    <div class="sav-head-s">Une question ? On vous répond.</div>
+  </div>
+  <div class="sav-body" id="sav-body">
+    <div class="sav-msg bot">Bonjour 👋 Comment pouvons-nous vous aider ? Choisissez une question ci-dessous, ou écrivez-nous directement.</div>
+  </div>
+  <div class="sav-sugg" id="sav-sugg"></div>
+  <div class="sav-foot">
+    <button class="sav-escalade" id="sav-escalade" onclick="savEscalade()">
+      😕 Pas la réponse que je cherchais — contacter un conseiller
+    </button>
+    <div class="sav-input-row">
+      <input type="text" id="sav-input" placeholder="Écrivez votre message…" onkeydown="if(event.key==='Enter')savEnvoyer()">
+      <button onclick="savEnvoyer()">➤</button>
+    </div>
+    <div class="sav-note" id="sav-note"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  QUESTIONS / RÉPONSES DU SAV
+//  · suggeree:true  → affichée comme bouton direct (max 4 conseillé)
+//  · les autres     → accessibles via « Voir toutes les questions »
+//  Pour AJOUTER une question : copiez un bloc { q, r } et complétez.
+// ═══════════════════════════════════════════════════
+const SAV_FAQ = [
+  // ── Les 4 suggestions visibles d'emblée ──
+  {
+    suggeree: true,
+    q: "Comment modifier les informations de ma pharmacie ?",
+    r: "Rendez-vous dans l'onglet « Mes infos » du back office. Vous pouvez y modifier votre nom, adresse, horaires, téléphone et logo. Les changements sont enregistrés automatiquement et visibles aussitôt sur votre page publique."
+  },
+  {
+    suggeree: true,
+    q: "Comment ajouter une promotion ou un produit ?",
+    r: "Dans l'onglet « Promotions », cliquez sur « Ajouter ». Renseignez le nom du produit, le prix et éventuellement une photo. La promotion apparaît immédiatement sur votre page, et vos clients peuvent la commander en click & collect."
+  },
+  {
+    suggeree: true,
+    q: "Je ne reçois pas les ordonnances par email, que faire ?",
+    r: "Vérifiez d'abord que votre email de contact est bien renseigné dans « Mes infos ». Pensez aussi à regarder votre dossier spam et à y marquer nos emails comme « non indésirables ». Si le problème persiste, contactez-nous via le bouton ci-dessous."
+  },
+  {
+    suggeree: true,
+    q: "Comment obtenir une plaque NFC ou de la signalétique ?",
+    r: "Nous proposons des plaques NFC, stickers, vitrophanie et totems pour mettre en avant votre page en officine. Contactez-nous via le bouton ci-dessous en précisant ce qui vous intéresse, et nous reviendrons vers vous avec les tarifs."
+  },
+
+  // ── Les autres questions (liste complète, hors suggestions) ──
+  {
+    q: "Comment modifier mes horaires d'ouverture ?",
+    r: "Dans « Mes infos », section horaires, ajustez chaque jour de la semaine. Vous pouvez indiquer plusieurs créneaux et fermer certains jours. Tout est enregistré automatiquement."
+  },
+  {
+    q: "Comment changer mon logo ?",
+    r: "Dans « Mes infos », cliquez sur la zone du logo puis importez votre image. Format conseillé : PNG ou JPG carré. Si vous n'importez rien, un logo par défaut s'affiche."
+  },
+  {
+    q: "Comment ajouter mes réseaux sociaux (Instagram, Doctolib…) ?",
+    r: "Dans la section « Mes liens », activez les réseaux souhaités et collez l'adresse de votre profil. Ils apparaîtront sur votre page publique sous forme d'icônes."
+  },
+  {
+    q: "Comment mettre en avant mon lien Google Avis ?",
+    r: "Renseignez votre lien Google dans la section « Mes liens ». Il apparaîtra sur votre page, et un bouton d'avis sera proposé aux patients après l'envoi d'une ordonnance."
+  },
+  {
+    q: "Mes clients peuvent-ils commander en ligne ?",
+    r: "Oui, via le click & collect. Les produits que vous ajoutez en promotion sont commandables : le client réserve, vous recevez la commande par email, et il vient retirer en officine."
+  },
+  {
+    q: "Comment fonctionne l'accès à vie ?",
+    r: "Votre accès à SwiftyPharm est acquis définitivement avec votre paiement unique. Aucun abonnement, aucun renouvellement : votre page et votre back office restent actifs sans frais récurrents."
+  },
+  {
+    q: "Comment récupérer le lien de ma page publique ?",
+    r: "Votre page est accessible à l'adresse swiftypharm.fr suivie de votre identifiant. Vous le trouvez en haut de votre back office ; vous pouvez le copier et le partager à vos patients."
+  },
+  {
+    q: "Comment supprimer mon compte ?",
+    r: "Dans « Mes infos », tout en bas, la section RGPD vous permet de demander la suppression de votre compte et de vos données. Cette action est définitive."
+  }
+];
+
+let savHistorique = [];   // trace de la conversation, pour l'email SAV
+let savEscaladeFait = false;
+let savToutAffiche = false;
+
+function savRenderSugg(){
+  const box = document.getElementById('sav-sugg');
+  // On n'affiche d'abord que les questions marquées "suggeree"
+  const aAfficher = savToutAffiche
+    ? SAV_FAQ
+    : SAV_FAQ.filter(function(f){ return f.suggeree; });
+
+  let html = aAfficher.map(function(f){
+    const i = SAV_FAQ.indexOf(f);
+    return `<button class="sav-sugg-btn" onclick="savPoser(${i})">${f.q}</button>`;
+  }).join('');
+
+  // Bouton "Voir toutes les questions" tant que tout n'est pas déplié
+  if (!savToutAffiche && SAV_FAQ.length > aAfficher.length) {
+    html += `<button class="sav-sugg-btn" style="border-style:dashed;color:#64748b" onclick="savVoirTout()">➕ Voir toutes les questions</button>`;
+  }
+  box.innerHTML = html;
+}
+
+function savVoirTout(){
+  savToutAffiche = true;
+  savRenderSugg();
+}
+
+function savToggle(){
+  const p = document.getElementById('sav-panel');
+  p.classList.toggle('open');
+  if (p.classList.contains('open') && !document.getElementById('sav-sugg').innerHTML) {
+    savRenderSugg();
+  }
+}
+
+function savAjouter(texte, cls){
+  const body = document.getElementById('sav-body');
+  const div = document.createElement('div');
+  div.className = 'sav-msg ' + cls;
+  div.textContent = texte;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function savPoser(i){
+  const f = SAV_FAQ[i];
+  savAjouter(f.q, 'user');
+  savHistorique.push({ de: 'pharmacien', texte: f.q });
+  setTimeout(function(){
+    savAjouter(f.r, 'bot');
+    savHistorique.push({ de: 'bot', texte: f.r });
+    // Après une réponse, on propose l'escalade si ça ne suffit pas
+    document.getElementById('sav-escalade').classList.add('show');
+  }, 350);
+}
+
+function savEnvoyer(){
+  const input = document.getElementById('sav-input');
+  const txt = input.value.trim();
+  if (!txt) return;
+  savAjouter(txt, 'user');
+  savHistorique.push({ de: 'pharmacien', texte: txt });
+  input.value = '';
+  // Message libre : on ne fait pas d'IA, on invite à contacter le conseiller
+  setTimeout(function(){
+    const rep = "Merci pour votre message. Pour une question spécifique, contactez directement un conseiller via le bouton ci-dessous — nous vous répondrons par email au plus vite.";
+    savAjouter(rep, 'bot');
+    savHistorique.push({ de: 'bot', texte: rep });
+    document.getElementById('sav-escalade').classList.add('show');
+  }, 350);
+}
+
+async function savEscalade(){
+  if (savEscaladeFait) {
+    document.getElementById('sav-note').textContent = "Votre demande a déjà été transmise. Un conseiller vous répondra par email.";
+    return;
+  }
+  const btn = document.getElementById('sav-escalade');
+  btn.disabled = true;
+  btn.textContent = "Envoi en cours…";
+
+  const cfg = (typeof getConfig === 'function') ? getConfig() : {};
+  const nomPharma = cfg.pharmacy?.name || SLUG || 'Pharmacie';
+  const emailPharma = cfg.pharmacy?.email_contact || cfg.pharmacy?.email || '';
+
+  try {
+    const res = await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'message_sav',
+        slug: SLUG,
+        pharmacie: nomPharma,
+        email: emailPharma,
+        historique: savHistorique,
+      }),
+    });
+    if (!res.ok) throw new Error('envoi impossible');
+    savEscaladeFait = true;
+    savAjouter("✅ Votre demande a bien été transmise à notre équipe. Un conseiller vous répondra par email dans les meilleurs délais.", 'bot');
+    btn.classList.remove('show');
+    document.getElementById('sav-note').textContent = "Demande transmise au SAV.";
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "😕 Pas la réponse que je cherchais — contacter un conseiller";
+    document.getElementById('sav-note').textContent = "Envoi impossible. Réessayez dans un instant.";
+  }
+}
+</script>
+
 </body>
 </html>
