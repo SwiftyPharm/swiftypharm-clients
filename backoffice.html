@@ -2731,14 +2731,14 @@ document.addEventListener('DOMContentLoaded', function() {
     transition:transform .15s}
   #sav-fab:hover{transform:scale(1.06)}
   #sav-panel{position:fixed;bottom:158px;right:18px;width:min(360px,calc(100vw - 32px));
-    max-height:min(480px,calc(100vh - 220px));background:#fff;border-radius:18px;z-index:9001;
+    max-height:min(640px,calc(100vh - 185px));background:#fff;border-radius:18px;z-index:9001;
     box-shadow:0 12px 40px rgba(15,23,42,.22);display:none;flex-direction:column;overflow:hidden}
   #sav-panel.open{display:flex}
   .sav-head{background:var(--blue);color:#fff;padding:13px 16px;flex-shrink:0;position:relative}
-  .sav-close{position:absolute;top:11px;right:12px;width:26px;height:26px;border:none;
-    background:rgba(255,255,255,.15);color:#fff;border-radius:50%;cursor:pointer;font-size:14px;
-    line-height:1;display:flex;align-items:center;justify-content:center}
-  .sav-close:hover{background:rgba(255,255,255,.28)}
+  .sav-close{position:absolute;top:8px;right:12px;width:32px;height:32px;border:none;
+    background:none;color:#fff;cursor:pointer;font-size:24px;
+    line-height:1;display:flex;align-items:center;justify-content:center;opacity:.85}
+  .sav-close:hover{opacity:1}
   .sav-head-t{font-size:14px;font-weight:800}
   .sav-head-s{font-size:11.5px;opacity:.8;margin-top:1px}
   .sav-body{flex:1;overflow-y:auto;padding:14px;background:#f6f8fd;display:flex;flex-direction:column;gap:9px;min-height:80px}
