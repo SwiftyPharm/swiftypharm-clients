@@ -196,6 +196,50 @@ exports.handler = async (event) => {
     return json(200, { ok: true });
   }
 
+  // ═══════════════════════════════════════════
+  //  MESSAGE SAV — un pharmacien demande de l'aide
+  //  Email vers le support + alerte Telegram
+  // ═══════════════════════════════════════════
+  if (body.action === 'message_sav') {
+    const pharmacie = esc(body.pharmacie || 'Pharmacie');
+    const slugM     = esc(body.slug || '—');
+    const emailM    = esc(body.email || '—');
+    const histo     = Array.isArray(body.historique) ? body.historique : [];
+
+    // Reconstitution de la conversation pour l'email
+    const convHtml = histo.map(function(m){
+      const qui = m.de === 'pharmacien' ? '👤 Pharmacien' : '🤖 Bot';
+      return `<p style="margin:6px 0"><strong>${qui} :</strong> ${esc(m.texte)}</p>`;
+    }).join('') || '<p>(aucun échange)</p>';
+
+    // Email au support (destinataire = l'expéditeur configuré, ta boîte)
+    try {
+      await envoyerEmail({
+        to: SENDER_EMAIL,
+        toName: 'SAV SwiftyPharm',
+        replyTo: body.email || undefined,
+        subject: `Demande SAV — ${body.pharmacie || slugM}`,
+        html: `<p>Un pharmacien demande de l'assistance.</p>
+          <p><strong>Pharmacie :</strong> ${pharmacie}<br>
+          <strong>Slug :</strong> ${slugM}<br>
+          <strong>Email :</strong> ${emailM}</p>
+          <hr><p><strong>Conversation :</strong></p>${convHtml}`,
+      });
+    } catch (e) { console.error('Email SAV échoué :', e.message); }
+
+    // Alerte Telegram : demande en attente de réponse humaine
+    const dernier = histo.filter(function(m){ return m.de === 'pharmacien'; }).pop();
+    await alerte(
+      `🆘 <b>DEMANDE SAV — réponse attendue</b>\n\n`
+      + `Pharmacie : <b>${pharmacie}</b>\n`
+      + `Email : ${emailM}\n`
+      + `Page : swiftypharm.fr/${slugM}\n\n`
+      + `Dernier message :\n<code>${esc(dernier ? dernier.texte : '—')}</code>`
+    );
+
+    return json(200, { ok: true });
+  }
+
   const slug = String(body.slug || '').trim().toLowerCase();
   if (!slug) return json(400, { error: 'Pharmacie non identifiée' });
 
