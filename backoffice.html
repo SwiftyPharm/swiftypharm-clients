@@ -2725,16 +2725,20 @@ document.addEventListener('DOMContentLoaded', function() {
      Réponses pré-écrites + escalade Telegram si non résolu
      ═══════════════════════════════════════════════════ -->
 <style>
-  #sav-fab{position:fixed;bottom:22px;right:22px;width:58px;height:58px;border-radius:50%;
-    background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:26px;z-index:9000;
+  #sav-fab{position:fixed;bottom:96px;right:18px;width:52px;height:52px;border-radius:50%;
+    background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:23px;z-index:9000;
     box-shadow:0 6px 20px rgba(0,0,70,.28);display:flex;align-items:center;justify-content:center;
     transition:transform .15s}
   #sav-fab:hover{transform:scale(1.06)}
-  #sav-panel{position:fixed;bottom:90px;right:22px;width:min(360px,calc(100vw - 32px));
-    max-height:min(480px,calc(100vh - 150px));background:#fff;border-radius:18px;z-index:9001;
+  #sav-panel{position:fixed;bottom:158px;right:18px;width:min(360px,calc(100vw - 32px));
+    max-height:min(480px,calc(100vh - 220px));background:#fff;border-radius:18px;z-index:9001;
     box-shadow:0 12px 40px rgba(15,23,42,.22);display:none;flex-direction:column;overflow:hidden}
   #sav-panel.open{display:flex}
-  .sav-head{background:var(--blue);color:#fff;padding:13px 16px;flex-shrink:0}
+  .sav-head{background:var(--blue);color:#fff;padding:13px 16px;flex-shrink:0;position:relative}
+  .sav-close{position:absolute;top:11px;right:12px;width:26px;height:26px;border:none;
+    background:rgba(255,255,255,.15);color:#fff;border-radius:50%;cursor:pointer;font-size:14px;
+    line-height:1;display:flex;align-items:center;justify-content:center}
+  .sav-close:hover{background:rgba(255,255,255,.28)}
   .sav-head-t{font-size:14px;font-weight:800}
   .sav-head-s{font-size:11.5px;opacity:.8;margin-top:1px}
   .sav-body{flex:1;overflow-y:auto;padding:14px;background:#f6f8fd;display:flex;flex-direction:column;gap:9px;min-height:80px}
@@ -2778,6 +2782,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="sav-panel">
   <div class="sav-head">
+    <button class="sav-close" onclick="savToggle()" title="Fermer">✕</button>
     <div class="sav-head-t">Assistance SwiftyPharm</div>
     <div class="sav-head-s">Une question ? On vous répond.</div>
   </div>
@@ -2811,17 +2816,17 @@ const SAV_FAQ = [
   {
     suggeree: true,
     q: "Comment ajouter une promotion ou un produit ?",
-    r: "Dans l'onglet « Promotions », cliquez sur « Ajouter ». Renseignez le nom du produit, le prix et une image. La promotion apparaît immédiatement sur votre page, et vos clients peuvent la commander en click & collect."
+    r: "Dans l'onglet « Promotions », cliquez sur « Ajouter ». Renseignez le nom du produit, le prix et éventuellement une photo. La promotion apparaît immédiatement sur votre page, et vos clients peuvent la commander en click & collect."
   },
   {
     suggeree: true,
     q: "Je ne reçois pas les ordonnances par email, que faire ?",
-    r: "Vérifiez d'abord que votre email de contact est bien renseigné dans « Mes infos ». Pensez aussi à regarder votre dossier spam et à y marquer nos emails comme « non spam ». Si le problème persiste, contactez-nous via le bouton ci-dessous."
+    r: "Vérifiez d'abord que votre email de contact est bien renseigné dans « Mes infos ». Pensez aussi à regarder votre dossier spam et à y marquer nos emails comme « non indésirables ». Si le problème persiste, contactez-nous via le bouton ci-dessous."
   },
   {
     suggeree: true,
     q: "Comment obtenir une plaque NFC ou de la signalétique ?",
-    r: "Nous proposons des plaques NFC, stickers au sol et sur vitre avec QR code, et totems avec QR code pour que vos clients puisse envoyer leur document avant de se rendre au comptoir. Contactez-nous via le bouton ci-dessous en précisant ce qui vous intéresse, et nous reviendrons vers vous en vous envoyant les visuels."
+    r: "Nous proposons des plaques NFC, stickers, vitrophanie et totems pour mettre en avant votre page en officine. Contactez-nous via le bouton ci-dessous en précisant ce qui vous intéresse, et nous reviendrons vers vous avec les tarifs."
   },
 
   // ── Les autres questions (liste complète, hors suggestions) ──
@@ -2834,12 +2839,12 @@ const SAV_FAQ = [
     r: "Dans « Mes infos », cliquez sur la zone du logo puis importez votre image. Format conseillé : PNG ou JPG carré. Si vous n'importez rien, un logo par défaut s'affiche."
   },
   {
-    q: "Comment ajouter mes réseaux sociaux et autres liens (Instagram, Doctolib…) ?",
+    q: "Comment ajouter mes réseaux sociaux (Instagram, Doctolib…) ?",
     r: "Dans la section « Mes liens », activez les réseaux souhaités et collez l'adresse de votre profil. Ils apparaîtront sur votre page publique sous forme d'icônes."
   },
   {
     q: "Comment mettre en avant mon lien Google Avis ?",
-    r: "Renseignez votre lien Google dans la section « Mes liens ». Il apparaîtra sur votre page, et un bouton d'avis sera proposé aux clients après l'envoi d'une ordonnance. Contactez nous si vous avez du mal à créer votre lien !"
+    r: "Renseignez votre lien Google dans la section « Mes liens ». Il apparaîtra sur votre page, et un bouton d'avis sera proposé aux patients après l'envoi d'une ordonnance."
   },
   {
     q: "Mes clients peuvent-ils commander en ligne ?",
@@ -2924,6 +2929,8 @@ function savAjouter(texte, cls){
 
 function savPoser(i){
   const f = SAV_FAQ[i];
+  // Referme la liste complète pour laisser la place à la réponse
+  if (savListeOuverte) { savListeOuverte = false; savRenderSugg(); }
   savAjouter(f.q, 'user');
   savHistorique.push({ de: 'pharmacien', texte: f.q });
   setTimeout(function(){
