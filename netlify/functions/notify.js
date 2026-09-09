@@ -204,6 +204,7 @@ exports.handler = async (event) => {
     const pharmacie = esc(body.pharmacie || 'Pharmacie');
     const slugM     = esc(body.slug || '—');
     const emailM    = esc(body.email || '—');
+    const demande   = esc(body.demande || '');
     const histo     = Array.isArray(body.historique) ? body.historique : [];
 
     // Reconstitution de la conversation pour l'email
@@ -211,6 +212,12 @@ exports.handler = async (event) => {
       const qui = m.de === 'pharmacien' ? '👤 Pharmacien' : '🤖 Bot';
       return `<p style="margin:6px 0"><strong>${qui} :</strong> ${esc(m.texte)}</p>`;
     }).join('') || '<p>(aucun échange)</p>';
+
+    // Bloc « demande détaillée » mis en avant si le pharmacien l'a écrite
+    const demandeHtml = demande
+      ? `<p><strong>Demande du pharmacien :</strong></p>
+         <p style="background:#f6f8fd;border-left:3px solid #1753FF;padding:10px 14px;border-radius:6px">${demande}</p>`
+      : '';
 
     // Email au support (destinataire = l'expéditeur configuré, ta boîte)
     try {
@@ -223,18 +230,18 @@ exports.handler = async (event) => {
           <p><strong>Pharmacie :</strong> ${pharmacie}<br>
           <strong>Slug :</strong> ${slugM}<br>
           <strong>Email :</strong> ${emailM}</p>
-          <hr><p><strong>Conversation :</strong></p>${convHtml}`,
+          ${demandeHtml}
+          <hr><p><strong>Historique du chat :</strong></p>${convHtml}`,
       });
     } catch (e) { console.error('Email SAV échoué :', e.message); }
 
     // Alerte Telegram : demande en attente de réponse humaine
-    const dernier = histo.filter(function(m){ return m.de === 'pharmacien'; }).pop();
     await alerte(
       `🆘 <b>DEMANDE SAV — réponse attendue</b>\n\n`
       + `Pharmacie : <b>${pharmacie}</b>\n`
       + `Email : ${emailM}\n`
       + `Page : swiftypharm.fr/${slugM}\n\n`
-      + `Dernier message :\n<code>${esc(dernier ? dernier.texte : '—')}</code>`
+      + `Demande :\n<code>${demande || '(non précisée)'}</code>`
     );
 
     return json(200, { ok: true });
