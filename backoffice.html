@@ -2946,7 +2946,14 @@ function savEnvoyer(){
   savAjouter(txt, 'user');
   savHistorique.push({ de: 'pharmacien', texte: txt });
   input.value = '';
-  // Message libre : on ne fait pas d'IA, on invite à contacter le conseiller
+
+  // En mode conseiller : ce message détaille la demande → envoi au SAV
+  if (savModeConseiller) {
+    savEnvoyerAuSAV(txt);
+    return;
+  }
+
+  // Sinon : message libre, on invite à contacter le conseiller
   setTimeout(function(){
     const rep = "Merci pour votre message. Pour une question spécifique, contactez un conseiller via « Contacter un conseiller » dans la liste des questions — nous vous répondrons par email au plus vite.";
     savAjouter(rep, 'bot');
@@ -2954,14 +2961,29 @@ function savEnvoyer(){
   }, 350);
 }
 
-async function savEscalade(){
+let savModeConseiller = false;   // true = le prochain message part au SAV
+
+// Étape 1 : le pharmacien clique « Contacter un conseiller »
+function savEscalade(){
   if (savEscaladeFait) {
-    document.getElementById('sav-note').textContent = "Votre demande a déjà été transmise. Un conseiller vous répondra par email.";
+    savAjouter("Votre demande a déjà été transmise. Un conseiller vous répondra par email.", 'bot');
     return;
   }
-  savAjouter("Je transmets votre demande à un conseiller…", 'user');
-  document.getElementById('sav-note').textContent = "Envoi en cours…";
+  if (savListeOuverte) { savListeOuverte = false; savRenderSugg(); }
+  savModeConseiller = true;
+  savAjouter(
+    "Décrivez votre demande en quelques mots ci-dessous, puis appuyez sur envoyer. "
+    + "Un conseiller vous répondra par email.",
+    'bot'
+  );
+  const input = document.getElementById('sav-input');
+  input.placeholder = "Détaillez votre demande…";
+  input.focus();
+}
 
+// Étape 2 : envoi effectif au SAV avec le message détaillé
+async function savEnvoyerAuSAV(message){
+  document.getElementById('sav-note').textContent = "Envoi en cours…";
   const cfg = (typeof getConfig === 'function') ? getConfig() : {};
   const nomPharma = cfg.pharmacy?.name || SLUG || 'Pharmacie';
   const emailPharma = cfg.pharmacy?.email_contact || cfg.pharmacy?.email || '';
@@ -2975,11 +2997,14 @@ async function savEscalade(){
         slug: SLUG,
         pharmacie: nomPharma,
         email: emailPharma,
+        demande: message,          // le message détaillé du pharmacien
         historique: savHistorique,
       }),
     });
     if (!res.ok) throw new Error('envoi impossible');
     savEscaladeFait = true;
+    savModeConseiller = false;
+    document.getElementById('sav-input').placeholder = "Écrivez votre message…";
     savAjouter("✅ Votre demande a bien été transmise à notre équipe. Un conseiller vous répondra par email dans les meilleurs délais.", 'bot');
     document.getElementById('sav-note').textContent = "Demande transmise au SAV.";
   } catch(e) {
