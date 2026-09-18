@@ -430,6 +430,11 @@ textarea{resize:vertical;min-height:72px}
   backdrop-filter:blur(2px);
 }
 .lm-overlay.show{display:flex}
+
+/* Modale ouverte : la page de fond ne défile plus et la barre de
+   navigation du bas s'efface, pour ne laisser que la sélection active. */
+body.lm-open{overflow:hidden;}
+body.lm-open #nav{display:none;}
 .lm-sheet{
   background:#fff;width:100%;max-width:520px;
   border-radius:22px 22px 0 0;padding:12px 22px 26px;
@@ -1670,9 +1675,11 @@ const RESEAUX_DEF = {
   facebook:{
     label:'Facebook', img:'/assets/facebook-icon.png', svg:'i-facebook',
     couleur:'#1877F2',
-    saisie:'pseudo', prefixe:'facebook.com/', exemple:'pharmacie.nhean',
-    construire:v=>'https://www.facebook.com/'+v.replace(/\/+$/,''),
-    extraire:u=>(u||'').replace(/^https?:\/\/(www\.)?facebook\.com\//,'').replace(/\?.*$/,'').replace(/\/+$/,''),
+    saisie:'url', exemple:'https://www.facebook.com/p/Ma-Page-61550629862535/',
+    aide:"Ouvrez votre page Facebook, puis copiez-collez l'adresse complète depuis la barre du navigateur.",
+    valider:v=>/facebook\.com\//.test(v) ? '' : "Cette adresse ne semble pas venir de Facebook.",
+    construire:v=>v.trim().replace(/\?.*$/,''),
+    extraire:u=>u||'',
   },
   tiktok:{
     label:'TikTok', img:'/assets/tiktok-icon.png', svg:'i-tiktok',
@@ -1798,6 +1805,7 @@ function ouvrirPicker(){
   zone.style.display = dispo.length ? 'grid' : 'none';
   vide.style.display = dispo.length ? 'none' : 'block';
   document.getElementById('lm-picker').classList.add('show');
+  document.body.classList.add('lm-open');
 }
 
 // ── Modale d'édition ──
@@ -1839,6 +1847,7 @@ function ouvrirEditeur(cle){
   document.getElementById('lm-erreur').classList.remove('show');
   majApercuLien();
   document.getElementById('lm-edit').classList.add('show');
+  document.body.classList.add('lm-open');
   setTimeout(() => input.focus(), 260);
 }
 
@@ -1854,6 +1863,7 @@ function majApercuLien(){
 function fermerModales(){
   document.getElementById('lm-edit').classList.remove('show');
   document.getElementById('lm-picker').classList.remove('show');
+  document.body.classList.remove('lm-open');
   lmCleEnCours = null;
 }
 
