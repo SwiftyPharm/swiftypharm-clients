@@ -345,16 +345,16 @@ function goScreen(id){
 // ══ VÉRIFICATION DE L'INVITATION ══
 // Chaque lien d'inscription porte un token unique, créé soit par le
 // webhook Shopify après paiement, soit par vous depuis le back office
-// admin lorsqu'un pharmacien vous a réglé les 7,90 € en direct.
+// admin lorsqu'un pharmacien vous a réglé les 12,90 € en direct.
 // Sans token valide, aucun compte ne peut être créé.
 async function verifierInvitation(){
   if (!_token) {
     gateMessage(
       'Cette page nécessite une invitation',
-      "L'accès à SwiftyPharm s'obtient en une fois, pour 7,90 €. "
+      "L'accès à SwiftyPharm s'obtient en une fois, pour 12,90 €. "
       + "Une fois votre achat effectué, vous recevez par email un lien personnel "
       + "pour créer votre espace.",
-      '<a class="gate-btn" href="' + URL_ACHAT + '">Obtenir mon accès — 7,90 €</a>'
+      '<a class="gate-btn" href="' + URL_ACHAT + '">Obtenir mon accès — 12,90 €</a>'
       + '<a class="gate-link" href="login.html">J\'ai déjà un compte — me connecter</a>'
     );
     return false;
