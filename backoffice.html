@@ -287,6 +287,16 @@ textarea{resize:vertical;min-height:72px}
 }
 .field-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
 
+/* Choix de la couleur de fond de la page publique */
+.fond-choix{display:flex;gap:10px;flex-wrap:wrap}
+.fond-opt{flex:1;min-width:88px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:14px 8px;border:2px solid var(--border);border-radius:14px;background:#fff;
+  cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.fond-opt:hover{border-color:var(--blue)}
+.fond-opt.actif{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,0,70,.08)}
+.fond-pastille{width:42px;height:42px;border-radius:50%;border:1px solid #d8dee9;display:block}
+.fond-nom{font-size:12px;font-weight:600;color:var(--text)}
+
 /* ── INPUT PREFIX ── */
 .input-prefix-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;background:#fff;transition:border-color .2s,box-shadow .2s}
 .input-prefix-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,0,70,.08)}
@@ -976,6 +986,27 @@ input:focus,textarea:focus,select:focus{
     </div>
   </div>
 
+  <!-- Apparence : couleur de fond de la page publique -->
+  <div class="card">
+    <div class="card-title">Apparence de votre page</div>
+    <p class="field-hint" style="margin-bottom:14px">
+      Choisissez la couleur de fond visible par vos patients.
+    </p>
+    <div class="fond-choix" id="fond-choix">
+      <button type="button" class="fond-opt" data-fond="#d2d2d2" onclick="choisirFond('#d2d2d2')">
+        <span class="fond-pastille" style="background:#d2d2d2"></span>
+        <span class="fond-nom">Gris</span>
+      </button>
+      <button type="button" class="fond-opt" data-fond="#ffffff" onclick="choisirFond('#ffffff')">
+        <span class="fond-pastille" style="background:#ffffff"></span>
+        <span class="fond-nom">Blanc</span>
+      </button>
+      <button type="button" class="fond-opt" data-fond="#f4efe7" onclick="choisirFond('#f4efe7')">
+        <span class="fond-pastille" style="background:#f4efe7"></span>
+        <span class="fond-nom">Sable</span>
+      </button>
+    </div>
+  </div>
 
   <!-- Réseaux & liens -->
   <div class="card">
@@ -1136,6 +1167,23 @@ input:focus,textarea:focus,select:focus{
 // ═══════════════════════════════
 // Clé de stockage propre à chaque pharmacie (évite le mélange des données)
 let STORAGE_KEY = 'swiftlink_config';
+
+// ── Couleur de fond de la page publique ──
+// Trois presets ; le gris est la valeur historique, conservée par défaut
+// pour que les pages existantes gardent exactement leur apparence.
+let fondActuel = '#d2d2d2';
+
+function majFond(couleur){
+  fondActuel = couleur || '#d2d2d2';
+  document.querySelectorAll('#fond-choix .fond-opt').forEach(function(btn){
+    btn.classList.toggle('actif', btn.dataset.fond === fondActuel);
+  });
+}
+
+function choisirFond(couleur){
+  majFond(couleur);
+  autoSave();
+}
 function setStorageKey(slug){ STORAGE_KEY = slug ? 'swiftlink_cfg_' + slug : 'swiftlink_config'; }
 const SESSION_KEY = 'swiftlink_session';
 const DEFAULT_ID  = '000000';
@@ -1208,6 +1256,7 @@ async function syncToSupabase(cfg){
       lat:cfg.pharmacy.lat??null,
       lon:cfg.pharmacy.lon??null,
       docteur:cfg.pharmacy.docteur||'',
+      couleur_fond:cfg.pharmacy.couleur_fond||'#d2d2d2',
       horaires:cfg.pharmacy.horairesSemaine||{},
       logo_url: cfg.pharmacy.logo || '',
       reseaux:cfg.pharmacy.reseaux||{}
@@ -1263,6 +1312,7 @@ async function loadFromSupabase(){
 
         cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
+        cfg.pharmacy.couleur_fond = d.couleur_fond || '#d2d2d2';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
         else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
@@ -1965,6 +2015,7 @@ function fillInfo(cfg){
   document.getElementById('ph-email').value=p.email_contact||'';
   document.getElementById('ph-adresse').value=p.adresse||'';
   document.getElementById('ph-docteur').value=p.docteur||'';
+  majFond(p.couleur_fond || '#d2d2d2');
   document.getElementById('ph-logo').value='';
 
   reseauxState = normaliserReseaux(p.reseaux);
@@ -2006,6 +2057,7 @@ function collectInfo(){
     lat:getConfig().pharmacy?.lat??null,
     lon:getConfig().pharmacy?.lon??null,
     docteur:document.getElementById('ph-docteur').value,
+    couleur_fond: fondActuel,
     reseaux:serialiserReseaux(),
     horaires:collectHoraires().texte,
     horairesSemaine:collectHoraires().semaine,
