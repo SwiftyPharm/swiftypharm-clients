@@ -1097,11 +1097,26 @@
         if (bloc) bloc.style.display = 'none';
         document.body.classList.add('sans-banniere');
       }
-      // Carte promo — visible pour tous (accès à vie, plus de condition de plan)
+      // Carte promo — affichée uniquement si la pharmacie a au moins
+      // une promotion active et nommée. Inutile d'envoyer un patient
+      // vers une page de promotions vide.
       const cartePromo = document.getElementById('card-promo');
       if (cartePromo) {
-        cartePromo.style.display = 'block';
         cartePromo.href = '/promos.html?slug=' + PAGE_SLUG;
+        try {
+          const { data: promos } = await supabaseClient
+            .from('promos')
+            .select('active,name')
+            .eq('pharmacie_slug', PAGE_SLUG);
+          const aDesPromos = (promos || []).some(function(p){
+            return p.active && p.name && p.name.trim() !== '';
+          });
+          cartePromo.style.display = aDesPromos ? 'block' : 'none';
+        } catch (e) {
+          // En cas d'échec de la requête, on masque : mieux vaut ne rien
+          // montrer qu'un lien vers une page potentiellement vide.
+          cartePromo.style.display = 'none';
+        }
       }
 
 
