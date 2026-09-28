@@ -297,6 +297,14 @@ textarea{resize:vertical;min-height:72px}
 .fond-pastille{width:42px;height:42px;border-radius:50%;border:1px solid #d8dee9;display:block}
 .fond-nom{font-size:12px;font-weight:600;color:var(--text)}
 
+/* Bannière de la page publique */
+.banniere-upload{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.banniere-preview-box{position:relative;width:180px;height:60px;border-radius:12px;
+  border:1px solid var(--border);background:#f6f8fd;overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center}
+.banniere-preview-box img{width:100%;height:100%;object-fit:cover;display:none}
+.banniere-actions{flex:1;min-width:190px}
+
 /* ── INPUT PREFIX ── */
 .input-prefix-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;background:#fff;transition:border-color .2s,box-shadow .2s}
 .input-prefix-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,0,70,.08)}
@@ -986,11 +994,21 @@ input:focus,textarea:focus,select:focus{
     </div>
   </div>
 
-  <!-- Apparence : couleur de fond de la page publique -->
+  <!-- Réseaux & liens -->
+  <div class="card">
+    <div class="card-title">Réseaux &amp; liens - ce qui s'affiche sur votre page</div>
+    <p class="liens-hint">
+      Touchez le logo d'une application pour modifier son lien ou la retirer.
+      Le bouton <strong>+</strong> ajoute une nouvelle application.
+    </p>
+    <div class="liens-grid" id="liens-grid"></div>
+  </div>
+
+  <!-- Apparence : couleur de fond + bannière de la page publique -->
   <div class="card">
     <div class="card-title">Apparence de votre page</div>
     <p class="field-hint" style="margin-bottom:14px">
-      Choisissez la couleur de fond visible par vos patients.
+      Choisissez la couleur de fond de votre page.
     </p>
     <div class="fond-choix" id="fond-choix">
       <button type="button" class="fond-opt" data-fond="#d2d2d2" onclick="choisirFond('#d2d2d2')">
@@ -1006,16 +1024,31 @@ input:focus,textarea:focus,select:focus{
         <span class="fond-nom">Sable</span>
       </button>
     </div>
-  </div>
 
-  <!-- Réseaux & liens -->
-  <div class="card">
-    <div class="card-title">Réseaux &amp; liens - ce qui s'affiche sur votre page</div>
-    <p class="liens-hint">
-      Touchez le logo d'une application pour modifier son lien ou la retirer.
-      Le bouton <strong>+</strong> ajoute une nouvelle application.
-    </p>
-    <div class="liens-grid" id="liens-grid"></div>
+    <!-- Bannière affichée en haut de la page publique -->
+    <div style="margin-top:22px;padding-top:20px;border-top:1px solid var(--border)">
+      <p class="field-hint" style="margin-bottom:12px">
+        Bannière affichée en haut de votre page.
+      </p>
+      <div class="banniere-upload">
+        <div class="banniere-preview-box" id="banniere-preview-box">
+          <span class="img-placeholder"><svg class="ico ico-lg"><use href="#i-building"/></svg></span>
+          <img id="banniere-preview-img" src="" alt="">
+        </div>
+        <div class="banniere-actions">
+          <label class="img-file-btn">
+            ＋ Choisir une bannière
+            <input type="file" accept="image/*" onchange="handleBanniereUpload(event)">
+          </label>
+          <p class="img-hint">Format paysage conseillé (1200 × 400) · max 2 Mo</p>
+          <button type="button" id="btn-clear-banniere" onclick="clearBanniere()"
+            style="margin-top:8px;padding:5px 12px;border-radius:7px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#dc2626;display:none">
+            <svg class="ico ico-sm"><use href="#i-trash"/></svg> Supprimer
+          </button>
+          <input type="url" id="ph-banniere" style="display:none">
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Horaires -->
@@ -1203,7 +1236,7 @@ setStorageKey(SLUG);
 const DEFAULTS = {
   pharmacy:{ name:'', sub:'', tel:'', email_contact:'', adresse:'', adresse_maps:'', lat:null, lon:null, docteur:'',
     reseaux:{},
-    horairesSemaine:{}, logoData:'', logo:''},
+    horairesSemaine:{}, logoData:'', logo:'', banniere:''},
   promos: Array.from({length:8},()=>({active:false,name:'',brand:'',img:'',imgData:'',priceBefore:'',priceAfter:'',badge:'',stock:0})),
   credentials:{id:DEFAULT_ID,pw:DEFAULT_PW}
 };
@@ -1257,6 +1290,7 @@ async function syncToSupabase(cfg){
       lon:cfg.pharmacy.lon??null,
       docteur:cfg.pharmacy.docteur||'',
       couleur_fond:cfg.pharmacy.couleur_fond||'#d2d2d2',
+      banniere_url:cfg.pharmacy.banniere||'',
       horaires:cfg.pharmacy.horairesSemaine||{},
       logo_url: cfg.pharmacy.logo || '',
       reseaux:cfg.pharmacy.reseaux||{}
@@ -1313,6 +1347,7 @@ async function loadFromSupabase(){
         cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
         cfg.pharmacy.couleur_fond = d.couleur_fond || '#d2d2d2';
+        cfg.pharmacy.banniere     = d.banniere_url || '';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
         else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
@@ -1500,6 +1535,75 @@ function clearLogo() {
 
   // Efface dans Supabase
   sb.from('pharmacies').update({ logo_base64: '', logo_url: '' }).eq('slug', SLUG);
+  flashSaved();
+}
+
+// ═══════════════════════════════════════════
+//  BANNIÈRE — même mécanique que le logo :
+//  envoi vers Supabase Storage puis URL publique en base.
+// ═══════════════════════════════════════════
+async function handleBanniereUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    alert("Bannière trop lourde (2 Mo maximum). Choisissez une image plus légère.");
+    return;
+  }
+
+  const ext = file.name.split('.').pop();
+  const fileName = SLUG + '-banniere.' + ext;
+
+  const { error } = await sb.storage
+    .from('pharmacies')
+    .upload(fileName, file, { upsert: true });
+
+  if (error) {
+    console.error('Upload bannière :', error);
+    alert("L'envoi de la bannière a échoué. Réessayez dans un instant.");
+    return;
+  }
+
+  const { data: urlData } = sb.storage
+    .from('pharmacies')
+    .getPublicUrl(fileName);
+
+  // Paramètre anti-cache : sans lui, le navigateur réafficherait
+  // l'ancienne image puisque le nom de fichier ne change pas.
+  const publicUrl = urlData.publicUrl + '?v=' + Date.now();
+
+  document.getElementById('ph-banniere').value = publicUrl;
+  showBannierePreview(publicUrl);
+  autoSave();
+}
+
+function showBannierePreview(src) {
+  const img = document.getElementById('banniere-preview-img');
+  const ph  = document.querySelector('#banniere-preview-box .img-placeholder');
+  const btn = document.getElementById('btn-clear-banniere');
+  if (!img) return;
+  if (src) {
+    img.src = src;
+    img.style.display = 'block';
+    if (ph)  ph.style.display = 'none';
+    if (btn) btn.style.display = 'inline-block';
+  } else {
+    img.src = '';
+    img.style.display = 'none';
+    if (ph)  ph.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+function clearBanniere() {
+  document.getElementById('ph-banniere').value = '';
+  showBannierePreview('');
+
+  const cfg = getConfig();
+  cfg.pharmacy.banniere = '';
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+
+  sb.from('pharmacies').update({ banniere_url: '', banniere_base64: '' }).eq('slug', SLUG);
   flashSaved();
 }
 window.clearLogo = clearLogo;
@@ -2016,6 +2120,10 @@ function fillInfo(cfg){
   document.getElementById('ph-adresse').value=p.adresse||'';
   document.getElementById('ph-docteur').value=p.docteur||'';
   majFond(p.couleur_fond || '#d2d2d2');
+  const _ban = p.banniere || '';
+  const _banInput = document.getElementById('ph-banniere');
+  if (_banInput) _banInput.value = _ban;
+  showBannierePreview(_ban);
   document.getElementById('ph-logo').value='';
 
   reseauxState = normaliserReseaux(p.reseaux);
@@ -2058,6 +2166,7 @@ function collectInfo(){
     lon:getConfig().pharmacy?.lon??null,
     docteur:document.getElementById('ph-docteur').value,
     couleur_fond: fondActuel,
+    banniere: document.getElementById('ph-banniere')?.value || '',
     reseaux:serialiserReseaux(),
     horaires:collectHoraires().texte,
     horairesSemaine:collectHoraires().semaine,
