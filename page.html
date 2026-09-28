@@ -97,9 +97,9 @@
     /* Conteneur du logo : porte l'anneau animé et le décalage vertical */
     .avatar-wrap {
       position: relative;
-      width: 108px;
-      height: 108px;
-      margin-top: -54px;
+      width: 102px;
+      height: 102px;
+      margin-top: -51px;
       z-index: 10;
       display: flex;
       align-items: center;
@@ -534,7 +534,8 @@
 
   <!-- ══ BANNIÈRE ══ -->
   <div class="banniere">
-    <img id="banniere-img" src="/assets/banniere_test.png" alt="Bannière pharmacie" onerror="this.style.display='none'">
+    <img id="banniere-img" src="/assets/banniere_test.png" alt="Bannière pharmacie"
+         onerror="this.style.display='none';this.closest('.banniere').style.display='none';document.body.classList.add('sans-banniere');">
   </div>
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
@@ -1153,18 +1154,10 @@
       // On ne remplace l'image que si le pharmacien a vraiment un logo.
       // Sinon on laisse le logo par défaut déjà présent dans le HTML.
       if (_logo) document.getElementById('profile-avatar-img').src = _logo;
-      // Bannière : URL du Storage en priorité, base64 pour les anciennes pages.
-      // Si aucune n'est définie, le bloc est masqué plutôt que d'afficher
-      // l'image de démonstration.
+      // Bannière : celle du pharmacien si elle existe, sinon on conserve
+      // la bannière par défaut déjà présente dans le HTML.
       const _ban = data.banniere_url || data.banniere_base64;
-      const _banImg = document.getElementById('banniere-img');
-      if (_ban) {
-        _banImg.src = _ban;
-      } else if (_banImg) {
-        const bloc = _banImg.closest('.banniere');
-        if (bloc) bloc.style.display = 'none';
-        document.body.classList.add('sans-banniere');
-      }
+      if (_ban) document.getElementById('banniere-img').src = _ban;
       // Carte promo — affichée uniquement si la pharmacie a au moins
       // une promotion active et nommée. Inutile d'envoyer un patient
       // vers une page de promotions vide.
