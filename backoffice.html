@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SwiftyPharm — Back Office</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════════════════════════
    SwiftyPharm — Back Office
    Direction : Clinique Suisse (Minimalism & Swiss Style)
-   Marque    : navy #000046 · cyan #1cb5e0 · typographie Inter
+   Marque    : navy #000046 · cyan #1cb5e0 · typographie Montserrat
    ══════════════════════════════════════════════════════════════ */
 :root{
   /* Marque */
@@ -43,7 +43,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);
+  font-family:'Montserrat', sans-serif;background:var(--paper);color:var(--ink);
   min-height:100vh;font-size:14px;
   -webkit-font-smoothing:antialiased;
   font-variant-numeric:tabular-nums;      /* chiffres alignés partout */
@@ -2370,7 +2370,7 @@ async function confirmerSuppressionCompte(){
     if(data.ok){
       localStorage.clear();
       sessionStorage.clear();
-      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Inter,sans-serif">'
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Montserrat,sans-serif">'
         // Cet écran remplace tout le <body> : le sprite d'icônes disparaît,
         // le SVG doit donc être autonome (pas de <use href="#…">).
         + '<div><div style="margin-bottom:16px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></div>'
