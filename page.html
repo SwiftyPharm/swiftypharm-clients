@@ -1332,11 +1332,11 @@
 
     function replier(){ wrap.classList.add('sans-video'); v.style.display = 'none'; }
 
-    v.addEventListener('loadeddata', function(){ v.playbackRate = 0.5; });
+    v.addEventListener('loadeddata', function(){ v.playbackRate = 0.3; });
     v.addEventListener('error', replier);
 
     // Certains navigateurs remettent la vitesse à 1 après une relance
-    v.addEventListener('play', function(){ v.playbackRate = 0.5; });
+    v.addEventListener('play', function(){ v.playbackRate = 0.3; });
 
     // Filet : si la lecture ne démarre pas (autoplay refusé, fichier
     // absent, codec non supporté), on bascule sur le dégradé animé.
