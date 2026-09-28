@@ -1476,28 +1476,36 @@ function showTab(name,btn){
 // ═══════════════════════════════
 //  LOGO
 // ═══════════════════════════════
-async function handleLogoUpload(e) {
+function handleLogoUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
+  // On passe par l'éditeur de recadrage ; l'envoi a lieu à la validation.
+  cropOuvrir(file, 'logo');
+  e.target.value = '';   // permet de resélectionner le même fichier
+}
 
-  // Nom unique : slug + extension
-  const ext = file.name.split('.').pop();
-  const fileName = SLUG + '-logo.' + ext;
+// Envoi effectif du logo recadré vers Supabase Storage
+async function envoyerLogoBlob(blob) {
+  const fileName = SLUG + '-logo.jpg';
 
-  const { data, error } = await sb.storage
+  const { error } = await sb.storage
     .from('pharmacies')
-    .upload(fileName, file, { upsert: true });
+    .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
 
-  if (error) { console.error('Upload error:', error); return; }
+  if (error) {
+    console.error('Upload logo :', error);
+    alert("L'envoi du logo a échoué. Réessayez dans un instant.");
+    return;
+  }
 
-  // URL publique
   const { data: urlData } = sb.storage
     .from('pharmacies')
     .getPublicUrl(fileName);
 
-  const publicUrl = urlData.publicUrl;
+  // Paramètre anti-cache : le nom de fichier ne changeant pas, le
+  // navigateur afficherait sinon l'ancienne image.
+  const publicUrl = urlData.publicUrl + '?v=' + Date.now();
 
-  // Stocker l'URL dans Supabase (colonne logo_url)
   document.getElementById('ph-logo').value = publicUrl;
   showLogoPreview(publicUrl);
   autoSave();
@@ -1542,21 +1550,20 @@ function clearLogo() {
 //  BANNIÈRE — même mécanique que le logo :
 //  envoi vers Supabase Storage puis URL publique en base.
 // ═══════════════════════════════════════════
-async function handleBanniereUpload(e) {
+function handleBanniereUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
+  cropOuvrir(file, 'banniere');
+  e.target.value = '';
+}
 
-  if (file.size > 2 * 1024 * 1024) {
-    alert("Bannière trop lourde (2 Mo maximum). Choisissez une image plus légère.");
-    return;
-  }
-
-  const ext = file.name.split('.').pop();
-  const fileName = SLUG + '-banniere.' + ext;
+// Envoi effectif de la bannière recadrée vers Supabase Storage
+async function envoyerBanniereBlob(blob) {
+  const fileName = SLUG + '-banniere.jpg';
 
   const { error } = await sb.storage
     .from('pharmacies')
-    .upload(fileName, file, { upsert: true });
+    .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
 
   if (error) {
     console.error('Upload bannière :', error);
@@ -1568,8 +1575,6 @@ async function handleBanniereUpload(e) {
     .from('pharmacies')
     .getPublicUrl(fileName);
 
-  // Paramètre anti-cache : sans lui, le navigateur réafficherait
-  // l'ancienne image puisque le nom de fichier ne change pas.
   const publicUrl = urlData.publicUrl + '?v=' + Date.now();
 
   document.getElementById('ph-banniere').value = publicUrl;
@@ -3181,6 +3186,221 @@ async function savEnvoyerAuSAV(message){
   } catch(e) {
     document.getElementById('sav-note').textContent = "Envoi impossible. Réessayez dans un instant.";
   }
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     ÉDITEUR D'IMAGE — recadrage avant envoi
+     Utilisé pour le logo (carré) et la bannière (paysage).
+     ═══════════════════════════════════════════════════ -->
+<style>
+  #crop-overlay{position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.72);
+    display:none;align-items:center;justify-content:center;padding:16px}
+  #crop-overlay.show{display:flex}
+  .crop-sheet{background:#fff;border-radius:20px;width:100%;max-width:420px;
+    padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
+  .crop-titre{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .crop-aide{font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+  /* Zone de travail : l'image déborde, le cadre montre ce qui sera gardé */
+  .crop-zone{position:relative;width:100%;background:#0f172a;border-radius:12px;
+    overflow:hidden;touch-action:none;cursor:grab}
+  .crop-zone:active{cursor:grabbing}
+  .crop-zone canvas{display:block;width:100%;height:100%}
+  .crop-controls{display:flex;align-items:center;gap:10px;margin-top:14px}
+  .crop-controls button{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
+    background:#fff;cursor:pointer;font-size:17px;font-weight:700;color:var(--text);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .crop-controls button:hover{background:var(--blue-l)}
+  .crop-controls input[type=range]{flex:1;accent-color:var(--blue)}
+  .crop-actions{display:flex;gap:10px;margin-top:16px}
+  .crop-actions button{flex:1;padding:11px;border-radius:11px;font-family:inherit;
+    font-size:13px;font-weight:700;cursor:pointer;border:none}
+  .crop-annuler{background:#f1f5f9;color:var(--text)}
+  .crop-valider{background:var(--blue);color:#fff}
+</style>
+
+<div id="crop-overlay">
+  <div class="crop-sheet">
+    <div class="crop-titre" id="crop-titre">Ajuster l'image</div>
+    <p class="crop-aide">
+      Faites glisser l'image pour la positionner, et utilisez le curseur
+      pour zoomer. Seule la zone visible sera conservée.
+    </p>
+    <div class="crop-zone" id="crop-zone">
+      <canvas id="crop-canvas"></canvas>
+    </div>
+    <div class="crop-controls">
+      <button type="button" onclick="cropZoom(-0.15)" title="Dézoomer">−</button>
+      <input type="range" id="crop-range" min="1" max="4" step="0.01" value="1" oninput="cropSetZoom(this.value)">
+      <button type="button" onclick="cropZoom(0.15)" title="Zoomer">+</button>
+    </div>
+    <div class="crop-actions">
+      <button type="button" class="crop-annuler" onclick="cropFermer()">Annuler</button>
+      <button type="button" class="crop-valider" onclick="cropValider()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  Recadrage d'image maison (aucune dépendance externe).
+//  L'utilisateur déplace et zoome ; on exporte la zone visible
+//  aux dimensions cibles avant l'envoi vers Supabase Storage.
+// ═══════════════════════════════════════════════════
+let cropImg = null;        // Image source chargée
+let cropRatio = 1;         // largeur / hauteur du cadre
+let cropSortieL = 600;     // largeur d'export
+let cropSortieH = 600;     // hauteur d'export
+let cropZoomVal = 1;
+let cropX = 0, cropY = 0;  // décalage du centre de l'image
+let cropCible = null;      // 'logo' ou 'banniere'
+let cropDrag = null;
+
+function cropOuvrir(file, cible) {
+  cropCible = cible;
+  if (cible === 'logo') {
+    cropRatio = 1;    cropSortieL = 600; cropSortieH = 600;
+    document.getElementById('crop-titre').textContent = "Ajuster votre logo";
+  } else {
+    cropRatio = 2.8;  cropSortieL = 1200; cropSortieH = 429;
+    document.getElementById('crop-titre').textContent = "Ajuster votre bannière";
+  }
+
+  const lecteur = new FileReader();
+  lecteur.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      cropImg = img;
+      cropZoomVal = 1; cropX = 0; cropY = 0;
+      document.getElementById('crop-range').value = 1;
+
+      // On affiche d'abord la modale : tant qu'elle est masquée,
+      // clientWidth vaut 0 et le cadre serait mal dimensionné.
+      document.getElementById('crop-overlay').classList.add('show');
+      document.body.classList.add('lm-open');
+
+      // Le cadre s'adapte ensuite à la largeur réelle, en gardant le ratio
+      const zone = document.getElementById('crop-zone');
+      const largeur = zone.clientWidth || 380;
+      zone.style.height = Math.round(largeur / cropRatio) + 'px';
+      const cv = document.getElementById('crop-canvas');
+      cv.width = largeur; cv.height = Math.round(largeur / cropRatio);
+
+      cropDessiner();
+    };
+    img.onerror = function(){ alert("Image illisible. Essayez un autre fichier."); };
+    img.src = ev.target.result;
+  };
+  lecteur.onerror = function(){ alert("Lecture du fichier impossible."); };
+  lecteur.readAsDataURL(file);
+}
+
+// Échelle minimale pour que l'image couvre tout le cadre (pas de vide)
+function cropEchelleBase(cv) {
+  return Math.max(cv.width / cropImg.width, cv.height / cropImg.height);
+}
+
+function cropDessiner() {
+  if (!cropImg) return;
+  const cv = document.getElementById('crop-canvas');
+  const ctx = cv.getContext('2d');
+  const ech = cropEchelleBase(cv) * cropZoomVal;
+  const l = cropImg.width * ech;
+  const h = cropImg.height * ech;
+
+  // On borne le déplacement : l'image ne peut pas laisser de bande vide
+  const maxX = Math.max(0, (l - cv.width) / 2);
+  const maxY = Math.max(0, (h - cv.height) / 2);
+  cropX = Math.max(-maxX, Math.min(maxX, cropX));
+  cropY = Math.max(-maxY, Math.min(maxY, cropY));
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(cropImg, (cv.width - l) / 2 + cropX, (cv.height - h) / 2 + cropY, l, h);
+}
+
+function cropSetZoom(v) {
+  cropZoomVal = parseFloat(v);
+  const r = document.getElementById('crop-range');
+  if (r && r.value !== String(cropZoomVal)) r.value = cropZoomVal;
+  cropDessiner();
+}
+function cropZoom(d) {
+  const r = document.getElementById('crop-range');
+  r.value = Math.max(1, Math.min(4, parseFloat(r.value) + d));
+  cropSetZoom(r.value);
+}
+
+// ── Déplacement à la souris et au doigt ──
+(function(){
+  const zone = document.getElementById('crop-zone');
+  if (!zone) return;
+
+  function debut(x, y){ cropDrag = { x: x, y: y }; }
+  function bouge(x, y){
+    if (!cropDrag) return;
+    cropX += x - cropDrag.x;
+    cropY += y - cropDrag.y;
+    cropDrag = { x: x, y: y };
+    cropDessiner();
+  }
+  function fin(){ cropDrag = null; }
+
+  zone.addEventListener('mousedown', e => debut(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e => bouge(e.clientX, e.clientY));
+  window.addEventListener('mouseup', fin);
+
+  zone.addEventListener('touchstart', function(e){
+    if (e.touches.length === 1) debut(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+  zone.addEventListener('touchmove', function(e){
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      bouge(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: false });
+  zone.addEventListener('touchend', fin);
+
+  zone.addEventListener('wheel', function(e){
+    e.preventDefault();
+    cropZoom(e.deltaY < 0 ? 0.08 : -0.08);
+  }, { passive: false });
+})();
+
+function cropFermer() {
+  document.getElementById('crop-overlay').classList.remove('show');
+  document.body.classList.remove('lm-open');
+  cropImg = null; cropDrag = null;
+}
+
+// Rend le résultat aux dimensions cibles, puis lance l'envoi
+function cropValider() {
+  if (!cropImg) return cropFermer();
+  const apercu = document.getElementById('crop-canvas');
+  const ech = cropEchelleBase(apercu) * cropZoomVal;
+
+  // Facteur entre l'aperçu à l'écran et l'export haute définition
+  const k = cropSortieL / apercu.width;
+  const out = document.createElement('canvas');
+  out.width = cropSortieL; out.height = cropSortieH;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, out.width, out.height);
+
+  const l = cropImg.width * ech * k;
+  const h = cropImg.height * ech * k;
+  ctx.drawImage(cropImg,
+    (out.width - l) / 2 + cropX * k,
+    (out.height - h) / 2 + cropY * k,
+    l, h);
+
+  const cible = cropCible;
+  out.toBlob(function(blob){
+    if (!blob) { alert("Le recadrage a échoué. Réessayez."); return; }
+    cropFermer();
+    if (cible === 'logo') envoyerLogoBlob(blob);
+    else envoyerBanniereBlob(blob);
+  }, 'image/jpeg', 0.9);
 }
 </script>
 
