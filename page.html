@@ -94,20 +94,68 @@
     }
     body.page-ready #page-splash { opacity: 0; pointer-events: none; }
     
+    /* Conteneur du logo : porte l'anneau animé et le décalage vertical */
+    .avatar-wrap {
+      position: relative;
+      width: 108px;
+      height: 108px;
+      margin-top: -54px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Anneau : la vidéo est écrêtée par un masque radial qui évide
+       le centre, ne laissant apparaître que la couronne. */
+    .avatar-anneau {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+              mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Repli si la vidéo ne charge pas : dégradé équivalent, en rotation */
+    .avatar-wrap.sans-video::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg,
+        #0f172a 0%, #059669 18%, #10b981 32%,
+        #2dd4bf 45%, #5eead4 55%, #14b8a6 68%,
+        #047857 82%, #0f172a 100%);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+              mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+      animation: anneau-rotation 8s linear infinite;
+      z-index: 1;
+    }
+    @keyframes anneau-rotation { to { transform: rotate(360deg); } }
+
+    /* Les personnes sensibles au mouvement gardent un anneau fixe */
+    @media (prefers-reduced-motion: reduce) {
+      .avatar-wrap.sans-video::before { animation: none; }
+    }
+
     .profile-avatar {
       width: 96px;
       height: 96px;
       border-radius: 50%;
       object-fit: cover;
       background: #ffffff;
-      margin-top: -48px;
       border: 3px solid #ffffff;
       position: relative;
-      z-index: 10;
+      z-index: 2;
     }
     /* Sans bannière : on annule le chevauchement du logo et on
        redonne un peu d'air en haut de page. */
-    body.sans-banniere .profile-avatar { margin-top: 0; }
+    body.sans-banniere .avatar-wrap { margin-top: 0; }
     body.sans-banniere .profile-section { margin-top: 28px; }
 
     .profile-name {
@@ -491,7 +539,13 @@
 
   <!-- ══ HEADER PROFIL (Dynamique via Supabase) ══ -->
   <div class="profile-section">
-    <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="if(this.src.indexOf('logo_pharmacie_general')===-1){this.src='/assets/logo_pharmacie_general.jpg';}">
+    <div class="avatar-wrap" id="avatar-wrap">
+      <video class="avatar-anneau" id="avatar-anneau"
+             autoplay loop muted playsinline preload="auto" aria-hidden="true">
+        <source src="/assets/video_e62e96751377.mp4" type="video/mp4">
+      </video>
+      <img class="profile-avatar" id="profile-avatar-img" src="/assets/logo_pharmacie_general.jpg" alt="Logo pharmacie" onerror="if(this.src.indexOf('logo_pharmacie_general')===-1){this.src='/assets/logo_pharmacie_general.jpg';}">
+    </div>
     <div class="profile-name" id="profile-name-display"></div>
     <div class="profile-sub" id="profile-sub-display"></div>
 
@@ -1268,6 +1322,36 @@
     // Révèle la page entière une fois le rendu terminé
     document.body.classList.add('page-ready');
   }
+
+  // ── Anneau vidéo autour du logo ──
+  // playbackRate à 0,5 : la vidéo tourne à moitié vitesse, en boucle.
+  (function(){
+    const v = document.getElementById('avatar-anneau');
+    const wrap = document.getElementById('avatar-wrap');
+    if (!v || !wrap) return;
+
+    function replier(){ wrap.classList.add('sans-video'); v.style.display = 'none'; }
+
+    v.addEventListener('loadeddata', function(){ v.playbackRate = 0.5; });
+    v.addEventListener('error', replier);
+
+    // Certains navigateurs remettent la vitesse à 1 après une relance
+    v.addEventListener('play', function(){ v.playbackRate = 0.5; });
+
+    // Filet : si la lecture ne démarre pas (autoplay refusé, fichier
+    // absent, codec non supporté), on bascule sur le dégradé animé.
+    // videoWidth à 0 signale une vidéo présente mais non décodable.
+    const lancer = v.play();
+    if (lancer && typeof lancer.catch === 'function') lancer.catch(replier);
+    setTimeout(function(){
+      if (v.readyState === 0 || v.videoWidth === 0) replier();
+    }, 3000);
+
+    // L'onglet revient au premier plan : on relance si besoin
+    document.addEventListener('visibilitychange', function(){
+      if (!document.hidden && v.paused) { v.play().catch(function(){}); }
+    });
+  })();
 
   // Chargement des données au démarrage de la page
   document.addEventListener("DOMContentLoaded", initPharmacyProfile);
