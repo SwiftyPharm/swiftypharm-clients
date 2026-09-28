@@ -26,6 +26,8 @@
   </script>
 
   <style>
+    /* Couleur de fond de la page, pilotée depuis le back office. */
+    :root { --bg-page: #d2d2d2; }
     * { margin:0; padding:0; box-sizing:border-box; }
     * {
       -webkit-user-select: none;
@@ -46,7 +48,7 @@
       flex-direction: column;
       align-items: center;
       padding: 0 0 64px;
-      background-color: #d2d2d2;
+      background-color: var(--bg-page);
     }
 
     /* ══ BANNIÈRE ══ */
@@ -87,7 +89,7 @@
     body > *:not(#page-splash) { opacity: 0; transition: opacity .25s ease; }
     body.page-ready > *:not(#page-splash) { opacity: 1; }
     #page-splash {
-      position: fixed; inset: 0; background: #d2d2d2; z-index: 9999;
+      position: fixed; inset: 0; background: var(--bg-page); z-index: 9999;
       transition: opacity .25s ease;
     }
     body.page-ready #page-splash { opacity: 0; pointer-events: none; }
@@ -449,7 +451,7 @@
 
     /* ══ CADRE DESKTOP ══ */
     @media (min-width: 769px) {
-      html { background: #d2d2d2; }
+      html { background: var(--bg-page); }
       body {
         max-width: 580px;
         margin: 24px auto;
@@ -1069,6 +1071,11 @@
       // 1. Textes et Logo du Profil
       if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
       if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
+      // Couleur de fond choisie par le client (gris par défaut)
+      if (data.couleur_fond) {
+        document.documentElement.style.setProperty('--bg-page', data.couleur_fond);
+      }
+
       const _logo = data.logo_url || data.logo_base64;
       // On ne remplace l'image que si le pharmacien a vraiment un logo.
       // Sinon on laisse le logo par défaut déjà présent dans le HTML.
