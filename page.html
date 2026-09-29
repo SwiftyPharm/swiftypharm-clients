@@ -253,6 +253,17 @@
       color: #fff;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
+    /* Mention discrète en pied de page */
+    .credit {
+      margin-top: 28px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .02em;
+      color: rgba(0, 0, 0, .38);
+      text-decoration: none;
+    }
+    .credit:hover { color: rgba(0, 0, 0, .6); }
+
     .social-card-txt {
       text-align: center;
       font-size: 13px;
@@ -652,6 +663,8 @@
      style="width:100%; display:block; margin-top:10px;">
     </div>
   </div>
+
+  <a class="credit" href="https://swiftup.fr" target="_blank" rel="noopener">Développé par swiftup.fr</a>
 
   <!-- ══ SCRIPTS FORMULAIRE ORDONNANCE ══ -->
   <script>
@@ -1305,8 +1318,52 @@
             <div class="social-card-txt">Suivez nous sur<br>TikTok !</div>
           </a>`;
       }
+      // ── LIENS PERSONNALISÉS ──
+      // Toute clé « perso_… » est un bouton libre créé depuis le back
+      // office : il porte son propre libellé et sa propre icône.
+      Object.keys(soc)
+        .filter(function(cle){ return cle.indexOf('perso_') === 0; })
+        .forEach(function(cle){
+          const o = soc[cle] || {};
+          const actif = o.actif ?? o.active;
+          const url   = String(o.url || o.valeur || '').trim();
+          if (!actif || !url) return;
+          // Seuls les liens web sont acceptés (pas de « javascript: »)
+          const lien = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^[a-z]+:/i, '');
 
+          const a = document.createElement('a');
+          a.href = lien;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.className = 'social-card-item';
 
+          const icone = String(o.icone || '').trim();
+          if (icone) {
+            const img = document.createElement('img');
+            img.src = icone;
+            img.alt = '';
+            img.className = 'social-card-img';
+            img.onerror = function(){
+              const f = document.createElement('div');
+              f.className = 'social-card-fallback';
+              f.style.cssText = 'background:#0f172a;color:#fff;';
+              f.innerHTML = '&#128279;';
+              img.replaceWith(f);
+            };
+            a.appendChild(img);
+          } else {
+            const f = document.createElement('div');
+            f.className = 'social-card-fallback';
+            f.style.cssText = 'background:#0f172a;color:#fff;';
+            f.innerHTML = '&#128279;';
+            a.appendChild(f);
+          }
+          const txt = document.createElement('div');
+          txt.className = 'social-card-txt';
+          txt.textContent = (o.label || 'Mon lien').trim();   // jamais interprété en HTML
+          a.appendChild(txt);
+          container.appendChild(a);
+        });
 
     } catch (err) {
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
