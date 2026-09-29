@@ -374,6 +374,21 @@ textarea{resize:vertical;min-height:72px}
 .notif-status.ok{color:var(--green);display:block}
 .notif-status.err{color:var(--red);display:block}
 
+/* ── Lien personnalisé : nom + icône importée ── */
+.lm-perso-f{margin-bottom:15px}
+.lm-perso-f > label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.lm-perso-f input[type=text]{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;outline:none;transition:border-color .2s}
+.lm-perso-f input[type=text]:focus{border-color:var(--blue)}
+.lm-perso-ico-row{display:flex;align-items:center;gap:14px}
+.lm-perso-ico{width:54px;height:54px;border-radius:15px;flex-shrink:0;background:#0f172a;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.lm-perso-ico .ico{width:24px;height:24px;color:#fff}
+.lm-perso-ico img{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lm-perso-ico-act{flex:1;min-width:0}
+.lm-perso-ico-act input[type=file]{display:none}
+.lm-perso-hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.lm-app-perso .lien-ico .ico{color:#fff}
+
 /* ── HORAIRES ── */
 .horaires-grid{display:flex;flex-direction:column;gap:6px}
 .horaire-row{display:grid;grid-template-columns:88px 1fr auto 1fr auto;align-items:center;gap:8px;background:var(--bg);border-radius:9px;padding:9px 12px;border:1px solid var(--border)}
@@ -1137,6 +1152,31 @@ input:focus,textarea:focus,select:focus{
     </div>
     <p class="lm-aide">Veuillez renseigner vos informations</p>
 
+    <!-- Propre aux liens personnalisés : nom du bouton et icône -->
+    <div id="lm-perso" style="display:none">
+      <div class="lm-perso-f">
+        <label for="lm-perso-nom">Nom du bouton</label>
+        <input type="text" id="lm-perso-nom" placeholder="Ex : Prendre rendez-vous" autocomplete="off" maxlength="28">
+      </div>
+      <div class="lm-perso-f">
+        <label>Icône</label>
+        <div class="lm-perso-ico-row">
+          <div class="lm-perso-ico">
+            <svg class="ico"><use href="#i-globe"/></svg>
+            <img id="lm-perso-img" alt="">
+          </div>
+          <div class="lm-perso-ico-act">
+            <label class="img-file-btn">
+              Importer une image
+              <input type="file" accept="image/*" id="lm-perso-fichier">
+            </label>
+            <p class="lm-perso-hint" id="lm-perso-hint">PNG ou JPG · recadré en carré automatiquement</p>
+          </div>
+        </div>
+        <input type="hidden" id="lm-perso-icone">
+      </div>
+    </div>
+
     <div class="lm-champ" id="lm-champ"></div>
     <p class="lm-erreur" id="lm-erreur"></p>
     <p class="lm-apercu" id="lm-apercu"></p>
@@ -1877,8 +1917,30 @@ const RESEAUX_DEF = {
 };
 
 // État courant : { cle: {actif, valeur, url} }
+// Les liens personnalisés portent une clé « perso_<horodatage> » et
+// embarquent en plus leur libellé et l'adresse de leur icône.
 let reseauxState = {};
 let lmCleEnCours = null;
+
+const estPerso = cle => typeof cle === 'string' && cle.indexOf('perso_') === 0;
+
+function defPour(cle){
+  if(!estPerso(cle)) return RESEAUX_DEF[cle];
+  const e = reseauxState[cle] || {};
+  return {
+    label: e.label || 'Mon lien',
+    img: e.icone || '',
+    svg: 'i-globe',
+    couleur: '#0f172a',
+    saisie: 'url',
+    exemple: 'https://mon-lien.fr',
+    aide: "Collez l'adresse complète, en commençant par https://",
+    valider: v => /^https?:\/\/.+\..+/.test(v) ? '' : "L'adresse doit commencer par https:// et contenir un nom de domaine.",
+    construire: v => v.trim(),
+    extraire: u => u || '',
+    perso: true,
+  };
+}
 
 // ── Normalisation depuis Supabase / localStorage ──
 // Une application figure sur la grille si elle a une valeur, ou si
@@ -1886,6 +1948,21 @@ let lmCleEnCours = null;
 // donc sans perdre le moindre lien.
 function normaliserReseaux(brut){
   const out = {};
+
+  // Liens personnalisés : repris tels qu'enregistrés.
+  Object.keys(brut || {}).filter(estPerso).forEach(cle => {
+    const d = brut[cle] || {};
+    const url = String(d.url || d.valeur || '').trim();
+    if(!url && d.actif !== true) return;
+    out[cle] = {
+      actif:  d.actif !== false,
+      valeur: url,
+      url,
+      label:  String(d.label || 'Mon lien').trim() || 'Mon lien',
+      icone:  String(d.icone || ''),
+    };
+  });
+
   Object.keys(RESEAUX_DEF).forEach(cle => {
     const d = brut?.[cle];
     if(!d) return;
@@ -1901,9 +1978,14 @@ function normaliserReseaux(brut){
 function serialiserReseaux(){
   const out = {};
   Object.entries(reseauxState).forEach(([cle, v]) => {
+    const valeur = (v.valeur||'').trim();
+    if(estPerso(cle)){
+      out[cle] = { actif: !!v.actif, valeur, url: valeur,
+                   label: v.label || 'Mon lien', icone: v.icone || '' };
+      return;
+    }
     const def = RESEAUX_DEF[cle];
     if(!def) return;
-    const valeur = (v.valeur||'').trim();
     out[cle] = {
       actif: !!v.actif,
       valeur,
@@ -1916,29 +1998,34 @@ function serialiserReseaux(){
 
 // ── Fabrique d'icône : PNG si disponible, vectoriel sinon ──
 function iconeHTML(cle){
-  const d = RESEAUX_DEF[cle];
-  return `<img src="${d.img}" alt="" onload="this.style.display='block';this.parentNode.style.background='none';this.nextElementSibling.style.display='none'">
-          <svg class="ico"><use href="#${d.svg}"/></svg>`;
+  const d = defPour(cle);
+  if(!d) return '';
+  const img = d.img
+    ? `<img src="${esc(d.img)}" alt="" onload="this.style.display='block';this.parentNode.style.background='none';this.nextElementSibling.style.display='none'">`
+    : '';
+  return img + `<svg class="ico"><use href="#${d.svg}"/></svg>`;
 }
-function styleIcone(cle){ return `background:${RESEAUX_DEF[cle].couleur}`; }
+function styleIcone(cle){ const d = defPour(cle); return d ? `background:${d.couleur}` : ''; }
 
 // ── Rendu de la grille ──
 function renderLiensGrid(){
   const grille = document.getElementById('liens-grid');
   if(!grille) return;
 
-  const tuiles = Object.keys(RESEAUX_DEF)
-    .filter(cle => reseauxState[cle])
+  const cles = Object.keys(RESEAUX_DEF).filter(cle => reseauxState[cle])
+    .concat(Object.keys(reseauxState).filter(estPerso));
+
+  const tuiles = cles
     .map(cle => {
-      const d = RESEAUX_DEF[cle];
+      const d = defPour(cle);
       const off = reseauxState[cle].actif ? '' : ' off';
       return `
         <div class="lien-tile${off}">
           <div class="lien-ico" style="${styleIcone(cle)}">${iconeHTML(cle)}</div>
-          <button class="lien-edit" data-lm-edit="${cle}" title="Modifier ${d.label}">
+          <button class="lien-edit" data-lm-edit="${cle}" title="Modifier ${esc(d.label)}">
             <svg class="ico"><use href="#i-pencil"/></svg>
           </button>
-          <div class="lien-nom">${d.label}</div>
+          <div class="lien-nom">${esc(d.label)}</div>
         </div>`;
     }).join('');
 
@@ -1959,17 +2046,21 @@ function ouvrirPicker(){
     <button class="lm-app" data-lm-pick="${cle}">
       <div class="lien-ico" style="${styleIcone(cle)}">${iconeHTML(cle)}</div>
       <span>${RESEAUX_DEF[cle].label}</span>
-    </button>`).join('');
+    </button>`).join('') + `
+    <button class="lm-app lm-app-perso" data-lm-pick="__perso__">
+      <div class="lien-ico" style="background:#0f172a"><svg class="ico"><use href="#i-plus-lg"/></svg></div>
+      <span>Lien personnalisé</span>
+    </button>`;
 
-  zone.style.display = dispo.length ? 'grid' : 'none';
-  vide.style.display = dispo.length ? 'none' : 'block';
+  zone.style.display = 'grid';
+  vide.style.display = 'none';
   document.getElementById('lm-picker').classList.add('show');
   document.body.classList.add('lm-open');
 }
 
 // ── Modale d'édition ──
 function ouvrirEditeur(cle){
-  const d = RESEAUX_DEF[cle];
+  const d = defPour(cle);
   if(!d) return;
   lmCleEnCours = cle;
   const etat = reseauxState[cle] || { actif:true, valeur:'' };
@@ -1978,6 +2069,18 @@ function ouvrirEditeur(cle){
   document.getElementById('lm-ico').innerHTML = iconeHTML(cle);
   document.getElementById('lm-nom').textContent = d.label;
   document.getElementById('lm-actif').checked = etat.actif !== false;
+
+  // Un lien personnalisé se nomme et s'illustre : deux champs de plus.
+  const zonePerso = document.getElementById('lm-perso');
+  if(zonePerso){
+    zonePerso.style.display = d.perso ? '' : 'none';
+    if(d.perso){
+      document.getElementById('lm-perso-nom').value = etat.label || '';
+      document.getElementById('lm-perso-hint').textContent = 'PNG ou JPG · recadré en carré automatiquement';
+      document.getElementById('lm-perso-hint').style.color = '';
+      majApercuIcone(etat.icone || '');
+    }
+  }
 
   // Champ de saisie adapté au type d'application
   const champ = document.getElementById('lm-champ');
@@ -2011,7 +2114,7 @@ function ouvrirEditeur(cle){
 }
 
 function majApercuLien(){
-  const d = RESEAUX_DEF[lmCleEnCours];
+  const d = defPour(lmCleEnCours);
   const v = (document.getElementById('lm-valeur')?.value || '').trim();
   const el = document.getElementById('lm-apercu');
   if(!d || !el) return;
@@ -2020,6 +2123,12 @@ function majApercuLien(){
 }
 
 function fermerModales(){
+  // Un lien personnalisé ouvert puis abandonné sans adresse ne doit pas
+  // laisser de tuile vide derrière lui.
+  if(estPerso(lmCleEnCours) && !(reseauxState[lmCleEnCours]?.valeur)){
+    delete reseauxState[lmCleEnCours];
+    renderLiensGrid();
+  }
   document.getElementById('lm-edit').classList.remove('show');
   document.getElementById('lm-picker').classList.remove('show');
   document.body.classList.remove('lm-open');
@@ -2028,7 +2137,7 @@ function fermerModales(){
 
 function sauverLien(){
   const cle = lmCleEnCours;
-  const d = RESEAUX_DEF[cle];
+  const d = defPour(cle);
   if(!d) return;
 
   const v   = (document.getElementById('lm-valeur').value || '').trim();
@@ -2044,11 +2153,22 @@ function sauverLien(){
     if(message){ err.textContent = message; err.classList.add('show'); return; }
   }
 
-  reseauxState[cle] = {
+  const entree = {
     actif: document.getElementById('lm-actif').checked,
     valeur: v,
     url: d.construire(v),
   };
+  if(d.perso){
+    const nom = (document.getElementById('lm-perso-nom').value || '').trim();
+    if(!nom){
+      err.textContent = 'Donnez un nom à votre lien.';
+      err.classList.add('show');
+      return;
+    }
+    entree.label = nom;
+    entree.icone = document.getElementById('lm-perso-icone').value || '';
+  }
+  reseauxState[cle] = entree;
   fermerModales();
   renderLiensGrid();
   autoSave();
@@ -2058,7 +2178,7 @@ function sauverLien(){
 function supprimerLien(){
   const cle = lmCleEnCours;
   if(!cle) return;
-  if(!confirm(`Retirer ${RESEAUX_DEF[cle].label} de votre page ?`)) return;
+  if(!confirm(`Retirer ${defPour(cle).label} de votre page ?`)) return;
   delete reseauxState[cle];
   fermerModales();
   renderLiensGrid();
@@ -2084,6 +2204,65 @@ function lancerRecherche(type){
   window.open(url, '_blank', 'noopener');
 }
 
+
+// ═══════════════════════════════
+//  ICÔNE D'UN LIEN PERSONNALISÉ
+// ═══════════════════════════════
+// Recadrée en carré 256 px côté navigateur avant l'envoi.
+function majApercuIcone(src){
+  const img  = document.getElementById('lm-perso-img');
+  const camp = document.getElementById('lm-perso-icone');
+  if(!img || !camp) return;
+  camp.value = src || '';
+  img.onerror = function(){ img.style.display = 'none'; };
+  if(src){ img.src = src; img.style.display = 'block'; }
+  else   { img.removeAttribute('src'); img.style.display = 'none'; }
+}
+
+function carrer(fichier, cote){
+  return new Promise(function(resolve, reject){
+    const lecteur = new FileReader();
+    lecteur.onload = function(){
+      const im = new Image();
+      im.onload = function(){
+        const c = Math.min(im.width, im.height);
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = cote;
+        cv.getContext('2d').drawImage(im, (im.width-c)/2, (im.height-c)/2, c, c, 0, 0, cote, cote);
+        cv.toBlob(function(b){ b ? resolve(b) : reject(new Error('Conversion impossible.')); }, 'image/png');
+      };
+      im.onerror = function(){ reject(new Error('Image illisible.')); };
+      im.src = lecteur.result;
+    };
+    lecteur.onerror = function(){ reject(new Error('Lecture impossible.')); };
+    lecteur.readAsDataURL(fichier);
+  });
+}
+
+async function importerIconePerso(e){
+  const fichier = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!fichier) return;
+  const aide = document.getElementById('lm-perso-hint');
+  const dire = (txt, err) => { aide.textContent = txt; aide.style.color = err ? '#e11d48' : ''; };
+
+  if(fichier.size > 5 * 1024 * 1024){ dire('Image trop lourde (5 Mo maximum).', true); return; }
+  dire('Import en cours…');
+  try{
+    const blob = await carrer(fichier, 256);
+    const nom  = (SLUG || 'page') + '-' + (lmCleEnCours || 'icone') + '.png';
+    const { error } = await sb.storage.from('pharmacies')
+      .upload(nom, blob, { upsert:true, contentType:'image/png' });
+    if(error) throw error;
+    const { data } = sb.storage.from('pharmacies').getPublicUrl(nom);
+    majApercuIcone(data.publicUrl + '?v=' + Date.now());
+    dire('Icône importée.');
+  }catch(err){
+    console.error('Icône personnalisée :', err);
+    dire("L'import a échoué. Réessayez.", true);
+  }
+}
+
 // ── Câblage : un seul écouteur pour toute la grille ──
 document.addEventListener('click', function(e){
   const edit = e.target.closest('[data-lm-edit]');
@@ -2094,8 +2273,13 @@ document.addEventListener('click', function(e){
 
   const pick = e.target.closest('[data-lm-pick]');
   if(pick){
+    let cle = pick.dataset.lmPick;
+    if(cle === '__perso__'){
+      cle = 'perso_' + Date.now().toString(36);
+      reseauxState[cle] = { actif:true, valeur:'', url:'', label:'', icone:'' };
+    }
     document.getElementById('lm-picker').classList.remove('show');
-    setTimeout(() => ouvrirEditeur(pick.dataset.lmPick), 120);
+    setTimeout(() => ouvrirEditeur(cle), 120);
     return;
   }
 
@@ -2823,6 +3007,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const loginPwField= document.getElementById('login-pw-field');
 
   // Modale « Paramètres du lien »
+  const champIcone = document.getElementById('lm-perso-fichier');
+  if(champIcone) champIcone.addEventListener('change', importerIconePerso);
   document.getElementById('lm-btn-save').addEventListener('click', sauverLien);
   document.getElementById('lm-btn-suppr').addEventListener('click', supprimerLien);
 
