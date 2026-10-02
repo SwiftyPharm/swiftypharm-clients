@@ -1157,6 +1157,21 @@
 
       // 1. Textes et Logo du Profil
       if (data.nom) document.getElementById('profile-name-display').textContent = data.nom;
+
+      // Titre de l'onglet et description : lus par Google (qui exécute le
+      // JavaScript) et affichés dans l'historique et les favoris.
+      if (data.nom) {
+        document.title = data.nom + (data.ville ? ' · ' + data.ville : '');
+        const desc = [data.nom, data.ville, (data.soustitre || '').replace(/\s+/g, ' ')]
+          .filter(Boolean).join(' — ') + '. Horaires, contact et envoi d\'ordonnance en ligne.';
+        let meta = document.querySelector('meta[name="description"]');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.name = 'description';
+          document.head.appendChild(meta);
+        }
+        meta.content = desc.slice(0, 160);
+      }
       if (data.soustitre) document.getElementById('profile-sub-display').textContent = data.soustitre;
       // Couleur de fond choisie par le client (gris par défaut)
       if (data.couleur_fond) {
@@ -1210,21 +1225,28 @@
       const container = document.getElementById('dynamic-social-links');
       container.innerHTML = ''; // On vide pour n'afficher que la sélection du BO
 
-      // ── GOOGLE AVIS ── (cherche 'google' ou 'avis')
+      // ── GOOGLE AVIS ──
+      // Deux sources : la colonne `avis_google_url`, renseignée depuis
+      // l'admin, et le lien saisi par le pharmacien dans son back office.
+      // Celui de l'admin l'emporte ; le vider rend la main au pharmacien.
       const googleObj = soc.google || soc.avis;
       const googleActif = googleObj?.actif ?? googleObj?.active;
-      const googleUrlVal = googleObj?.url || googleObj?.val;
-      
-      // URL Google Avis calculée une fois, réutilisée pour la carte ET le
-      // bouton d'avis affiché après l'envoi d'une ordonnance.
+      const urlClient = String(googleObj?.url || googleObj?.val || '').trim();
+      const urlAdmin  = String(data.avis_google_url || '').trim();
+      const googleUrlVal = urlAdmin || urlClient;
+
+      // URL calculée une fois, réutilisée pour la carte ET le bouton
+      // d'avis affiché après l'envoi d'une ordonnance.
       let googleAvisUrl = '';
-      if (googleUrlVal && googleUrlVal.trim() !== '') {
+      if (googleUrlVal) {
         googleAvisUrl = googleUrlVal.startsWith('http')
           ? googleUrlVal
           : `https://www.google.com/search?q=${encodeURIComponent(googleUrlVal + ' avis google')}&tbm=lcl`;
       }
 
-      if (googleObj && googleActif && googleAvisUrl) {
+      // Un lien posé par l'admin s'affiche même si la carte n'a pas été
+      // activée par le pharmacien.
+      if (googleAvisUrl && (urlAdmin || (googleObj && googleActif))) {
         container.innerHTML += `
           <a href="${googleAvisUrl}" target="_blank" class="social-card-item">
             <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
