@@ -5,6 +5,8 @@
 //   action: 'ordonnance'  → la page publique transmet une ordonnance à l'officine
 //   action: 'commande'    → click & collect : email au pharmacien + SMS au client
 //   action: 'statut'      → la commande passe à « prête » : SMS au client
+//   action: 'demande_avis_google' → le pharmacien demande qu'on crée son
+//                                   lien Google Avis : alerte Telegram
 //
 // ═══════════════════════════════════════════════════════════
 //  PRINCIPE DE SÉCURITÉ — à ne jamais modifier
@@ -245,6 +247,71 @@ exports.handler = async (event) => {
     );
 
     return json(200, { ok: true });
+  }
+
+  // ═══════════════════════════════════════════
+  //  DEMANDE DE LIEN GOOGLE AVIS — alerte Telegram
+  //  Traitée avant la lecture commune de la pharmacie : elle lit ses
+  //  propres colonnes, de sorte qu'une migration non exécutée ne
+  //  bloque que ce bouton, jamais les ordonnances.
+  //  Les informations viennent de la base, pas de la requête : seul
+  //  le slug est lu, et une demande au plus par 24 h est relayée.
+  // ═══════════════════════════════════════════
+  if (body.action === 'demande_avis_google') {
+    const slugD = String(body.slug || '').trim().toLowerCase();
+    if (!slugD) return json(400, { error: 'Pharmacie non identifiée' });
+
+    let ph;
+    try {
+      const rows = await sb(
+        'pharmacies?slug=eq.' + encodeURIComponent(slugD)
+        + '&select=slug,nom,ville,adresse,telephone,email_contact,avis_google_url,avis_google_demande_at&limit=1'
+      );
+      if (!rows?.length) return json(404, { error: 'Pharmacie introuvable' });
+      ph = rows[0];
+    } catch (e) {
+      console.error('demande_avis_google', e.message);
+      return json(500, { error: 'Base de données indisponible' });
+    }
+
+    // Lien déjà posé par l'équipe : rien à demander
+    if (ph.avis_google_url) return json(200, { ok: true, deja_cree: true });
+
+    // Anti-doublon : une alerte par pharmacie et par 24 h
+    const derniere = ph.avis_google_demande_at ? Date.parse(ph.avis_google_demande_at) : 0;
+    if (derniere && Date.now() - derniere < 24 * 3600 * 1000) {
+      return json(200, { ok: true, deja_demande: true, demande_at: ph.avis_google_demande_at });
+    }
+
+    const maintenant = new Date().toISOString();
+    try {
+      await sb('pharmacies?slug=eq.' + encodeURIComponent(slugD), {
+        method: 'PATCH',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({ avis_google_demande_at: maintenant }),
+      });
+    } catch (e) {
+      console.error('demande_avis_google PATCH', e.message);
+      return json(500, { error: "La demande n'a pas pu être enregistrée." });
+    }
+
+    const recherche = [ph.nom, ph.adresse, ph.ville].filter(Boolean).join(' ');
+    const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(recherche);
+    const admin = 'https://swiftypharm.fr/admin.html?q=' + encodeURIComponent(ph.slug);
+
+    await alerte(
+      `⭐ <b>LIEN GOOGLE AVIS À CRÉER</b>\n\n`
+      + `Pharmacie : <b>${esc(ph.nom || ph.slug)}</b>\n`
+      + `Ville : ${esc(ph.ville || '—')}\n`
+      + `Adresse : ${esc(ph.adresse || '—')}\n`
+      + `Téléphone : ${esc(ph.telephone || '—')}\n`
+      + `Email : ${esc(ph.email_contact || '—')}\n\n`
+      + `<a href="${esc(maps)}">Voir sur Google Maps</a> · `
+      + `<a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder">Trouver le Place ID</a>\n`
+      + `<a href="${esc(admin)}">Ouvrir dans l'admin</a>`
+    );
+
+    return json(200, { ok: true, demande_at: maintenant });
   }
 
   const slug = String(body.slug || '').trim().toLowerCase();
