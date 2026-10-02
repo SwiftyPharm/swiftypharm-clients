@@ -255,6 +255,7 @@ body{
 .cmd-empty-emoji{font-size:40px;margin-bottom:12px;opacity:.5}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 #save-indicator{font-size:11px;font-weight:600;opacity:0;transition:opacity .3s;padding:3px 10px;border-radius:20px;background:var(--blue-l);color:var(--blue)}
+#save-indicator.ko{background:#fee2e2;color:#b91c1c}
 .btn-logout{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .2s}
 .btn-logout:hover{background:var(--bg);color:var(--text)}
 .btn-view-page{font-size:12px;font-weight:600;color:var(--blue);background:var(--blue-l);border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:4px}
@@ -375,6 +376,15 @@ textarea{resize:vertical;min-height:72px}
 .notif-status.err{color:var(--red);display:block}
 
 /* ── Lien personnalisé : nom + icône importée ── */
+.gd-bloc{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.gd-titre{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.gd-btn{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--blue);background:#fff;
+  color:var(--blue);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;line-height:1.35;transition:all .15s}
+.gd-btn:hover:not(:disabled){background:var(--blue);color:#fff}
+.gd-btn:disabled{opacity:.6;cursor:wait}
+.gd-attente{font-size:12.5px;line-height:1.55;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px}
+.gd-ok{font-size:12.5px;line-height:1.55;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px}
+.gd-err{font-size:12px;color:#be123c;margin:8px 0 0}
 .lm-perso-f{margin-bottom:15px}
 .lm-perso-f > label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
 .lm-perso-f input[type=text]{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;outline:none;transition:border-color .2s}
@@ -845,6 +855,9 @@ input:focus,textarea:focus,select:focus{
   .btn-view-page,.btn-logout{white-space:nowrap;padding:6px 10px;font-size:11.5px}
   .nav-right{gap:6px}
   #save-indicator{display:none}
+  /* L'échec, lui, doit rester visible sur téléphone */
+  #save-indicator.ko{display:block;position:fixed;top:66px;left:50%;transform:translateX(-50%);
+    z-index:300;padding:6px 14px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
   .chart-svg{height:100px}
 }
 </style>
@@ -1297,8 +1310,22 @@ function loadConfig(){
 function getConfig(){return loadConfig();}
 function flashSaved(){
   const el=document.getElementById('save-indicator');
+  el.classList.remove('ko');
+  el.innerHTML = '<svg class="ico ico-sm"><use href="#i-check"/></svg> Sauvegardé';
   el.style.opacity='1';clearTimeout(el._t);
   el._t=setTimeout(()=>el.style.opacity='0',2200);
+}
+
+// Une sauvegarde refusée par la base ne doit jamais passer inaperçue.
+function flashErreur(detail){
+  const el=document.getElementById('save-indicator');
+  if(!el) return;
+  el.classList.add('ko');
+  el.textContent = 'Non sauvegardé';
+  el.title = detail || '';
+  el.style.opacity='1';clearTimeout(el._t);
+  el._t=setTimeout(()=>{ el.style.opacity='0'; el.classList.remove('ko'); }, 6000);
+  console.error('Sauvegarde refusée :', detail);
 }
 
 let _syncTimer;
@@ -1335,11 +1362,15 @@ async function syncToSupabase(cfg){
       logo_url: cfg.pharmacy.logo || '',
       reseaux:cfg.pharmacy.reseaux||{}
     };
-    await fetch(SUPABASE_REST+'pharmacies?on_conflict=slug',{
+    const res = await fetch(SUPABASE_REST+'pharmacies?on_conflict=slug',{
       method:'POST',
       headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
       body:JSON.stringify(payload)
     });
+    if(!res.ok){
+      flashErreur('HTTP ' + res.status + ' · ' + (await res.text()).slice(0,200));
+      return;
+    }
     const promosPayload=cfg.promos.map((p,i)=>({
       pharmacie_slug:SLUG,
       position:i+1,
@@ -1351,12 +1382,15 @@ async function syncToSupabase(cfg){
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
       badge:p.badge,stock:parseInt(p.stock)||0
     }));
-    await fetch(SUPABASE_REST+'promos?on_conflict=pharmacie_slug,position',{
+    const resP = await fetch(SUPABASE_REST+'promos?on_conflict=pharmacie_slug,position',{
       method:'POST',
       headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
       body:JSON.stringify(promosPayload)
     });
-  }catch(e){console.warn('Sync error:',e);}
+    if(!resP.ok){
+      flashErreur('Promotions · HTTP ' + resP.status + ' · ' + (await resP.text()).slice(0,200));
+    }
+  }catch(e){ flashErreur(e.message); }
 }
 
 async function loadFromSupabase(){
@@ -1391,6 +1425,10 @@ async function loadFromSupabase(){
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
         else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
         if(d.reseaux)  cfg.pharmacy.reseaux=d.reseaux;
+        // Lien posé par l'équipe et demande en cours : lus seulement,
+        // jamais réécrits par la sauvegarde du back office.
+        googleAdmin     = d.avis_google_url || '';
+        googleDemandeAt = d.avis_google_demande_at || '';
         if(d.horaires) cfg.pharmacy.horairesSemaine=d.horaires;
 
         // ══ PROMOS — Supabase fait autorité ══
@@ -1900,11 +1938,30 @@ const RESEAUX_DEF = {
   google:{
     label:'Google Avis', img:'/assets/google-avis-icon.png', svg:'i-star',
     couleur:'linear-gradient(135deg,#4285F4,#EA4335)',
-    saisie:'nom', exemple:'Pharmacie Centrale, Paris',
-    aide:"Saisissez le nom exact de votre pharmacie tel qu'il apparaît sur Google.",
+    saisie:'pseudo',
+    prefixe:'…writereview?placeid=',
+    exemple:'ChIJN1t_tDeuEmsRUsoyG83frY4',
+    aide:"Collez uniquement le Place ID de votre pharmacie. Le bouton « Trouver mon Place ID » ouvre l'outil officiel de Google : cherchez votre pharmacie, l'identifiant s'affiche sous son nom.",
     recherche:'google',
-    construire:v=>'https://www.google.com/search?q='+encodeURIComponent(v+' avis google')+'&tbm=lcl',
-    extraire:u=>'',
+    valider:v=>/^[A-Za-z0-9_\-]{10,}$/.test(v.trim())
+      ? ''
+      : "Un Place ID ne contient que des lettres, des chiffres, des tirets et des underscores (au moins 10 caractères).",
+    // Le lien « writereview » ouvre directement la fenêtre de notation.
+    construire:v=>GOOGLE_AVIS_BASE + encodeURIComponent(v.trim()),
+    extraire:u=>{
+      const m = String(u||'').match(/[?&]place_?id=([^&]+)/i);
+      return m ? decodeURIComponent(m[1]) : '';
+    },
+    // Les pharmacies inscrites avant ce changement ont un nom en guise de
+    // valeur et un lien de recherche Google. On ne garde comme valeur
+    // qu'un vrai Place ID ; sinon le champ reste vide et l'ancien lien
+    // continue de fonctionner tel quel (voir serialiserReseaux).
+    lireValeur:d=>{
+      const id = RESEAUX_DEF.google.extraire(d.url);
+      if(id) return id;
+      const v = String(d.valeur ?? d._name ?? '').trim();
+      return /^[A-Za-z0-9_\-]{10,}$/.test(v) && !/\s/.test(v) ? v : '';
+    },
   },
   website:{
     label:'Site Web', img:'/assets/website-icon.png', svg:'i-globe',
@@ -1916,11 +1973,25 @@ const RESEAUX_DEF = {
   },
 };
 
+// Formulaire d'avis Google : le visiteur arrive directement sur la
+// fenêtre de notation, sans passer par la fiche de l'établissement.
+const GOOGLE_AVIS_BASE = 'https://search.google.com/local/writereview?placeid=';
+
+// Lien Google Avis créé par l'équipe SwiftyPharm, et date de la demande
+// du pharmacien. Chargés depuis la base, affichés dans la fenêtre Google.
+let googleAdmin = '';
+let googleDemandeAt = '';
+
 // État courant : { cle: {actif, valeur, url} }
 // Les liens personnalisés portent une clé « perso_<horodatage> » et
 // embarquent en plus leur libellé et l'adresse de leur icône.
 let reseauxState = {};
 let lmCleEnCours = null;
+
+// Clés de `reseaux` que ce back office ne gère pas (écrites par l'admin
+// ou par une version ultérieure) : conservées à l'identique, sinon la
+// première sauvegarde du pharmacien les effacerait.
+let reseauxInconnus = {};
 
 const estPerso = cle => typeof cle === 'string' && cle.indexOf('perso_') === 0;
 
@@ -1948,6 +2019,13 @@ function defPour(cle){
 // donc sans perdre le moindre lien.
 function normaliserReseaux(brut){
   const out = {};
+  reseauxInconnus = {};
+  // Les anciens alias (avis, insta, fb…) sont lus par la page publique en
+  // repli : les conserver ferait réapparaître un lien supprimé ici.
+  const ALIAS_ANCIENS = ['avis','insta','fb','web','tik','docto'];
+  Object.keys(brut || {}).forEach(cle => {
+    if(!RESEAUX_DEF[cle] && !estPerso(cle) && !ALIAS_ANCIENS.includes(cle)) reseauxInconnus[cle] = brut[cle];
+  });
 
   // Liens personnalisés : repris tels qu'enregistrés.
   Object.keys(brut || {}).filter(estPerso).forEach(cle => {
@@ -1967,7 +2045,7 @@ function normaliserReseaux(brut){
     const d = brut?.[cle];
     if(!d) return;
     const def = RESEAUX_DEF[cle];
-    const valeur = d.valeur ?? d._name ?? def.extraire(d.url||'') ?? '';
+    const valeur = def.lireValeur ? def.lireValeur(d) : (d.valeur ?? d._name ?? def.extraire(d.url||'') ?? '');
     const aQuelqueChose = String(valeur).trim() !== '' || String(d.url||'').trim() !== '';
     if(!aQuelqueChose && d.actif !== true) return;
     out[cle] = { actif: d.actif !== false, valeur: String(valeur).trim(), url: d.url || '' };
@@ -1976,7 +2054,7 @@ function normaliserReseaux(brut){
 }
 
 function serialiserReseaux(){
-  const out = {};
+  const out = Object.assign({}, reseauxInconnus);
   Object.entries(reseauxState).forEach(([cle, v]) => {
     const valeur = (v.valeur||'').trim();
     if(estPerso(cle)){
@@ -1989,7 +2067,9 @@ function serialiserReseaux(){
     out[cle] = {
       actif: !!v.actif,
       valeur,
-      url: valeur ? def.construire(valeur) : '',
+      // Google Avis sans Place ID : l'ancien lien est conservé tel quel,
+      // plutôt que remplacé par un lien vide.
+      url: valeur ? def.construire(valeur) : (cle === 'google' ? (v.url || '') : ''),
       _name: valeur,          // compatibilité avec l'ancien format
     };
   });
@@ -2095,11 +2175,19 @@ function ouvrirEditeur(cle){
     champ.insertAdjacentHTML('beforeend',
       `<button class="lm-recherche" data-lm-rech="${d.recherche}">
          <svg class="ico"><use href="#i-search"/></svg>
-         ${d.recherche==='doctolib' ? 'Trouver ma page Doctolib' : 'Vérifier ma fiche Google'}
+         ${d.recherche==='doctolib' ? 'Trouver ma page Doctolib' : 'Trouver mon Place ID'}
        </button>`);
   }
   if(d.aide){
     champ.insertAdjacentHTML('beforeend', `<p class="lm-apercu">${d.aide}</p>`);
+  }
+  if(cle === 'google' && !etat.valeur && etat.url){
+    champ.insertAdjacentHTML('beforeend',
+      `<p class="lm-apercu" style="color:#b45309">Votre lien actuel reste actif tant que vous n'avez pas saisi de Place ID.</p>`);
+  }
+  if(cle === 'google'){
+    champ.insertAdjacentHTML('beforeend', `<div class="gd-bloc" id="gd-bloc"></div>`);
+    majBlocDemandeGoogle();
   }
 
   const input = document.getElementById('lm-valeur');
@@ -2142,6 +2230,14 @@ function sauverLien(){
 
   const v   = (document.getElementById('lm-valeur').value || '').trim();
   const err = document.getElementById('lm-erreur');
+
+  // Ancien lien Google sans Place ID : on permet quand même de l'afficher
+  // ou de le masquer, sans exiger une nouvelle saisie.
+  if(!v && cle === 'google' && reseauxState.google?.url){
+    reseauxState.google.actif = document.getElementById('lm-actif').checked;
+    fermerModales(); renderLiensGrid(); autoSave(); majCompletion();
+    return;
+  }
 
   if(!v){
     err.textContent = 'Renseignez un lien avant de sauvegarder.';
@@ -2199,7 +2295,7 @@ function lancerRecherche(type){
 
   const url = type === 'doctolib'
     ? 'https://www.google.com/search?q=' + encodeURIComponent('site:doctolib.fr ' + (q || 'pharmacie'))
-    : 'https://www.google.com/search?q=' + encodeURIComponent((q || 'pharmacie') + ' avis google') + '&tbm=lcl';
+    : 'https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder';
 
   window.open(url, '_blank', 'noopener');
 }
@@ -2262,6 +2358,59 @@ async function importerIconePerso(e){
     dire("L'import a échoué. Réessayez.", true);
   }
 }
+
+
+// ═══════════════════════════════════════════
+//  DEMANDE DE CRÉATION DU LIEN GOOGLE AVIS
+//  Le pharmacien qui ne trouve pas son Place ID le demande à l'équipe :
+//  une alerte Telegram part, l'équipe pose le lien depuis l'admin.
+// ═══════════════════════════════════════════
+function majBlocDemandeGoogle(){
+  const bloc = document.getElementById('gd-bloc');
+  if(!bloc) return;
+
+  if(googleAdmin){
+    bloc.innerHTML = `<div class="gd-ok">✓ Votre lien Google Avis a été créé par notre équipe : il s'affiche déjà sur votre page.</div>`;
+    return;
+  }
+  if(googleDemandeAt){
+    const le = new Date(googleDemandeAt).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+    bloc.innerHTML = `<div class="gd-attente">Demande envoyée le ${le}. Nous créons votre lien et il apparaîtra automatiquement sur votre page.</div>`;
+    return;
+  }
+  bloc.innerHTML = `
+    <p class="gd-titre">Vous ne trouvez pas votre Place ID ?</p>
+    <button type="button" class="gd-btn" id="gd-btn">Je veux que l'on me crée mon lien Google Avis</button>`;
+  document.getElementById('gd-btn').addEventListener('click', demanderLienGoogle);
+}
+
+async function demanderLienGoogle(){
+  const btn = document.getElementById('gd-btn');
+  if(!btn || !SLUG) return;
+  btn.disabled = true;
+  btn.textContent = 'Envoi…';
+  try{
+    const res = await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'demande_avis_google', slug: SLUG }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    if(data.deja_cree){ googleAdmin = googleAdmin || 'oui'; }
+    googleDemandeAt = data.demande_at || new Date().toISOString();
+    majBlocDemandeGoogle();
+  }catch(e){
+    console.error('Demande lien Google :', e);
+    btn.disabled = false;
+    btn.textContent = "Je veux que l'on me crée mon lien Google Avis";
+    const bloc = document.getElementById('gd-bloc');
+    if(bloc && !bloc.querySelector('.gd-err')){
+      bloc.insertAdjacentHTML('beforeend', `<p class="gd-err">L'envoi a échoué. Réessayez dans un instant.</p>`);
+    }
+  }
+}
+window.demanderLienGoogle = demanderLienGoogle;
 
 // ── Câblage : un seul écouteur pour toute la grille ──
 document.addEventListener('click', function(e){
@@ -2342,7 +2491,10 @@ function majLienPage(){
 }
 
 function collectInfo(){
-  const logoData=document.getElementById('logo-preview-img').src||'';
+  // getAttribute et non .src : sur une image sans source, .src renvoie
+  // l'adresse de la page courante, qui finissait enregistrée comme logo
+  // (« …/backoffice.html » dans logo_url).
+  const logoData=document.getElementById('logo-preview-img').getAttribute('src')||'';
 
   return{
     name:document.getElementById('ph-name').value,
@@ -3376,214 +3528,374 @@ async function savEnvoyerAuSAV(message){
 </script>
 
 <!-- ═══════════════════════════════════════════════════
-     ÉDITEUR D'IMAGE — recadrage avant envoi
-     Utilisé pour le logo (carré) et la bannière (paysage).
+     ÉDITEUR D'IMAGE — recadrage libre avant envoi
+     Coins et bords déplaçables, cadre mobile. Logo et bannière.
      ═══════════════════════════════════════════════════ -->
 <style>
-  #crop-overlay{position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.72);
-    display:none;align-items:center;justify-content:center;padding:16px}
-  #crop-overlay.show{display:flex}
-  .crop-sheet{background:#fff;border-radius:20px;width:100%;max-width:420px;
-    padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
-  .crop-titre{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
-  .crop-aide{font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
-  /* Zone de travail : l'image déborde, le cadre montre ce qui sera gardé */
-  .crop-zone{position:relative;width:100%;background:#0f172a;border-radius:12px;
-    overflow:hidden;touch-action:none;cursor:grab}
-  .crop-zone:active{cursor:grabbing}
-  .crop-zone canvas{display:block;width:100%;height:100%}
-  .crop-controls{display:flex;align-items:center;gap:10px;margin-top:14px}
-  .crop-controls button{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
-    background:#fff;cursor:pointer;font-size:17px;font-weight:700;color:var(--text);
-    display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .crop-controls button:hover{background:var(--blue-l)}
-  .crop-controls input[type=range]{flex:1;accent-color:var(--blue)}
-  .crop-actions{display:flex;gap:10px;margin-top:16px}
-  .crop-actions button{flex:1;padding:11px;border-radius:11px;font-family:inherit;
-    font-size:13px;font-weight:700;cursor:pointer;border:none}
-  .crop-annuler{background:#f1f5f9;color:var(--text)}
-  .crop-valider{background:var(--blue);color:#fff}
+/* ── Recadrage libre ── */
+body.lm-open{overflow:hidden}
+.crop-overlay{position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.62);
+  display:none;align-items:center;justify-content:center;padding:16px}
+.crop-overlay.show{display:flex}
+.crop-sheet{background:#fff;border-radius:20px;width:100%;max-width:620px;max-height:calc(100vh - 32px);
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.crop-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 10px}
+.crop-titre{font-size:16px;font-weight:800;color:var(--text)}
+.crop-x{background:none;border:none;font-size:30px;line-height:1;color:var(--muted);cursor:pointer;padding:0 4px}
+.crop-zone{padding:20px;display:flex;justify-content:center;background:#0f172a0d}
+.crop-scene{position:relative;touch-action:none;user-select:none;
+  -webkit-user-select:none;background:
+  repeating-conic-gradient(#e5e7eb 0 25%,#fff 0 50%) 0 0/16px 16px}
+.crop-scene img{display:block;pointer-events:none;max-width:none}
+.crop-voile{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.crop-trou{position:absolute;box-shadow:0 0 0 9999px rgba(15,23,42,.55)}
+.crop-box{position:absolute;outline:2px solid #fff;cursor:move}
+/* Zone réellement visible sur la page : le logo y est affiché en cercle,
+   centré, au diamètre du plus petit côté. */
+.crop-rond{display:none;position:absolute;left:50%;top:50%;border-radius:50%;
+  border:1.5px dashed rgba(255,255,255,.95);transform:translate(-50%,-50%);pointer-events:none;
+  box-shadow:0 0 0 1px rgba(15,23,42,.25)}
+.crop-box.rond .crop-rond{display:block}
+.crop-grille{position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(to right,transparent calc(33.33% - .5px),rgba(255,255,255,.45) calc(33.33% - .5px),rgba(255,255,255,.45) calc(33.33% + .5px),transparent calc(33.33% + .5px),
+                             transparent calc(66.66% - .5px),rgba(255,255,255,.45) calc(66.66% - .5px),rgba(255,255,255,.45) calc(66.66% + .5px),transparent calc(66.66% + .5px)),
+    linear-gradient(to bottom,transparent calc(33.33% - .5px),rgba(255,255,255,.45) calc(33.33% - .5px),rgba(255,255,255,.45) calc(33.33% + .5px),transparent calc(33.33% + .5px),
+                             transparent calc(66.66% - .5px),rgba(255,255,255,.45) calc(66.66% - .5px),rgba(255,255,255,.45) calc(66.66% + .5px),transparent calc(66.66% + .5px))}
+.crop-h{position:absolute;z-index:2}
+.crop-coin{width:26px;height:26px}
+.crop-coin::after{content:'';position:absolute;width:14px;height:14px;background:#fff;
+  border:2px solid var(--blue);border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.crop-coin[data-h=nw]{left:-13px;top:-13px;cursor:nwse-resize}
+.crop-coin[data-h=se]{right:-13px;bottom:-13px;cursor:nwse-resize}
+.crop-coin[data-h=ne]{right:-13px;top:-13px;cursor:nesw-resize}
+.crop-coin[data-h=sw]{left:-13px;bottom:-13px;cursor:nesw-resize}
+.crop-coin::after{left:4px;top:4px}
+.crop-bord[data-h=n],.crop-bord[data-h=s]{left:14px;right:14px;height:18px;cursor:ns-resize}
+.crop-bord[data-h=e],.crop-bord[data-h=w]{top:14px;bottom:14px;width:18px;cursor:ew-resize}
+.crop-bord[data-h=n]{top:-9px}.crop-bord[data-h=s]{bottom:-9px}
+.crop-bord[data-h=e]{right:-9px}.crop-bord[data-h=w]{left:-9px}
+.crop-bord::after{content:'';position:absolute;background:#fff;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.crop-bord[data-h=n]::after,.crop-bord[data-h=s]::after{left:50%;top:7px;width:24px;height:4px;margin-left:-12px}
+.crop-bord[data-h=e]::after,.crop-bord[data-h=w]::after{top:50%;left:7px;height:24px;width:4px;margin-top:-12px}
+.crop-box.verrou .crop-bord{display:none}
+.crop-outils{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px 0;flex-wrap:wrap}
+.crop-lock{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;
+  text-transform:none;letter-spacing:0;margin:0}
+.crop-lock input{width:17px;height:17px;accent-color:var(--blue);cursor:pointer}
+.crop-reset{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;
+  font-family:inherit;font-size:12px;font-weight:600;color:var(--text);cursor:pointer}
+.crop-reset:hover{border-color:var(--blue);color:var(--blue)}
+.crop-aide{font-size:12px;color:var(--muted);line-height:1.5;padding:8px 20px 0}
+.crop-pied{display:flex;gap:10px;padding:16px 20px 20px}
+.crop-annuler,.crop-valider{flex:1;padding:12px;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.crop-annuler{background:#f1f5f9;border:none;color:var(--text)}
+.crop-valider{background:var(--blue);border:none;color:#fff}
+.crop-valider:disabled{opacity:.5;cursor:wait}
 </style>
 
-<div id="crop-overlay">
-  <div class="crop-sheet">
-    <div class="crop-titre" id="crop-titre">Ajuster l'image</div>
-    <p class="crop-aide">
-      Faites glisser l'image pour la positionner, et utilisez le curseur
-      pour zoomer. Seule la zone visible sera conservée.
-    </p>
+<!-- ══════ MODALE : RECADRAGE LIBRE (logo, bannière) ══════ -->
+<div class="crop-overlay" id="crop-modal" aria-hidden="true">
+  <div class="crop-sheet" role="dialog" aria-modal="true" aria-labelledby="crop-titre">
+    <div class="crop-head">
+      <div class="crop-titre" id="crop-titre">Recadrer l'image</div>
+      <button type="button" class="crop-x" id="crop-x" aria-label="Fermer">&times;</button>
+    </div>
     <div class="crop-zone" id="crop-zone">
-      <canvas id="crop-canvas"></canvas>
+      <div class="crop-scene" id="crop-scene">
+        <img id="crop-img" alt="" draggable="false">
+        <!-- Voile sombre découpé à la taille de l'image : il reste
+             rogné, tandis que le cadre et ses poignées débordent
+             librement pour rester saisissables sur les bords. -->
+        <div class="crop-voile"><div class="crop-trou" id="crop-trou"></div></div>
+        <div class="crop-box" id="crop-box">
+          <span class="crop-grille"></span>
+          <span class="crop-rond" id="crop-rond"></span>
+          <span class="crop-h crop-bord" data-h="n"></span>
+          <span class="crop-h crop-bord" data-h="s"></span>
+          <span class="crop-h crop-bord" data-h="e"></span>
+          <span class="crop-h crop-bord" data-h="w"></span>
+          <span class="crop-h crop-coin" data-h="nw"></span>
+          <span class="crop-h crop-coin" data-h="ne"></span>
+          <span class="crop-h crop-coin" data-h="sw"></span>
+          <span class="crop-h crop-coin" data-h="se"></span>
+        </div>
+      </div>
     </div>
-    <div class="crop-controls">
-      <button type="button" onclick="cropZoom(-0.15)" title="Dézoomer">−</button>
-      <input type="range" id="crop-range" min="1" max="4" step="0.01" value="1" oninput="cropSetZoom(this.value)">
-      <button type="button" onclick="cropZoom(0.15)" title="Zoomer">+</button>
+    <div class="crop-outils">
+      <label class="crop-lock">
+        <input type="checkbox" id="crop-lock">
+        <span id="crop-lock-txt">Conserver les proportions</span>
+      </label>
+      <button type="button" class="crop-reset" id="crop-reset">Tout sélectionner</button>
     </div>
-    <div class="crop-actions">
-      <button type="button" class="crop-annuler" onclick="cropFermer()">Annuler</button>
-      <button type="button" class="crop-valider" onclick="cropValider()">Valider</button>
+    <p class="crop-aide">Faites glisser un coin ou un bord pour ajuster le cadre, l'intérieur du cadre pour le déplacer.</p>
+    <div class="crop-pied">
+      <button type="button" class="crop-annuler" id="crop-annuler">Annuler</button>
+      <button type="button" class="crop-valider" id="crop-valider">Valider</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════
-//  Recadrage d'image maison (aucune dépendance externe).
-//  L'utilisateur déplace et zoome ; on exporte la zone visible
-//  aux dimensions cibles avant l'envoi vers Supabase Storage.
-// ═══════════════════════════════════════════════════
-let cropImg = null;        // Image source chargée
-let cropRatio = 1;         // largeur / hauteur du cadre
-let cropSortieL = 600;     // largeur d'export
-let cropSortieH = 600;     // hauteur d'export
-let cropZoomVal = 1;
-let cropX = 0, cropY = 0;  // décalage du centre de l'image
-let cropCible = null;      // 'logo' ou 'banniere'
-let cropDrag = null;
+// ═══════════════════════════════════════════
+//  RECADRAGE LIBRE
+//  Un cadre posé sur l'image : on tire un coin ou un bord pour le
+//  redimensionner, on fait glisser son intérieur pour le déplacer.
+//  L'export se fait à la résolution d'origine de l'image, pas à celle
+//  de l'aperçu à l'écran.
+// ═══════════════════════════════════════════
+const CROP_CFG = {
+  logo:     { titre:'Recadrer le logo',     ratio:1,   verrou:true,  rond:true,
+              max:800,  texteVerrou:'Format carré (le logo s\'affiche dans un cercle)' },
+  banniere: { titre:'Recadrer la bannière', ratio:2.8, verrou:false, rond:false,
+              max:1600, texteVerrou:'Format bannière (2,8 : 1)' },
+};
+const CROP_MIN = 28;           // taille minimale du cadre, en pixels écran
+let crop = null;               // état de la session de recadrage
 
 function cropOuvrir(file, cible) {
-  cropCible = cible;
-  if (cible === 'logo') {
-    cropRatio = 1;    cropSortieL = 600; cropSortieH = 600;
-    document.getElementById('crop-titre').textContent = "Ajuster votre logo";
-  } else {
-    cropRatio = 2.8;  cropSortieL = 1200; cropSortieH = 429;
-    document.getElementById('crop-titre').textContent = "Ajuster votre bannière";
-  }
+  if (!/^image\//.test(file.type)) { alert('Choisissez un fichier image.'); return; }
+  if (file.size > 15 * 1024 * 1024) { alert('Image trop lourde (15 Mo maximum).'); return; }
 
+  const cfg = CROP_CFG[cible];
   const lecteur = new FileReader();
-  lecteur.onload = function(ev) {
-    const img = new Image();
-    img.onload = function() {
-      cropImg = img;
-      cropZoomVal = 1; cropX = 0; cropY = 0;
-      document.getElementById('crop-range').value = 1;
+  lecteur.onload = function () {
+    const img = document.getElementById('crop-img');
+    img.onload = function () {
+      crop = {
+        cible, cfg, type: file.type,
+        nw: img.naturalWidth, nh: img.naturalHeight,
+        W: 0, H: 0, x: 0, y: 0, w: 0, h: 0,
+        verrou: cfg.verrou,
+      };
+      document.getElementById('crop-titre').textContent = cfg.titre;
+      document.getElementById('crop-lock-txt').textContent = cfg.texteVerrou;
+      document.getElementById('crop-lock').checked = cfg.verrou;
+      document.getElementById('crop-box').classList.toggle('rond', cfg.rond);
 
-      // On affiche d'abord la modale : tant qu'elle est masquée,
-      // clientWidth vaut 0 et le cadre serait mal dimensionné.
-      document.getElementById('crop-overlay').classList.add('show');
+      // La modale doit être visible AVANT toute mesure de largeur.
+      document.getElementById('crop-modal').classList.add('show');
       document.body.classList.add('lm-open');
-
-      // Le cadre s'adapte ensuite à la largeur réelle, en gardant le ratio
-      const zone = document.getElementById('crop-zone');
-      const largeur = zone.clientWidth || 380;
-      zone.style.height = Math.round(largeur / cropRatio) + 'px';
-      const cv = document.getElementById('crop-canvas');
-      cv.width = largeur; cv.height = Math.round(largeur / cropRatio);
-
-      cropDessiner();
+      cropDimensionner();
+      cropInitialiser();
     };
-    img.onerror = function(){ alert("Image illisible. Essayez un autre fichier."); };
-    img.src = ev.target.result;
+    img.src = lecteur.result;
   };
-  lecteur.onerror = function(){ alert("Lecture du fichier impossible."); };
   lecteur.readAsDataURL(file);
 }
 
-// Échelle minimale pour que l'image couvre tout le cadre (pas de vide)
-function cropEchelleBase(cv) {
-  return Math.max(cv.width / cropImg.width, cv.height / cropImg.height);
+// L'image est affichée en entier, à la plus grande taille qui tient.
+function cropDimensionner() {
+  const zone = document.getElementById('crop-zone');
+  const dispoW = Math.max(200, zone.clientWidth - 40);   // marges de la zone
+  const dispoH = Math.max(200, Math.min(window.innerHeight * 0.58, 520));
+  const k = Math.min(dispoW / crop.nw, dispoH / crop.nh, 1.5);
+  crop.W = Math.round(crop.nw * k);
+  crop.H = Math.round(crop.nh * k);
+  const img = document.getElementById('crop-img');
+  img.style.width = crop.W + 'px';
+  img.style.height = crop.H + 'px';
+  const scene = document.getElementById('crop-scene');
+  scene.style.width = crop.W + 'px';
+  scene.style.height = crop.H + 'px';
+}
+
+// Cadre de départ : le plus grand possible au bon format, centré.
+function cropInitialiser() {
+  const r = crop.cfg.ratio;
+  let w = crop.W, h = crop.W / r;
+  if (h > crop.H) { h = crop.H; w = h * r; }
+  if (!crop.verrou && crop.cible === 'banniere') { w = crop.W; }
+  crop.w = w; crop.h = h;
+  crop.x = (crop.W - w) / 2;
+  crop.y = (crop.H - h) / 2;
+  cropDessiner();
 }
 
 function cropDessiner() {
-  if (!cropImg) return;
-  const cv = document.getElementById('crop-canvas');
-  const ctx = cv.getContext('2d');
-  const ech = cropEchelleBase(cv) * cropZoomVal;
-  const l = cropImg.width * ech;
-  const h = cropImg.height * ech;
-
-  // On borne le déplacement : l'image ne peut pas laisser de bande vide
-  const maxX = Math.max(0, (l - cv.width) / 2);
-  const maxY = Math.max(0, (h - cv.height) / 2);
-  cropX = Math.max(-maxX, Math.min(maxX, cropX));
-  cropY = Math.max(-maxY, Math.min(maxY, cropY));
-
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, cv.width, cv.height);
-  ctx.drawImage(cropImg, (cv.width - l) / 2 + cropX, (cv.height - h) / 2 + cropY, l, h);
+  ['crop-box', 'crop-trou'].forEach(function (id) {
+    const el = document.getElementById(id);
+    el.style.left = crop.x + 'px';
+    el.style.top = crop.y + 'px';
+    el.style.width = crop.w + 'px';
+    el.style.height = crop.h + 'px';
+  });
+  document.getElementById('crop-box').classList.toggle('verrou', crop.verrou);
+  const d = Math.min(crop.w, crop.h);
+  const rond = document.getElementById('crop-rond');
+  rond.style.width = d + 'px';
+  rond.style.height = d + 'px';
 }
 
-function cropSetZoom(v) {
-  cropZoomVal = parseFloat(v);
-  const r = document.getElementById('crop-range');
-  if (r && r.value !== String(cropZoomVal)) r.value = cropZoomVal;
-  cropDessiner();
-}
-function cropZoom(d) {
-  const r = document.getElementById('crop-range');
-  r.value = Math.max(1, Math.min(4, parseFloat(r.value) + d));
-  cropSetZoom(r.value);
-}
+const borne = (v, a, b) => Math.max(a, Math.min(b, v));
 
-// ── Déplacement à la souris et au doigt ──
-(function(){
-  const zone = document.getElementById('crop-zone');
-  if (!zone) return;
+// Redimensionnement par un coin : le coin opposé reste fixe.
+function cropCoin(poignee, px, py, depart) {
+  const d = depart;
+  // Le coin opposé sert d'ancre
+  const ax = poignee.includes('w') ? d.x + d.w : d.x;
+  const ay = poignee.includes('n') ? d.y + d.h : d.y;
+  const versDroite = !poignee.includes('w');
+  const versBas    = !poignee.includes('n');
+  const maxW = versDroite ? crop.W - ax : ax;
+  const maxH = versBas    ? crop.H - ay : ay;
 
-  function debut(x, y){ cropDrag = { x: x, y: y }; }
-  function bouge(x, y){
-    if (!cropDrag) return;
-    cropX += x - cropDrag.x;
-    cropY += y - cropDrag.y;
-    cropDrag = { x: x, y: y };
-    cropDessiner();
+  let w = Math.abs(borne(px, 0, crop.W) - ax);
+  let h = Math.abs(borne(py, 0, crop.H) - ay);
+
+  if (crop.verrou) {
+    const r = crop.cfg.ratio;
+    // On suit la direction qui s'est le plus déplacée
+    if (w / h > r) h = w / r; else w = h * r;
+    if (w > maxW) { w = maxW; h = w / r; }
+    if (h > maxH) { h = maxH; w = h * r; }
+    if (w < CROP_MIN) { w = CROP_MIN; h = w / r; }
+    if (h < CROP_MIN) { h = CROP_MIN; w = h * r; }
+  } else {
+    w = borne(w, CROP_MIN, maxW);
+    h = borne(h, CROP_MIN, maxH);
   }
-  function fin(){ cropDrag = null; }
+  crop.w = w; crop.h = h;
+  crop.x = versDroite ? ax : ax - w;
+  crop.y = versBas    ? ay : ay - h;
+}
 
-  zone.addEventListener('mousedown', e => debut(e.clientX, e.clientY));
-  window.addEventListener('mousemove', e => bouge(e.clientX, e.clientY));
-  window.addEventListener('mouseup', fin);
+// Redimensionnement par un bord (mode libre uniquement).
+function cropBord(poignee, px, py, d) {
+  if (poignee === 'n') {
+    const bas = d.y + d.h;
+    crop.y = borne(py, 0, bas - CROP_MIN); crop.h = bas - crop.y;
+  } else if (poignee === 's') {
+    crop.h = borne(py - d.y, CROP_MIN, crop.H - d.y);
+  } else if (poignee === 'w') {
+    const droite = d.x + d.w;
+    crop.x = borne(px, 0, droite - CROP_MIN); crop.w = droite - crop.x;
+  } else if (poignee === 'e') {
+    crop.w = borne(px - d.x, CROP_MIN, crop.W - d.x);
+  }
+}
 
-  zone.addEventListener('touchstart', function(e){
-    if (e.touches.length === 1) debut(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: true });
-  zone.addEventListener('touchmove', function(e){
-    if (e.touches.length === 1) {
-      e.preventDefault();
-      bouge(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: false });
-  zone.addEventListener('touchend', fin);
+(function cropCablage() {
+  let geste = null;   // { mode, poignee, sx, sy, depart }
 
-  zone.addEventListener('wheel', function(e){
+  function pointScene(e) {
+    const r = document.getElementById('crop-scene').getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    if (!crop) return;
+    const box = document.getElementById('crop-box');
+    if (!box.contains(e.target)) return;
     e.preventDefault();
-    cropZoom(e.deltaY < 0 ? 0.08 : -0.08);
+    const p = pointScene(e);
+    const poignee = e.target.dataset && e.target.dataset.h;
+    geste = {
+      mode: poignee ? 'taille' : 'deplacer',
+      poignee: poignee || null,
+      sx: p.x, sy: p.y,
+      depart: { x: crop.x, y: crop.y, w: crop.w, h: crop.h },
+    };
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+
+  document.addEventListener('pointermove', function (e) {
+    if (!geste || !crop) return;
+    e.preventDefault();
+    const p = pointScene(e);
+    const d = geste.depart;
+    if (geste.mode === 'deplacer') {
+      crop.x = borne(d.x + (p.x - geste.sx), 0, crop.W - d.w);
+      crop.y = borne(d.y + (p.y - geste.sy), 0, crop.H - d.h);
+    } else if (geste.poignee.length === 2) {
+      cropCoin(geste.poignee, p.x, p.y, d);
+    } else {
+      cropBord(geste.poignee, p.x, p.y, d);
+    }
+    cropDessiner();
   }, { passive: false });
+
+  function fin() { geste = null; }
+  document.addEventListener('pointerup', fin);
+  document.addEventListener('pointercancel', fin);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('crop-x').addEventListener('click', cropFermer);
+    document.getElementById('crop-annuler').addEventListener('click', cropFermer);
+    document.getElementById('crop-valider').addEventListener('click', cropValider);
+    document.getElementById('crop-reset').addEventListener('click', function () {
+      if (!crop) return;
+      if (crop.verrou) { cropInitialiser(); return; }
+      crop.x = 0; crop.y = 0; crop.w = crop.W; crop.h = crop.H;
+      cropDessiner();
+    });
+    document.getElementById('crop-lock').addEventListener('change', function () {
+      if (!crop) return;
+      crop.verrou = this.checked;
+      if (crop.verrou) {
+        // Remet le cadre au bon format, autour de son centre actuel.
+        const r = crop.cfg.ratio;
+        const cx = crop.x + crop.w / 2, cy = crop.y + crop.h / 2;
+        let w = crop.w, h = w / r;
+        if (h > crop.h) { h = crop.h; w = h * r; }
+        crop.w = w; crop.h = h;
+        crop.x = borne(cx - w / 2, 0, crop.W - w);
+        crop.y = borne(cy - h / 2, 0, crop.H - h);
+      }
+      cropDessiner();
+    });
+    document.getElementById('crop-modal').addEventListener('click', function (e) {
+      if (e.target === this) cropFermer();
+    });
+    window.addEventListener('resize', function () {
+      if (!crop || !document.getElementById('crop-modal').classList.contains('show')) return;
+      // Conserve la sélection en proportion lors d'un changement de taille d'écran
+      const ancienW = crop.W, ancienH = crop.H;
+      cropDimensionner();
+      const kx = crop.W / ancienW, ky = crop.H / ancienH;
+      crop.x *= kx; crop.w *= kx; crop.y *= ky; crop.h *= ky;
+      cropDessiner();
+    });
+  });
 })();
 
 function cropFermer() {
-  document.getElementById('crop-overlay').classList.remove('show');
+  document.getElementById('crop-modal').classList.remove('show');
   document.body.classList.remove('lm-open');
-  cropImg = null; cropDrag = null;
+  document.getElementById('crop-img').removeAttribute('src');
+  crop = null;
 }
 
-// Rend le résultat aux dimensions cibles, puis lance l'envoi
 function cropValider() {
-  if (!cropImg) return cropFermer();
-  const apercu = document.getElementById('crop-canvas');
-  const ech = cropEchelleBase(apercu) * cropZoomVal;
+  if (!crop) return;
+  const bouton = document.getElementById('crop-valider');
+  bouton.disabled = true;
+  bouton.textContent = 'Import…';
 
-  // Facteur entre l'aperçu à l'écran et l'export haute définition
-  const k = cropSortieL / apercu.width;
-  const out = document.createElement('canvas');
-  out.width = cropSortieL; out.height = cropSortieH;
-  const ctx = out.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, out.width, out.height);
+  // Passage des coordonnées écran à la résolution réelle de l'image
+  const k = crop.nw / crop.W;
+  const sx = Math.round(crop.x * k), sy = Math.round(crop.y * k);
+  const sw = Math.max(1, Math.round(crop.w * k)), sh = Math.max(1, Math.round(crop.h * k));
+  const reduction = Math.min(1, crop.cfg.max / Math.max(sw, sh));
+  const cw = Math.max(1, Math.round(sw * reduction));
+  const ch = Math.max(1, Math.round(sh * reduction));
 
-  const l = cropImg.width * ech * k;
-  const h = cropImg.height * ech * k;
-  ctx.drawImage(cropImg,
-    (out.width - l) / 2 + cropX * k,
-    (out.height - h) / 2 + cropY * k,
-    l, h);
+  const canvas = document.createElement('canvas');
+  canvas.width = cw; canvas.height = ch;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  // Fond blanc : l'envoi existant produit un JPEG, sans transparence.
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
+  ctx.drawImage(document.getElementById('crop-img'), sx, sy, sw, sh, 0, 0, cw, ch);
 
-  const cible = cropCible;
-  out.toBlob(function(blob){
-    if (!blob) { alert("Le recadrage a échoué. Réessayez."); return; }
+  const cible = crop.cible;
+  canvas.toBlob(function (blob) {
+    bouton.disabled = false;
+    bouton.textContent = 'Valider';
+    if (!blob) { alert('Le recadrage a échoué. Réessayez.'); return; }
     cropFermer();
+    // Envoi par les fonctions déjà en place (bucket « pharmacies »)
     if (cible === 'logo') envoyerLogoBlob(blob);
     else envoyerBanniereBlob(blob);
   }, 'image/jpeg', 0.9);
