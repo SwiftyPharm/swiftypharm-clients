@@ -134,6 +134,17 @@
   .inv-empty{font-size:12.5px;color:var(--muted);padding:14px 16px;background:#f8fafc;border-radius:11px;text-align:center}
 
   .badge-life{background:#dcfce7;color:#15803d}
+  .badge-demande{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+
+  /* Interrupteur Place ID / Lien complet */
+  .avis-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .avis-head label{margin-bottom:0}
+  .avis-mode{display:inline-flex;background:#f1f5f9;border-radius:20px;padding:2px;flex-shrink:0}
+  .avis-mode button{border:none;background:none;font-family:inherit;font-size:10.5px;font-weight:700;
+    color:var(--muted);padding:4px 10px;border-radius:18px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .avis-mode button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .avis-aide{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+  .avis-aide a{color:var(--blue);font-weight:600;text-decoration:none}
 
 
   .empty-state { text-align:center; padding:56px 20px; color:var(--muted); font-size:14px; background:#fff; border-radius:var(--radius); border:1px solid var(--border); }
@@ -316,6 +327,7 @@
     <button class="filter-btn active" id="filter-all">Toutes</button>
     <button class="filter-btn" id="filter-ok">✓ Configurées</button>
     <button class="filter-btn" id="filter-pending">⏳ En attente</button>
+    <button class="filter-btn" id="filter-google">🔔 Demandes Google <span id="nb-demandes"></span></button>
     <button class="btn-refresh" id="btn-refresh-small">🔄</button>
   </div>
 
@@ -370,6 +382,19 @@ const ADMIN_PW = '23543';
 const PRIX_ACCES = 7.90;                       // prix unique, accès à vie
 const BASE_URL   = 'https://swiftypharm.fr';
 const ADMIN_BO_KEY = 'swifty-admin-2026';
+// Même base que le back office : le visiteur arrive sur le formulaire
+// d'avis. On accepte ici un Place ID seul ou une URL complète.
+const GOOGLE_AVIS_BASE = 'https://search.google.com/local/writereview?placeid=';
+const PLACE_ID_RE = /^[A-Za-z0-9_-]{10,}$/;
+const PLACE_ID_FINDER = 'https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder';
+
+// Extrait le Place ID d'un lien « writereview », sinon chaîne vide.
+function placeIdDe(url){
+  const m = String(url || '').match(/[?&]place_?id=([^&#]+)/i);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+// Une demande est « en attente » tant qu'aucun lien admin n'a été posé.
+const demandeEnAttente = p => !!p.avis_google_demande_at && !p.avis_google_url;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allPharmacies = [];
@@ -403,9 +428,15 @@ function toast(msg, isErr) {
 
 // ══ LOAD ══
 async function loadPharmacies() {
-  const { data, error } = await sb.from('pharmacies')
-    .select('slug,nom,soustitre,telephone,email_contact,ville,canal_acquisition,montant_paye,created_at,horaires,reseaux')
+  const COLS = 'slug,nom,soustitre,telephone,email_contact,ville,canal_acquisition,montant_paye,created_at,horaires,reseaux,avis_google_url';
+  let { data, error } = await sb.from('pharmacies')
+    .select(COLS + ',avis_google_demande_at')
     .order('created_at', { ascending:false });
+  // Migration pas encore exécutée : la liste s'affiche quand même,
+  // sans les demandes de lien Google.
+  if (error && /avis_google_demande_at/.test(error.message || '')) {
+    ({ data, error } = await sb.from('pharmacies').select(COLS).order('created_at', { ascending:false }));
+  }
 
   if (error) {
     document.getElementById('pharma-list').innerHTML = '<div class="empty-state">Erreur : '+error.message+'</div>';
@@ -547,7 +578,7 @@ function copierTexte(txt) {
 // ══ STATS ══
 function isConfigured(p){
   // Les templates EmailJS sont globaux — reste à vérifier email + lien avis
-  return !!p.email_contact && !!(p.reseaux?.google?.url);
+  return !!p.email_contact && !!(p.avis_google_url || p.reseaux?.google?.url);
 }
 function updateStats() {
   const total = allPharmacies.length;
@@ -567,6 +598,8 @@ function updateStats() {
     ca.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' €';
 
   document.getElementById('nav-count').textContent = total+' pharmacie'+(total>1?'s':'');
+  const nbDem = allPharmacies.filter(demandeEnAttente).length;
+  document.getElementById('nb-demandes').textContent = nbDem ? '(' + nbDem + ')' : '';
 }
 
 // ══ RENDER ══
@@ -600,7 +633,17 @@ function renderList(list) {
       : '—';
 
     const emailVal = p.email_contact || '';
-    const avisVal  = p.reseaux?.google?.url || '';
+    const avisVal    = p.avis_google_url || '';
+    const avisClient = p.reseaux?.google?.url || '';
+    // Mode par défaut : Place ID. Lien complet seulement si le lien
+    // enregistré n'est pas un lien « writereview » à Place ID.
+    const avisId     = placeIdDe(avisVal);
+    const avisMode   = (avisVal && !avisId) ? 'lien' : 'placeid';
+    const avisAffiche = avisMode === 'placeid' ? avisId : avisVal;
+    const demande    = demandeEnAttente(p);
+    const demandeLe  = demande
+      ? new Date(p.avis_google_demande_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
+      : '';
 
     return `
       <div class="pharma-card" id="card-${esc(p.slug)}">
@@ -612,6 +655,7 @@ function renderList(list) {
           </div>
           <div class="pharma-meta">
             ${badge}
+            ${demande ? `<span class="badge badge-demande">🔔 Lien Google demandé le ${demandeLe}</span>` : ''}
             ${accesBadge}
             ${canalBadge}
           </div>
@@ -627,14 +671,28 @@ function renderList(list) {
               <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-mail">Sauver</button>
             </div>
           </div>
-          <div class="config-field">
-            <label>Lien Google Avis ${avisVal ? '' : '<span style="color:#d97706">— à renseigner</span>'}</label>
+          <div class="config-field" id="avis-field-${esc(p.slug)}" data-mode="${avisMode}">
+            <div class="avis-head">
+              <label>Lien Google Avis ${avisVal
+                ? '<span style="color:#15803d">— prioritaire</span>'
+                : (avisClient ? '<span style="color:#64748b">— celui de la pharmacie s\'applique</span>'
+                              : '<span style="color:#d97706">— à renseigner</span>')}</label>
+              <div class="avis-mode" role="group" aria-label="Type de saisie">
+                <button type="button" class="${avisMode==='placeid'?'on':''}" data-action="avis-mode" data-mode="placeid" data-slug="${esc(p.slug)}">Place ID</button>
+                <button type="button" class="${avisMode==='lien'?'on':''}" data-action="avis-mode" data-mode="lien" data-slug="${esc(p.slug)}">Lien complet</button>
+              </div>
+            </div>
             <div class="config-row">
               <input class="config-input ${avisVal?'saved':''}" id="avis-${esc(p.slug)}"
-                value="${esc(avisVal)}" placeholder="https://g.page/r/..."
-                data-slug="${esc(p.slug)}" data-action="avis-input">
+                value="${esc(avisAffiche)}"
+                placeholder="${avisMode==='placeid' ? 'ChIJN1t_tDeuEmsRUsoyG83frY4' : 'https://…'}"
+                title="${avisClient ? 'Lien saisi par la pharmacie : ' + esc(avisClient) : ''}"
+                data-slug="${esc(p.slug)}" data-action="avis-input" autocomplete="off" spellcheck="false">
               <button class="btn-save-sm" data-slug="${esc(p.slug)}" data-action="save-avis">Sauver</button>
             </div>
+            <div class="avis-aide" id="avis-aide-${esc(p.slug)}">${avisMode==='placeid'
+              ? `Collez le Place ID seul · <a href="${PLACE_ID_FINDER}" target="_blank" rel="noopener">Trouver le Place ID</a>`
+              : 'Collez le lien complet, tel quel'}</div>
           </div>
         </div>
 
@@ -668,21 +726,77 @@ async function saveEmail(slug) {
   toast('Email de contact enregistré');
 }
 
+function changerModeAvis(slug, mode){
+  const field = document.getElementById('avis-field-'+slug);
+  const input = document.getElementById('avis-'+slug);
+  const aide  = document.getElementById('avis-aide-'+slug);
+  if (!field || !input || field.dataset.mode === mode) return;
+  const v = input.value.trim();
+  if (mode === 'lien') {
+    // Un Place ID déjà saisi devient le lien complet correspondant
+    if (PLACE_ID_RE.test(v)) input.value = GOOGLE_AVIS_BASE + encodeURIComponent(v);
+    input.placeholder = 'https://…';
+    aide.textContent = 'Collez le lien complet, tel quel';
+  } else {
+    // Un lien « writereview » redevient son Place ID ; un autre lien
+    // ne contient pas de Place ID récupérable : on vide le champ.
+    input.value = placeIdDe(v) || (PLACE_ID_RE.test(v) ? v : '');
+    input.placeholder = 'ChIJN1t_tDeuEmsRUsoyG83frY4';
+    aide.innerHTML = 'Collez le Place ID seul · <a href="'+PLACE_ID_FINDER+'" target="_blank" rel="noopener">Trouver le Place ID</a>';
+  }
+  field.dataset.mode = mode;
+  field.querySelectorAll('[data-action="avis-mode"]').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  input.classList.remove('saved');
+  input.focus();
+}
+
+// Le lien saisi ici va dans la colonne `avis_google_url`, que le back
+// office ne touche jamais : il ne peut plus être écrasé par une
+// sauvegarde du pharmacien, et il prime sur son propre lien.
+// Champ vidé = on rend la main à la pharmacie.
 async function saveAvis(slug) {
   const input = document.getElementById('avis-'+slug);
-  const url = input.value.trim();
+  const field = document.getElementById('avis-field-'+slug);
+  let mode = field?.dataset.mode || 'placeid';
+  let saisie = input.value.trim();
   const p = allPharmacies.find(x=>x.slug===slug);
-  const reseaux = JSON.parse(JSON.stringify(p?.reseaux || {}));
-  if (!reseaux.google) reseaux.google = { actif:true };
-  reseaux.google.url = url;
-  reseaux.google.actif = true;
 
-  const { error } = await sb.from('pharmacies').update({ reseaux }).eq('slug', slug);
+  // Lien collé en mode Place ID : on bascule plutôt que de le refuser
+  if (mode === 'placeid' && /^https?:\/\//i.test(saisie)) {
+    const id = placeIdDe(saisie);
+    if (id) saisie = id;
+    else { changerModeAvis(slug, 'lien'); input.value = saisie; mode = 'lien'; }
+  }
+
+  let url = '';
+  if (saisie) {
+    if (mode === 'placeid') {
+      if (!PLACE_ID_RE.test(saisie)) {
+        toast('Place ID invalide : lettres, chiffres, - et _ uniquement (10 caractères minimum)', true);
+        return;
+      }
+      url = GOOGLE_AVIS_BASE + encodeURIComponent(saisie);
+    } else {
+      if (!/^https?:\/\/.+\..+/i.test(saisie)) {
+        toast('Le lien doit commencer par https://', true);
+        return;
+      }
+      url = saisie;
+    }
+  }
+
+  // Poser un lien clôt la demande éventuelle du pharmacien
+  const maj = { avis_google_url: url || null };
+  if (url) maj.avis_google_demande_at = null;
+
+  const { error } = await sb.from('pharmacies').update(maj).eq('slug', slug);
   if (error) { toast('Erreur : '+error.message, true); return; }
-  input.classList.add('saved');
-  if (p) p.reseaux = reseaux;
+
+  if (p) { p.avis_google_url = url || null; if (url) p.avis_google_demande_at = null; }
   updateStats();
-  toast('Lien Google Avis enregistré');
+  filterList();
+  toast(url ? 'Lien Google Avis enregistré · prioritaire'
+            : 'Lien retiré · celui de la pharmacie reprend la main');
 }
 
 // ══ SUPPRESSION ══
@@ -748,6 +862,7 @@ function filterList() {
     if (!match) return false;
     if (currentFilter==='ok')      return isConfigured(p);
     if (currentFilter==='pending') return !isConfigured(p);
+    if (currentFilter==='google')  return demandeEnAttente(p);
     return true;
   });
   renderList(list);
@@ -771,7 +886,9 @@ function showDetail(slug) {
     ['Ville', p.ville || '—'],
     ['Template ordonnances', TPL_ORDONNANCES + ' (global)'],
     ['Template commandes',   TPL_COMMANDES + ' (global)'],
-    ['Google Avis', soc.google?.url||'—'],
+    ['Google Avis (admin, prioritaire)', p.avis_google_url || '—'],
+    ['Google Avis (pharmacie)', soc.google?.url || '—'],
+    ['Lien Google demandé le', p.avis_google_demande_at ? new Date(p.avis_google_demande_at).toLocaleString('fr-FR') : '—'],
     ['Instagram', soc.instagram?.url||'—'],
     ['Facebook', soc.facebook?.url||'—'],
     ['Site Web', soc.website?.url||'—'],
@@ -796,6 +913,11 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('filter-all').addEventListener('click', function(){ setFilter('all', this); });
   document.getElementById('filter-ok').addEventListener('click', function(){ setFilter('ok', this); });
   document.getElementById('filter-pending').addEventListener('click', function(){ setFilter('pending', this); });
+  document.getElementById('filter-google').addEventListener('click', function(){ setFilter('google', this); });
+
+  // Lien direct depuis Telegram : admin.html?q=<slug> pré-remplit la recherche
+  const qUrl = new URLSearchParams(location.search).get('q');
+  if (qUrl) document.getElementById('search').value = qUrl;
   document.getElementById('btn-close-detail').addEventListener('click', closeDetail);
 
   // Création de client + invitations
@@ -851,6 +973,7 @@ document.addEventListener('DOMContentLoaded', function(){
     switch(el.dataset.action) {
       case 'save-mail': saveEmail(slug);    break;
       case 'save-avis': saveAvis(slug);     break;
+      case 'avis-mode': changerModeAvis(slug, el.dataset.mode); break;
       case 'detail':    showDetail(slug);   break;
       case 'delete':    askDelete(slug);    break;
     }
