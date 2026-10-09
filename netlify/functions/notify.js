@@ -5,6 +5,7 @@
 //   action: 'ordonnance'  → la page publique transmet une ordonnance à l'officine
 //   action: 'commande'    → click & collect : email au pharmacien + SMS au client
 //   action: 'statut'      → la commande passe à « prête » : SMS au client
+//   action: 'demande_pro'         → formulaire de la page /pro : alerte Telegram
 //   action: 'demande_avis_google' → le pharmacien demande qu'on crée son
 //                                   lien Google Avis : alerte Telegram
 //
@@ -246,6 +247,52 @@ exports.handler = async (event) => {
       + `Demande :\n<code>${demande || '(non précisée)'}</code>`
     );
 
+    return json(200, { ok: true });
+  }
+
+  // ═══════════════════════════════════════════
+  //  DEMANDE DEPUIS LA PAGE /pro — alerte Telegram
+  //  Devis, rendez-vous ou question d'une officine ou d'un groupement.
+  //  Aucune pharmacie à retrouver en base : traité avant la lecture
+  //  commune. Pot de miel + quota par adresse IP contre le spam.
+  // ═══════════════════════════════════════════
+  if (body.action === 'demande_pro') {
+    if (body.site_web) return json(200, { ok: true });            // pot de miel rempli : robot
+
+    const ip = String(event.headers?.['x-nf-client-connection-ip']
+      || event.headers?.['x-forwarded-for'] || 'inconnue').split(',')[0].trim();
+    if (quotaDepasse('pro:' + ip, 5)) {
+      return json(429, { error: 'Trop de demandes envoyées. Réessayez demain ou appelez-nous.' });
+    }
+
+    const champ = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+    const d = {
+      profil:    champ(body.profil, 20),
+      nom:       champ(body.nom, 120),
+      structure: champ(body.structure, 160),
+      ville:     champ(body.ville, 80),
+      email:     champ(body.email, 160),
+      telephone: champ(body.telephone, 30),
+      objet:     champ(body.objet, 60),
+      quantite:  champ(body.quantite, 20),
+      message:   champ(body.message, 2000),
+    };
+    if (!d.nom || !d.structure) return json(400, { error: 'Indiquez votre nom et celui de votre pharmacie ou groupement.' });
+    if (!d.email && !d.telephone) return json(400, { error: 'Indiquez un email ou un téléphone pour que nous puissions vous répondre.' });
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return json(400, { error: 'Adresse email invalide.' });
+
+    const titre = d.profil === 'groupement' ? '🏢 DEMANDE GROUPEMENT' : '📩 DEMANDE OFFICINE';
+    await alerte(
+      `${titre} — page /pro\n\n`
+      + `Objet : <b>${esc(d.objet || '—')}</b>\n`
+      + `Nom : <b>${esc(d.nom)}</b>\n`
+      + `${d.profil === 'groupement' ? 'Groupement' : 'Pharmacie'} : <b>${esc(d.structure)}</b>\n`
+      + `Ville : ${esc(d.ville || '—')}\n`
+      + `Email : ${esc(d.email || '—')}\n`
+      + `Téléphone : ${esc(d.telephone || '—')}\n`
+      + (d.quantite ? `Plaques envisagées : ${esc(d.quantite)}\n` : '')
+      + (d.message ? `\nMessage :\n<code>${esc(d.message)}</code>` : '')
+    );
     return json(200, { ok: true });
   }
 
