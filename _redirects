@@ -1,0 +1,22 @@
+# SwiftyPharm : règles Netlify
+# L'ordre compte : la première règle qui correspond s'applique.
+# Un fichier qui existe réellement (ex. /login.html, /assets/...) est
+# toujours servi tel quel, avant ces règles.
+
+# 1. Fonctions serveur : /api/notify, /api/invitations, /api/delete-account...
+/api/*          /.netlify/functions/:splat   200
+
+# 2. Pages du site, accessibles sans .html
+/pro            /pro.html          200
+/login          /login.html        200
+/signup         /signup.html       200
+/backoffice     /backoffice.html   200
+/admin          /admin.html        200
+/promos         /promos.html       200
+/privacy        /privacy.html      200
+/terms          /terms.html        200
+/dpa            /dpa.html          200
+
+# 3. Page de chaque pharmacie : swiftypharm.fr/<slug>
+#    Toujours en dernier : elle capte toute adresse à un seul niveau.
+/:slug          /page.html         200
