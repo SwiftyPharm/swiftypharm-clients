@@ -267,6 +267,11 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
 .footer-copy{font-size:12px;color:rgba(255,255,255,.25);}
 
 /* ── MOBILE ── */
+/* Menu : liens sur une ligne, masqués quand la place manque */
+.nav-links a{white-space:nowrap;}
+@media(max-width:1060px){.nav-links{gap:22px;margin-left:32px;}}
+@media(max-width:940px){.nav-links{display:none;}}
+
 @media(max-width:900px){
   .features-split{grid-template-columns:1fr;gap:28px;}
   .features-stage{max-width:300px;margin:0 auto;width:100%;}
@@ -359,6 +364,7 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
     <a href="#features">Fonctionnalités</a>
     <a href="#how">Comment ça marche</a>
     <a href="#pricing">Tarifs</a>
+    <a href="/pro">Offre pro</a>
   </div>
   <div class="nav-cta">
     <a href="login.html" class="btn-nav-ghost">Se connecter</a>
@@ -604,7 +610,7 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
         <div class="faq-q">La plaque NFC est-elle obligatoire pour utiliser SwiftyPharm ?</div>
         <div class="faq-chevron">▾</div>
       </div>
-      <div class="faq-body"><p>Oui. Même si votre page fonctionne indépendamment de la plaque, elle est un accessoire optionnel qui facilite l'accès pour vos patients au comptoir, via NFC (sans contact) ou QR code. Elle offre également un accés instantané Wi-Fi.</p></div>
+      <div class="faq-body"><p>Non. Votre page fonctionne indépendamment de la plaque : c'est un accessoire optionnel qui facilite l'accès pour vos patients au comptoir, via NFC (sans contact) ou QR code. La plaque personnalisée offre également un accès instantané au Wi-Fi. <a href="/pro#supports" style="color:var(--cyan)">Voir les plaques et stickers</a></p></div>
     </div>
 
   </div>
@@ -626,6 +632,7 @@ footer{padding:40px 40px 32px;border-top:1px solid var(--border);display:flex;al
   <div class="footer-links">
     <a href="#features">Fonctionnalités</a>
     <a href="#pricing">Tarifs</a>
+    <a href="/pro">Offre pro</a>
     <a href="login.html">Connexion</a>
     <a href="privacy.html">Confidentialité</a>
     <a href="terms.html">CGU</a>
