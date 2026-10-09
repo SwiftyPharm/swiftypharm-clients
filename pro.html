@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SwiftyPharm Pro · Solutions pour officines et groupements</title>
+<meta name="description" content="Page mobile de pharmacie, plaques NFC et stickers de sol : envoi d'ordonnance sans stockage, avis Google, réseaux sociaux. Fonctionnement, RGPD, tarifs et offres groupements.">
+<link rel="canonical" href="https://swiftypharm.fr/pro">
+<meta property="og:title" content="SwiftyPharm Pro · Solutions pour officines et groupements">
+<meta property="og:description" content="Vos patients envoient leur ordonnance avant d'arriver au comptoir. Ordonnances transmises, jamais stockées.">
+<meta property="og:image" content="https://swiftypharm.fr/assets/pro/plaque.jpg">
+<meta property="og:url" content="https://swiftypharm.fr/pro">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nuit:#000046;
+  --action:#0012ff;
+  --action-sombre:#000ec4;
+  --cyan:#1cb5e0;
+  --texte:#4a5068;
+  --doux:#6b7189;
+  --brume:#f2f3f7;
+  --trait:#dfe2ea;
+  --vert:#23a565;
+  --blanc:#ffffff;
+  --rayon:20px;
+  --largeur:1120px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;font-size:17px;line-height:1.6;color:var(--texte);background:var(--blanc);-webkit-font-smoothing:antialiased}
+img,video,svg{display:block;max-width:100%}
+img,video{height:auto}
+a{color:var(--action);text-decoration-thickness:1px;text-underline-offset:3px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:3px;border-radius:6px}
+h1,h2,h3{color:var(--nuit);line-height:1.12;letter-spacing:-.022em}
+h1{font-size:clamp(34px,5.4vw,56px);font-weight:800}
+h2{font-size:clamp(28px,3.6vw,40px);font-weight:800;max-width:22ch}
+h3{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+p{max-width:68ch}
+.conteneur{max-width:var(--largeur);margin:0 auto;padding:0 24px}
+.section{padding:96px 0}
+.section--brume{background:var(--brume)}
+.chapo{font-size:19px;line-height:1.6;margin-top:18px;max-width:62ch}
+.petit{font-size:14px;color:var(--doux)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ── Boutons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 26px;border-radius:999px;font-weight:700;font-size:16px;text-decoration:none;border:2px solid transparent;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.btn--plein{background:var(--action);color:#fff}
+.btn--plein:hover{background:var(--action-sombre)}
+.btn--contour{border-color:var(--nuit);color:var(--nuit);background:transparent}
+.btn--contour:hover{background:var(--nuit);color:#fff}
+.btn--clair{background:#fff;color:var(--nuit)}
+.btn--clair:hover{background:#e8ebff}
+
+/* ── En-tête ── */
+.entete{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--trait)}
+.entete .conteneur{display:flex;align-items:center;gap:28px;height:68px}
+.marque{font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--nuit);text-decoration:none;white-space:nowrap}
+.marque b{color:var(--action);font-weight:800}
+.marque span{font-weight:600;color:var(--doux);font-size:14px;margin-left:8px;letter-spacing:0}
+.nav{display:flex;gap:22px;margin-left:auto}
+.nav a{color:var(--nuit);text-decoration:none;font-size:14.5px;font-weight:600}
+.nav a:hover{color:var(--action)}
+.entete .btn{min-height:42px;padding:0 20px;font-size:14.5px;white-space:nowrap;flex-shrink:0}
+@media (max-width:1020px){.nav{display:none}.entete .btn{margin-left:auto}}
+.txt-court{display:none}
+@media (max-width:420px){.marque span{display:none}}
+@media (max-width:370px){.txt-long{display:none}.txt-court{display:inline}}
+
+/* ── Accroche ── */
+.accroche{padding:72px 0 64px}
+.accroche .conteneur{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+.accroche h1{max-width:15ch}
+.accroche .chapo{font-size:19.5px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.vitrine{justify-self:end;width:min(100%,440px)}
+.vitrine-grille{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.vitrine-grille li{display:grid;justify-items:center;gap:4px}
+.vitrine-grille img{width:100%;filter:drop-shadow(0 12px 16px rgba(0,0,70,.16)) drop-shadow(0 2px 4px rgba(0,0,70,.10))}
+.vitrine-grille span{font-size:12.5px;font-weight:600;color:var(--doux)}
+.vitrine figcaption{margin-top:16px;text-align:center;font-size:14px;color:var(--doux)}
+.essentiels{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:36px;list-style:none}
+.essentiels li{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--nuit)}
+.essentiels svg{flex-shrink:0;color:var(--vert)}
+.confiance{border-top:1px solid var(--trait);padding:26px 0}
+.confiance p{max-width:none;font-size:15.5px}
+.confiance strong{color:var(--nuit)}
+@media (max-width:860px){
+  .accroche{padding:44px 0 48px}
+  .accroche .conteneur{grid-template-columns:1fr;gap:40px}
+  .vitrine{justify-self:center;width:min(100%,420px)}
+  .vitrine-grille{gap:10px 16px}
+}
+
+/* ── Fonctionnalités ── */
+.fonctions{display:grid;grid-template-columns:340px 1fr;gap:72px;margin-top:56px;align-items:start}
+.telephone{position:sticky;top:110px;width:300px;border-radius:44px;background:var(--nuit);padding:12px;box-shadow:0 30px 60px -28px rgba(0,0,70,.5)}
+.ecran{border-radius:34px;overflow:hidden;background:#d2d2d2;height:600px;position:relative}
+.ecran-banniere{height:120px;background:linear-gradient(135deg,#0b2f6b,#1cb5e0)}
+.ecran-logo{width:76px;height:76px;border-radius:50%;background:#fff;border:4px solid #fff;box-shadow:0 0 0 3px var(--cyan);margin:-40px auto 0;display:grid;place-items:center;position:relative}
+.ecran-logo svg{width:40px;height:40px}
+.ecran-nom{text-align:center;font-weight:800;color:var(--nuit);font-size:16px;margin-top:10px}
+.ecran-sous{text-align:center;font-size:11.5px;color:#555;margin-top:2px}
+.ecran-icones{display:flex;justify-content:center;gap:14px;margin:14px 0 12px}
+.ecran-icones span{width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--nuit)}
+.ecran-cartes{display:grid;gap:9px;padding:0 14px}
+.ecran-carte{background:#fff;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700;color:var(--nuit)}
+.ecran-carte i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-style:normal;color:#fff;flex-shrink:0}
+.ecran-carte--ordo{background:var(--nuit);color:#fff}
+.liste-fonctions{list-style:none;display:grid;gap:0}
+.liste-fonctions li{display:grid;grid-template-columns:44px 1fr;gap:18px;padding:26px 0;border-top:1px solid var(--trait)}
+.liste-fonctions li:first-child{border-top:none;padding-top:0}
+.pictos{width:44px;height:44px;border-radius:12px;background:#e9ecff;color:var(--action);display:grid;place-items:center}
+.liste-fonctions p{margin-top:6px}
+.exemples{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+@media (max-width:900px){
+  .fonctions{grid-template-columns:1fr;gap:48px}
+  .telephone{position:relative;top:0;margin:0 auto;width:270px}
+  .ecran{height:540px}
+}
+
+/* ── Données de santé (bande signature) ── */
+.sante{background:var(--nuit);color:#c9cce6;padding:104px 0}
+.sante h2{color:#fff;max-width:20ch}
+.sante h3{color:#fff}
+.sante .chapo{color:#d6d9f0}
+.sante strong{color:#fff}
+.parcours-zone{position:relative;margin-top:64px}
+.parcours{position:relative;list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:20px;counter-reset:etape}
+.parcours::before{content:"";position:absolute;left:24px;right:24px;top:23px;height:2px;background:rgba(28,181,224,.35)}
+.parcours li{position:relative;counter-increment:etape}
+.parcours li::before{content:counter(etape);display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--nuit);border:2px solid var(--cyan);color:#fff;font-weight:800;font-size:17px;position:relative;z-index:1}
+.parcours h3{font-size:16.5px;margin-top:18px}
+.parcours p{font-size:14.5px;line-height:1.55;margin-top:6px;color:#b9bddc}
+.document{position:absolute;top:9px;left:12px;width:24px;height:30px;z-index:2;opacity:0;pointer-events:none}
+.document svg{width:24px;height:30px}
+.parcours-zone.anime .document{animation:transit 4.2s cubic-bezier(.45,.05,.35,1) .3s forwards}
+@keyframes transit{
+  0%{opacity:0;transform:translateX(0)}
+  8%{opacity:1}
+  85%{opacity:1;transform:translateX(var(--fin,800px))}
+  100%{opacity:0;transform:translateX(var(--fin,800px))}
+}
+.rien{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;margin-top:64px;padding:30px 32px;border:1px solid rgba(255,255,255,.16);border-radius:var(--rayon)}
+.rien-titre{color:#fff;font-weight:800;font-size:22px;line-height:1.25;max-width:15ch}
+.rien ul{list-style:none;display:flex;flex-wrap:wrap;gap:12px}
+.rien li{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.07);color:#fff;font-weight:600;font-size:15px}
+.rien li svg{color:#ff7b8a}
+.deux-colonnes{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:64px}
+.deux-colonnes p+p{margin-top:14px}
+.garanties{list-style:none;display:grid;gap:18px;margin-top:16px}
+.garanties li{padding-left:28px;position:relative}
+.garanties li::before{content:"";position:absolute;left:0;top:9px;width:12px;height:7px;border-left:2px solid var(--cyan);border-bottom:2px solid var(--cyan);transform:rotate(-45deg)}
+.garanties b{color:#fff}
+.documentation{margin-top:56px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding-top:32px;border-top:1px solid rgba(255,255,255,.16)}
+.documentation p{color:#d6d9f0}
+@media (max-width:900px){
+  .sante{padding:72px 0}
+  .parcours-zone{margin-top:44px}
+  .parcours{grid-template-columns:1fr;gap:0}
+  .parcours::before{left:23px;right:auto;top:24px;bottom:24px;width:2px;height:auto}
+  .parcours li{display:grid;grid-template-columns:48px 1fr;column-gap:18px;padding-bottom:28px}
+  .parcours li::before{grid-row:span 2}
+  .parcours h3{margin-top:10px}
+  .document{display:none}
+  .rien{grid-template-columns:1fr;gap:18px;padding:24px}
+  .deux-colonnes{grid-template-columns:1fr;gap:40px;margin-top:48px}
+}
+
+/* ── Supports ── */
+.support{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:64px}
+.support + .support{margin-top:88px}
+.support--inverse .support-media{order:2}
+.support > *{min-width:0}
+.support-media{background:var(--brume);border-radius:28px;padding:40px;display:grid;place-items:center}
+.support-media img{width:min(100%,380px);border-radius:22px;box-shadow:0 22px 44px -22px rgba(0,0,70,.35)}
+.support-media video{width:min(100%,300px);border-radius:22px;box-shadow:0 22px 44px -22px rgba(0,0,70,.35);background:#ccc}
+.support p{margin-top:12px}
+.comparatif{width:100%;border-collapse:collapse;margin-top:26px;font-size:15.5px}
+.comparatif th,.comparatif td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--trait);vertical-align:middle}
+.comparatif thead th{font-size:14px;color:var(--doux);font-weight:600}
+.comparatif thead th:not(:first-child),.comparatif td{text-align:center;width:28%}
+.comparatif tbody th{font-weight:600;color:var(--nuit)}
+.comparatif .prix td{font-weight:800;color:var(--nuit);font-size:18px}
+.oui{color:var(--vert);display:inline-flex}
+.non{color:#b5b9c8;display:inline-flex}
+.fiche{list-style:none;margin-top:22px;display:grid;gap:10px}
+.fiche li{display:flex;justify-content:space-between;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--trait);font-size:15.5px}
+.fiche li span:last-child{font-weight:700;color:var(--nuit);text-align:right}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;margin-top:96px;padding-top:56px;border-top:1px solid var(--trait)}
+.trio ul{list-style:none;margin-top:14px;display:grid;gap:12px}
+.trio li{font-size:15.5px;line-height:1.55;padding-left:18px;position:relative}
+.trio li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--cyan)}
+.trio li b{color:var(--nuit)}
+@media (max-width:900px){
+  .support{grid-template-columns:1fr;gap:32px}
+  .support--inverse .support-media{order:0}
+  .support-media{padding:28px}
+  .trio{grid-template-columns:1fr;gap:40px;margin-top:64px}
+}
+
+/* ── Publics ── */
+.publics{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:48px;border-top:2px solid var(--nuit)}
+.publics div{padding:24px 24px 0 0}
+.publics div + div{padding-left:24px;border-left:1px solid var(--trait)}
+.publics p{font-size:15.5px;margin-top:8px}
+@media (max-width:900px){
+  .publics{grid-template-columns:1fr 1fr;row-gap:28px}
+  .publics div:nth-child(3){padding-left:0;border-left:none}
+}
+@media (max-width:560px){
+  .publics{grid-template-columns:1fr}
+  .publics div + div{padding-left:0;border-left:none;border-top:1px solid var(--trait)}
+}
+
+/* ── Comptoir : avant / après ── */
+.avant-apres{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
+.colonne{border-radius:var(--rayon);padding:34px}
+.colonne--sans{background:#fff;border:1px solid var(--trait)}
+.colonne--avec{background:#fff;border:2px solid var(--action);box-shadow:0 24px 50px -30px rgba(0,18,255,.45)}
+.colonne h3{display:flex;align-items:center;gap:10px}
+.colonne ol{list-style:none;margin-top:22px;display:grid;gap:16px}
+.colonne li{display:grid;grid-template-columns:26px 1fr;gap:12px;font-size:15.5px;line-height:1.55}
+.colonne li svg{margin-top:2px}
+.colonne--sans li svg{color:#b5b9c8}
+.colonne--avec li svg{color:var(--action)}
+.resultat{margin-top:32px;font-size:18px;color:var(--nuit);font-weight:600;max-width:70ch}
+.atouts{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:72px}
+.atouts p{margin-top:10px}
+@media (max-width:860px){
+  .avant-apres,.atouts{grid-template-columns:1fr}
+  .colonne{padding:26px}
+}
+
+/* ── Tarifs ── */
+.tarifs{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;margin-top:56px;align-items:start}
+.grille{width:100%;border-collapse:collapse}
+.grille caption{text-align:left;font-weight:700;color:var(--nuit);font-size:15px;padding-bottom:10px}
+.grille th,.grille td{padding:18px 0;border-bottom:1px solid var(--trait);text-align:left;vertical-align:top}
+.grille th{font-weight:600;color:var(--nuit);font-size:16.5px}
+.grille th small{display:block;font-weight:400;color:var(--doux);font-size:14px;margin-top:3px}
+.grille td{text-align:right;font-weight:800;color:var(--nuit);font-size:21px;white-space:nowrap;padding-left:18px}
+.grille td small{display:block;font-weight:500;color:var(--doux);font-size:13.5px}
+.grille tr:first-child th,.grille tr:first-child td{border-top:2px solid var(--nuit)}
+.conditions{background:#fff;border-radius:var(--rayon);padding:30px}
+.conditions dl{display:grid;gap:18px}
+.conditions dt{font-weight:700;color:var(--nuit);font-size:15.5px}
+.conditions dd{font-size:15px;margin-top:3px}
+@media (max-width:860px){.tarifs{grid-template-columns:1fr;gap:36px}}
+
+/* ── Offres ── */
+.offres{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
+.offre{border-radius:var(--rayon);padding:34px;background:#fff;border:1px solid var(--trait)}
+.offre p{margin-top:10px;font-size:16px}
+.offre .montant{font-size:44px;font-weight:800;color:var(--action);letter-spacing:-.03em;line-height:1;margin-bottom:14px}
+.offre .montant small{font-size:16px;font-weight:700;color:var(--nuit);letter-spacing:0;margin-left:6px}
+.offre ul{list-style:none;margin-top:16px;display:grid;gap:8px;font-size:15px}
+.offre ul li{padding-left:22px;position:relative}
+.offre ul li::before{content:"";position:absolute;left:2px;top:8px;width:10px;height:6px;border-left:2px solid var(--vert);border-bottom:2px solid var(--vert);transform:rotate(-45deg)}
+.offre--groupement{grid-column:1/-1;background:var(--nuit);border:none;color:#c9cce6;display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:center;padding:44px}
+.offre--groupement h3{color:#fff;font-size:26px}
+.offre--groupement p{color:#d6d9f0}
+.offre--groupement ul li{color:#fff}
+.offre--groupement ul li::before{border-color:var(--cyan)}
+.offre--groupement .actions{margin-top:0;flex-direction:column;align-items:stretch}
+@media (max-width:860px){
+  .offres{grid-template-columns:1fr}
+  .offre--groupement{grid-template-columns:1fr;gap:28px;padding:30px}
+}
+
+/* ── Commander ── */
+.etapes{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:56px;counter-reset:pas}
+.etapes li{counter-increment:pas;border-top:2px solid var(--nuit);padding-top:22px}
+.etapes li::before{content:counter(pas);display:block;font-size:48px;font-weight:800;color:var(--action);line-height:1;letter-spacing:-.03em;margin-bottom:14px}
+.etapes p{font-size:15.5px;margin-top:8px}
+.etapes ul{list-style:none;margin-top:12px;display:grid;gap:7px;font-size:15px}
+.etapes ul li{border:none;padding:0 0 0 16px;position:relative;counter-increment:none}
+.etapes ul li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin:0;font-size:0}
+@media (max-width:860px){.etapes{grid-template-columns:1fr;gap:36px}}
+
+/* ── FAQ ── */
+.faq{max-width:820px;margin-top:48px;border-top:2px solid var(--nuit)}
+.faq details{border-bottom:1px solid var(--trait)}
+.faq summary{list-style:none;cursor:pointer;padding:22px 44px 22px 0;font-weight:700;color:var(--nuit);font-size:17px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:8px;top:50%;width:11px;height:11px;border-right:2px solid var(--nuit);border-bottom:2px solid var(--nuit);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq details p{padding:0 0 22px;font-size:16px}
+
+/* ── Contact ── */
+.contact{display:grid;grid-template-columns:1.3fr .7fr;gap:56px;margin-top:48px;align-items:start}
+.formulaire{background:#fff;border:1px solid var(--trait);border-radius:var(--rayon);padding:34px;display:grid;grid-template-columns:1fr 1fr;gap:18px 16px}
+.champ{display:grid;gap:7px}
+.champ--large{grid-column:1/-1}
+.champ label,.champ legend{font-size:14px;font-weight:700;color:var(--nuit)}
+.champ label small{font-weight:500;color:var(--doux)}
+.champ input,.champ select,.champ textarea{width:100%;border:1.5px solid var(--trait);border-radius:12px;padding:12px 14px;font-size:16px;background:#fff;color:var(--nuit);transition:border-color .15s}
+.champ textarea{min-height:120px;resize:vertical}
+.champ input:focus,.champ select:focus,.champ textarea:focus{outline:none;border-color:var(--action);box-shadow:0 0 0 3px rgba(0,18,255,.14)}
+.bascule{display:flex;gap:6px;background:var(--brume);border-radius:999px;padding:5px;border:none}
+.bascule label{flex:1;position:relative;cursor:pointer}
+.bascule input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.bascule span{display:block;text-align:center;white-space:nowrap;padding:10px 8px;border-radius:999px;font-weight:700;font-size:15px;color:var(--doux);transition:background .15s,color .15s}
+.bascule input:checked + span{background:#fff;color:var(--nuit);box-shadow:0 1px 4px rgba(0,0,70,.15)}
+.bascule input:focus-visible + span{outline:3px solid var(--cyan);outline-offset:2px}
+.piege{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.envoi{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:6px}
+.envoi .petit{flex:1;min-width:220px}
+.message-form{grid-column:1/-1;border-radius:12px;padding:14px 16px;font-weight:600;font-size:15px;display:none}
+.message-form.erreur{display:block;background:#fff1f2;color:#b42318}
+.formulaire.envoye{display:block;text-align:left;padding:44px}
+.merci h3{font-size:24px}
+.merci p{margin-top:10px}
+.contact--seul{grid-template-columns:minmax(0,760px)}
+.direct h3{font-size:20px}
+.direct p{margin-top:10px;font-size:16px}
+.direct .actions{flex-direction:column;align-items:stretch;margin-top:22px}
+@media (max-width:860px){
+  .contact{grid-template-columns:1fr;gap:40px}
+  .formulaire{grid-template-columns:1fr;padding:24px}
+}
+
+/* ── Pied de page ── */
+.pied{background:var(--nuit);color:#b9bddc;padding:48px 0;font-size:14.5px}
+.pied .conteneur{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;align-items:center}
+.pied a{color:#fff;text-decoration:none;font-weight:600}
+.pied a:hover{text-decoration:underline}
+.pied nav{display:flex;flex-wrap:wrap;gap:22px}
+.pied .marque{color:#fff}
+.pied .marque b{color:var(--cyan)}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .comparatif{font-size:14px}
+  .comparatif th,.comparatif td{padding:10px 5px}
+  .comparatif thead th:not(:first-child),.comparatif td{width:30%}
+  .section{padding:68px 0}
+  .conteneur{padding:0 16px}
+  .chapo{font-size:17px}
+  .btn{width:100%}
+  .actions .btn{flex:1 1 100%}
+  .entete .btn{width:auto;padding:0 16px}
+  .entete .conteneur{gap:12px}
+  .bascule span{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .parcours-zone.anime .document{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="entete">
+  <div class="conteneur">
+    <a class="marque" href="/" aria-label="SwiftyPharm, accueil"><b>Swifty</b>Pharm<span>Pro</span></a>
+    <nav class="nav" aria-label="Sections de la page">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#donnees-de-sante">Données de santé</a>
+      <a href="#supports">Supports</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#groupements">Groupements</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <a class="btn btn--plein" href="#contact"><span class="txt-long">Demander un devis</span><span class="txt-court" aria-hidden="true">Devis</span></a>
+  </div>
+</header>
+
+<main>
+
+<!-- ══ ACCROCHE ══ -->
+<section class="accroche">
+  <div class="conteneur">
+    <div>
+      <h1>Vos patients envoient leur ordonnance avant d'arriver au comptoir.</h1>
+      <p class="chapo">SwiftyPharm donne à votre pharmacie une page mobile qui s'ouvre d'un geste, depuis une plaque NFC au comptoir ou un sticker dans la file d'attente. Envoi d'ordonnance, avis Google, réseaux sociaux, horaires : tout y est, sans application et sans abonnement.</p>
+      <div class="actions">
+        <a class="btn btn--plein" href="#contact">Demander un devis</a>
+        <a class="btn btn--contour" href="#tarifs">Voir les tarifs</a>
+      </div>
+      <ul class="essentiels">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Ordonnances transmises, jamais stockées</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Paiement unique, accès à vie</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Livraison offerte</li>
+      </ul>
+    </div>
+    <figure class="vitrine">
+      <ul class="vitrine-grille">
+        <li><img src="/assets/pro/plaque-perso-quatrieme.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Quatrième, à Marseille, avec QR code Wi-Fi" fetchpriority="high"><span>Personnalisée</span></li>
+        <li><img src="/assets/pro/plaque-perso-elsie.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Val d'Yerres, à Quincy-sous-Sénart"><span>Personnalisée</span></li>
+        <li><img src="/assets/pro/plaque-perso-verte.webp" width="560" height="560" alt="Plaque personnalisée verte de la Pharmacie Intercommunale, à Chevilly-Larue"><span>Personnalisée</span></li>
+        <li><img src="/assets/pro/plaque.webp" width="900" height="900" alt="Plaque standard : « Envoyez votre ordonnance », approchez votre téléphone ou scannez le QR code"><span>Standard</span></li>
+        <li><img src="/assets/pro/sticker-bleu.webp" width="560" height="560" alt="Sticker de sol bleu : « Gagnez du temps ! », QR code pour envoyer son ordonnance"><span>Sticker de sol</span></li>
+        <li><img src="/assets/pro/sticker-orange.webp" width="560" height="560" alt="Sticker de sol orange : « Gagnez du temps ! », QR code pour envoyer son ordonnance"><span>Sticker de sol</span></li>
+      </ul>
+      <figcaption>Plaques 12 × 12 cm, NFC et QR code. Stickers de sol 60 × 60 cm.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<div class="confiance">
+  <div class="conteneur">
+    <p><strong>SwiftyPharm est la branche officine de Swiftup</strong>, qui conçoit des solutions NFC et des outils numériques dédiés à la collecte d'avis Google pour les commerces de proximité. Swiftup équipe déjà plusieurs magasins Carrefour Market, G20 et d'autres enseignes, partout en France.</p>
+  </div>
+</div>
+
+<!-- ══ FONCTIONNALITÉS ══ -->
+<section class="section section--brume" id="fonctionnalites">
+  <div class="conteneur">
+    <h2>Ce que vos patients trouvent sur votre page</h2>
+    <p class="chapo">Chaque pharmacie dispose d'une page mobile à son nom, et d'un espace de gestion pour la tenir à jour en toute autonomie.</p>
+
+    <div class="fonctions">
+      <div class="telephone" aria-hidden="true">
+        <div class="ecran">
+          <div class="ecran-banniere"></div>
+          <div class="ecran-logo"><svg viewBox="0 0 40 40"><rect x="15" y="6" width="10" height="28" rx="2" fill="#2fb36d"/><rect x="6" y="15" width="28" height="10" rx="2" fill="#2fb36d"/></svg></div>
+          <div class="ecran-nom">Votre pharmacie</div>
+          <div class="ecran-sous">Ouverte aujourd'hui · 8h30 – 20h00</div>
+          <div class="ecran-icones">
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span>
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          </div>
+          <div class="ecran-cartes">
+            <div class="ecran-carte ecran-carte--ordo"><i style="background:#1cb5e0">⇪</i>Envoyer mon ordonnance</div>
+            <div class="ecran-carte"><i style="background:#fbbc04">★</i>Laisser un avis Google</div>
+            <div class="ecran-carte"><i style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)">◎</i>Instagram</div>
+            <div class="ecran-carte"><i style="background:#0596de">D</i>Prendre rendez-vous</div>
+            <div class="ecran-carte"><i style="background:#e11d48">%</i>Promo du mois</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <ul class="liste-fonctions">
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 17v-6M9 14l3-3 3 3"/></svg></span>
+            <div><h3>Envoi d'ordonnance</h3><p>Le patient l'envoie depuis chez lui ou depuis la file d'attente, et votre équipe la prépare avant son arrivée. Il peut joindre au même envoi un document complémentaire, comme l'attestation de mutuelle. Vous la recevez par email, en pièce jointe.</p></div>
+          </li>
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg></span>
+            <div><h3>Avis Google</h3><p>Juste après l'envoi de l'ordonnance, l'écran de confirmation invite le patient à laisser un avis et ouvre directement la fenêtre de notation Google de votre officine.</p></div>
+          </li>
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></span>
+            <div><h3>Réseaux sociaux et liens</h3><p>Instagram, Facebook, TikTok, Doctolib, votre site internet, ainsi que des liens personnalisés, avec le nom et l'icône de votre choix.</p></div>
+          </li>
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div><h3>Informations pratiques</h3><p>Appel en un geste, itinéraire, horaires avec le jour en cours mis en avant.</p></div>
+          </li>
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>
+            <div><h3>Promotion du mois et click &amp; collect</h3><p>Mettez en avant vos offres du moment ; vos patients réservent en ligne et viennent retirer leurs produits.</p></div>
+          </li>
+          <li>
+            <span class="pictos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span>
+            <div><h3>Autonomie et accompagnement</h3><p>Vous modifiez vous-même vos horaires, votre logo, vos liens et vos promotions depuis votre espace de gestion, sans intervention technique. Une configuration assistée par l'équipe Swiftup est également possible : nous pouvons paramétrer la page pour votre compte. Et à tout moment, un chat intégré à l'espace de gestion vous permet de demander de l'aide en un clic, avec une réponse sous 24 h maximum.</p></div>
+          </li>
+        </ul>
+        <div class="exemples" id="exemples" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DONNÉES DE SANTÉ ══ -->
+<section class="sante" id="donnees-de-sante">
+  <div class="conteneur">
+    <h2>Les ordonnances sont transmises, jamais stockées.</h2>
+    <p class="chapo">Une ordonnance est une donnée de santé au sens de l'article 9 du RGPD, et son hébergement impose une certification HDS (Hébergeur de Données de Santé). Nous avons donc fait un choix d'architecture radical : <strong>SwiftyPharm n'héberge aucune ordonnance.</strong> Le document transite le temps de l'envoi, quelques secondes, puis il est remis à l'officine.</p>
+
+    <div class="parcours-zone" id="parcours">
+    <div class="document" aria-hidden="true"><svg viewBox="0 0 24 30"><path d="M3 1h12l6 6v20a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z" fill="#fff"/><path d="M15 1v6h6" fill="#c9e9f5"/><path d="M5 13h12M5 17h12M5 21h8" stroke="#000046" stroke-width="1.6"/></svg></div>
+    <ol class="parcours">
+      <li><h3>Le patient photographie son ordonnance</h3><p>Depuis la page de la pharmacie, ou joint un PDF. Seuls son nom et son téléphone sont demandés ; l'email et le message sont facultatifs.</p></li>
+      <li><h3>La photo est compressée sur son téléphone</h3><p>Directement dans le navigateur, avant tout envoi.</p></li>
+      <li><h3>Elle est transmise par connexion chiffrée</h3><p>En HTTPS, à notre fonction d'envoi. Celle-ci contrôle le format et la taille du fichier, le traite en mémoire et ne l'écrit jamais sur disque.</p></li>
+      <li><h3>Brevo l'achemine à l'officine</h3><p>Le document est aussitôt confié à Brevo, prestataire français d'envoi d'emails dont les données sont hébergées dans l'Union européenne.</p></li>
+      <li><h3>L'officine la reçoit en pièce jointe</h3><p>Exactement comme si le patient la lui avait envoyée lui-même. Elle en reste seule dépositaire, dans ses outils habituels.</p></li>
+    </ol>
+    </div>
+
+    <div class="rien">
+      <p class="rien-titre">Une fois l'envoi terminé, il n'en reste aucune copie chez nous.</p>
+      <ul>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>Aucune base de données d'ordonnances</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>Aucun stockage de fichiers</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>Aucune trace dans nos journaux</li>
+      </ul>
+    </div>
+
+    <div class="deux-colonnes">
+      <div>
+        <h3>Rien à pirater, rien à divulguer, rien à purger</h3>
+        <p>Il n'existe pas de base d'ordonnances SwiftyPharm. Ce qui n'est pas conservé ne peut ni fuiter, ni être consulté par un tiers, ni devoir être effacé plus tard.</p>
+        <p>L'officine reste responsable du traitement et Swiftup agit en tant que sous-traitant, dans le cadre d'un accord de traitement des données (article 28 du RGPD) accepté à l'inscription.</p>
+      </div>
+      <div>
+        <h3>Les garanties complémentaires</h3>
+        <ul class="garanties">
+          <li><b>Aucun détournement possible.</b> Le navigateur du patient ne transmet jamais l'adresse de destination : nos serveurs la retrouvent à partir de la fiche de l'officine, si bien que le formulaire ne peut pas servir à envoyer des documents ailleurs.</li>
+          <li><b>Protection contre les abus.</b> Le nombre d'envois est plafonné pour chaque officine.</li>
+          <li><b>Minimisation des données.</b> Nous ne demandons que le strict nécessaire, nom et téléphone. Le patient n'a ni compte à créer ni application à installer.</li>
+          <li><b>Registre des traitements.</b> Nous tenons un registre des traitements à jour.</li>
+          <li><b>Droit à l'effacement.</b> Une officine peut demander à tout moment la suppression complète de son compte et de ses données.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="documentation">
+      <p>L'accord de traitement, le registre et le schéma des flux sont à la disposition de votre délégué à la protection des données.</p>
+      <a class="btn btn--clair" href="#contact" data-objet="Documentation RGPD">Demander la documentation</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SUPPORTS ══ -->
+<section class="section" id="supports">
+  <div class="conteneur">
+    <h2>Les supports en officine : un geste, accessible à tous</h2>
+    <p class="chapo">Le patient approche son téléphone, ou scanne le QR code, et la page de votre pharmacie s'ouvre. Il n'a aucune application à installer et aucun compte à créer.</p>
+
+    <div class="support">
+      <div class="support-media">
+        <img src="/assets/pro/plaque.webp" width="900" height="900" loading="lazy" alt="Plaque NFC SwiftyPharm avec QR code">
+      </div>
+      <div>
+        <h3>Plaques NFC, 12 × 12 cm</h3>
+        <p>Pour les comptoirs et la vitrine. Chaque plaque contient une puce NFC et porte un QR code vers votre page : elle est lisible par tous les smartphones. Elle est livrée avec un dos adhésif, prête à poser.</p>
+        <table class="comparatif">
+          <thead><tr><th scope="col"><span class="sr">Caractéristique</span></th><th scope="col">Standard</th><th scope="col">Personnalisée</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Puce NFC vers votre page</th><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td></tr>
+            <tr><th scope="row">QR code vers votre page</th><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td></tr>
+            <tr><th scope="row">Votre logo et le nom de votre pharmacie</th><td><span class="non" aria-label="Non"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></span></td><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td></tr>
+            <tr><th scope="row">QR code Wi-Fi instantané</th><td><span class="non" aria-label="Non"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></span></td><td><span class="oui" aria-label="Oui"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td></tr>
+            <tr><th scope="row">Expédition</th><td>3 jours ouvrés</td><td>15 jours ouvrés après validation de la maquette</td></tr>
+            <tr class="prix"><th scope="row">Prix</th><td>34,90 €</td><td>44,90 €</td></tr>
+          </tbody>
+        </table>
+        <p class="petit">Le QR code Wi-Fi connecte le patient à votre réseau sans saisir de mot de passe. Nous vous conseillons d'y associer un réseau « invité », distinct du réseau de l'officine.</p>
+      </div>
+    </div>
+
+    <div class="support support--inverse">
+      <div class="support-media">
+        <video src="/assets/pro/sticker.mp4" poster="/assets/pro/sticker-poster.jpg" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="Un patient scanne le sticker de sol dans la file d'attente"></video>
+      </div>
+      <div>
+        <h3>Sticker de sol, 60 × 60 cm</h3>
+        <p>Il se colle dans la file d'attente, visible de tous, et porte un QR code vers votre page. Pendant qu'il attend, le patient envoie son ordonnance et sa mutuelle, sort sa carte Vitale et parcourt vos réseaux sociaux. Arrivé au comptoir, tout est prêt.</p>
+        <ul class="fiche">
+          <li><span>1 sticker</span><span>29,90 €</span></li>
+          <li><span>2 stickers</span><span>54,90 €</span></li>
+          <li><span>3 stickers</span><span>74,90 €</span></li>
+          <li><span>Disponibilité</span><span>En stock</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="trio">
+      <div>
+        <h3>Où les placer</h3>
+        <ul>
+          <li><b>Une plaque par poste de comptoir.</b></li>
+          <li><b>Une plaque en vitrine</b>, pour recevoir des ordonnances même en dehors de vos horaires d'ouverture.</li>
+          <li><b>Un sticker de sol</b> dans la file d'attente, voire un second à l'entrée.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compatibilité</h3>
+        <ul>
+          <li><b>NFC :</b> lu sans application par tous les iPhone depuis l'iPhone XS (2018) et par la grande majorité des smartphones Android. Sur certains Android, le NFC doit être activé dans les réglages.</li>
+          <li><b>QR code :</b> lisible par l'appareil photo de n'importe quel smartphone. Il prend le relais si le téléphone n'a pas le NFC.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Pose et entretien</h3>
+        <ul>
+          <li><b>Pose :</b> retirez le film adhésif et collez. Ni branchement, ni pile, ni réglage : la puce est alimentée par le téléphone du patient au moment du contact.</li>
+          <li><b>Emplacement :</b> de préférence sur une surface non métallique (bois, verre, plastique, mélaminé). Le métal peut gêner la lecture NFC ; le QR code reste lisible dans tous les cas.</li>
+          <li><b>Entretien :</b> un chiffon humide suffit.</li>
+          <li><b>Jamais à changer :</b> vos supports pointent vers votre page, dont vous modifiez le contenu à tout moment.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PUBLICS ══ -->
+<section class="section section--brume" id="accessibilite">
+  <div class="conteneur">
+    <h2>Pensé pour tous vos patients</h2>
+    <div class="publics">
+      <div><h3>Les personnes âgées</h3><p>Un seul geste, de grands boutons, aucun mot de passe. Un proche ou un aidant peut aussi envoyer l'ordonnance à leur place, à distance.</p></div>
+      <div><h3>Les personnes pressées</h3><p>L'ordonnance part avant même leur arrivée au comptoir : il ne leur reste qu'à récupérer leurs produits.</p></div>
+      <div><h3>Les actifs et les parents</h3><p>Ils envoient l'ordonnance depuis le travail ou la maison, à toute heure.</p></div>
+      <div><h3>Les patients sans smartphone</h3><p>Rien ne change pour eux, le comptoir fonctionne comme avant. SwiftyPharm s'ajoute au service, il ne le remplace pas.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMPTOIR ══ -->
+<section class="section" id="comptoir">
+  <div class="conteneur">
+    <h2>Le passage au comptoir, avec et sans SwiftyPharm</h2>
+    <div class="avant-apres">
+      <div class="colonne colonne--sans">
+        <h3>Sans SwiftyPharm</h3>
+        <ol>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg><span>Dans la file, le patient attend sans rien faire.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg><span>Au comptoir, il cherche sa carte Vitale et son attestation de mutuelle, puis déplie son ordonnance.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg><span>L'équipe découvre l'ordonnance à ce moment-là, la lit et vérifie le stock pendant que le patient patiente.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg><span>S'il manque un produit, le patient devra revenir.</span></li>
+        </ol>
+      </div>
+      <div class="colonne colonne--avec">
+        <h3>Avec SwiftyPharm</h3>
+        <ol>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span>Dans la file, le sticker de sol invite le patient à envoyer son ordonnance et sa mutuelle, et à sortir sa carte Vitale.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span>L'équipe reçoit les documents avant que le patient arrive au comptoir : elle les lit, vérifie le stock et prépare la commande.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span>Au comptoir, le patient a sa carte Vitale en main et son dossier est prêt : il ne reste que la délivrance et le conseil.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span>Si l'ordonnance est envoyée depuis chez lui, l'officine peut commander un produit manquant avant même qu'il se déplace.</span></li>
+        </ol>
+      </div>
+    </div>
+    <p class="resultat">Le passage au comptoir est plus court et la file avance plus vite. L'équipe se consacre au conseil plutôt qu'aux formalités.</p>
+
+    <div class="atouts">
+      <div>
+        <h3>Une attente plus agréable</h3>
+        <p>Grâce au sticker de sol, le patient parcourt les réseaux sociaux de l'officine et découvre la promotion du mois au lieu de regarder sa montre.</p>
+      </div>
+      <div>
+        <h3>Un meilleur référencement local</h3>
+        <p>Chaque envoi d'ordonnance se conclut par une invitation à laisser un avis Google, au moment où le patient vient d'être bien servi. Le nombre et la note des avis comptent parmi les critères de classement de Google Maps : plus d'avis, c'est une officine mieux placée quand un patient cherche une pharmacie autour de lui.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TARIFS ══ -->
+<section class="section section--brume" id="tarifs">
+  <div class="conteneur">
+    <h2>Tarifs</h2>
+    <p class="chapo">Aucun abonnement : vous payez une fois l'accès à votre page, puis les supports dont vous avez besoin.</p>
+    <div class="tarifs">
+      <table class="grille">
+        <caption class="sr">Grille tarifaire SwiftyPharm</caption>
+        <tbody>
+          <tr><th scope="row">Accès SwiftyPharm<small>Votre page et votre espace de gestion. Paiement unique, accès à vie. Un seul accès suffit pour toute la pharmacie, quel que soit le nombre de supports.</small></th><td>12,90 €<small>une fois</small></td></tr>
+          <tr><th scope="row">Plaque NFC standard<small>12 × 12 cm, NFC et QR code vers votre page</small></th><td>34,90 €</td></tr>
+          <tr><th scope="row">Plaque NFC personnalisée<small>Votre logo et votre nom, QR code Wi-Fi instantané</small></th><td>44,90 €</td></tr>
+          <tr><th scope="row">Sticker de sol<small>60 × 60 cm, QR code vers votre page</small></th><td>29,90 €<small>l'unité</small></td></tr>
+          <tr><th scope="row">Lot de 2 stickers de sol</th><td>54,90 €</td></tr>
+          <tr><th scope="row">Lot de 3 stickers de sol</th><td>74,90 €</td></tr>
+        </tbody>
+      </table>
+      <aside class="conditions" aria-label="Conditions">
+        <dl>
+          <div><dt>TVA</dt><dd>TVA non applicable, art. 293 B du CGI. Les prix indiqués sont les montants à régler.</dd></div>
+          <div><dt>Livraison</dt><dd>Offerte, à l'adresse de la pharmacie.</dd></div>
+          <div><dt>Délais d'expédition</dt><dd>Plaques standard : 3 jours ouvrés après le paiement.<br>Plaques personnalisées : 15 jours ouvrés après la validation de votre maquette.<br>Stickers de sol : en stock.</dd></div>
+          <div><dt>Paiement</dt><dd>Par carte bancaire, via un lien de paiement sécurisé, ou par virement. Une facture vous est adressée.</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ══ OFFRES ══ -->
+<section class="section" id="groupements">
+  <div class="conteneur">
+    <h2>Offres en cours</h2>
+    <div class="offres">
+      <article class="offre">
+        <p class="montant">42,80 €<small>offerts</small></p>
+        <h3>Dès 10 plaques commandées</h3>
+        <p>Pour une commande d'au moins 10 plaques, nous vous offrons l'accès SwiftyPharm et un sticker de sol.</p>
+        <ul>
+          <li>Accès SwiftyPharm offert, au lieu de 12,90 €</li>
+          <li>1 sticker de sol offert, au lieu de 29,90 €</li>
+          <li>Plaques standard et personnalisées panachables</li>
+        </ul>
+        <p class="petit">Exemple : 10 plaques personnalisées, accès et sticker compris, 449,00 €. Avec 10 plaques standard : 349,00 €.</p>
+      </article>
+      <article class="offre">
+        <p class="montant">15 %<small>remboursés</small></p>
+        <h3>Parrainage</h3>
+        <p>Si vous recommandez SwiftyPharm à un confrère, nous vous remboursons 15 % du montant de votre commande dès que la pharmacie que vous nous avez adressée passe sa propre commande. Il lui suffit de mentionner le nom de votre pharmacie au moment de commander.</p>
+        <ul>
+          <li>Recommandation avant votre règlement : remise déduite de votre facture</li>
+          <li>Après votre règlement : remboursement par virement ou sur votre carte</li>
+          <li>Une remise par commande, sans date limite</li>
+        </ul>
+        <p class="petit">Exemple : pour une commande de 449,00 €, vous récupérez 67,35 €.</p>
+      </article>
+      <article class="offre offre--groupement">
+        <div>
+          <h3>Groupements et réseaux de pharmacies</h3>
+          <p>Nous accompagnons les têtes de réseau qui souhaitent proposer SwiftyPharm à leurs adhérents, avec des conditions dédiées.</p>
+          <ul>
+            <li>Phase pilote offerte, sur un panel d'officines choisies par la tête de réseau</li>
+            <li>Suivi des résultats : ordonnances reçues, avis Google collectés, retours des équipes</li>
+            <li>Tarif réseau sur les supports pour chaque adhérent</li>
+            <li>Présentation au siège avec démonstration en direct</li>
+            <li>Documentation RGPD complète pour votre délégué à la protection des données</li>
+          </ul>
+          <p class="petit" style="color:#b9bddc">Conditions sur demande.</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn--clair" href="#contact" data-objet="Offre groupement" data-profil="groupement">Organiser une présentation</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMMANDER ══ -->
+<section class="section section--brume" id="commander">
+  <div class="conteneur">
+    <h2>Commander en 3 étapes</h2>
+    <ol class="etapes">
+      <li>
+        <h3>Vous nous écrivez</h3>
+        <p>Par le formulaire ci-dessous ou par email, en indiquant :</p>
+        <ul>
+          <li>le nombre de plaques standard et personnalisées ;</li>
+          <li>le nombre de stickers de sol ;</li>
+          <li>l'adresse email qui recevra les ordonnances ;</li>
+          <li>l'adresse de livraison et les informations de facturation ;</li>
+          <li>pour les plaques personnalisées : votre logo en haute définition (PNG, SVG ou PDF), ainsi que le nom et le mot de passe du réseau Wi-Fi à intégrer au QR code.</li>
+        </ul>
+      </li>
+      <li>
+        <h3>Vous validez et réglez</h3>
+        <p>Nous vous envoyons la facture. Vous réglez par carte bancaire, via un lien de paiement sécurisé, ou par virement. Pour les plaques personnalisées, nous vous soumettons la maquette pour validation avant fabrication.</p>
+      </li>
+      <li>
+        <h3>Vous posez vos supports</h3>
+        <p>Nous créons votre page et vous envoyons l'invitation à votre espace de gestion, puis nous expédions vos supports. Ils sont opérationnels dès leur pose.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══ FAQ ══ -->
+<section class="section" id="faq">
+  <div class="conteneur">
+    <h2>Questions fréquentes</h2>
+    <div class="faq">
+      <details><summary>Mes patients doivent-ils installer une application ?</summary><p>Non. La page s'ouvre directement dans le navigateur du téléphone, sans application et sans compte à créer.</p></details>
+      <details><summary>Tous les téléphones sont-ils compatibles ?</summary><p>La puce NFC est lue sans application par tous les iPhone depuis l'iPhone XS (2018) et par la grande majorité des smartphones Android. Sur certains Android, le NFC doit être activé dans les réglages. Chaque support porte aussi un QR code, lisible par l'appareil photo de n'importe quel smartphone.</p></details>
+      <details><summary>Et les patients qui n'ont pas de smartphone ?</summary><p>Rien ne change pour eux : le comptoir fonctionne comme avant. SwiftyPharm s'ajoute au service, il ne le remplace pas. Un proche ou un aidant peut aussi envoyer l'ordonnance à leur place.</p></details>
+      <details><summary>Y a-t-il un abonnement ?</summary><p>Non. L'accès SwiftyPharm se règle une seule fois, 12,90 €, et reste actif à vie. Les supports s'achètent une fois.</p></details>
+      <details><summary>Faut-il un accès par plaque ?</summary><p>Non. Un seul accès suffit pour toute la pharmacie : toutes vos plaques et tous vos stickers ouvrent la même page.</p></details>
+      <details><summary>Puis-je modifier ma page après la pose des supports ?</summary><p>Oui, à tout moment, depuis votre espace de gestion : horaires, logo, liens, promotions. Vos supports n'ont jamais à être changés, ils affichent immédiatement la version à jour.</p></details>
+      <details><summary>Où arrivent les ordonnances ?</summary><p>À l'adresse email que vous nous indiquez, en pièce jointe, avec le nom et le téléphone du patient. Rien n'est conservé chez SwiftyPharm.</p></details>
+      <details><summary>Les ordonnances sont-elles stockées quelque part ?</summary><p>Non. Le document transite le temps de l'envoi, puis il est remis à votre adresse email. Il n'est conservé ni dans une base de données, ni dans un espace de stockage, ni dans nos journaux. Le détail figure dans la partie <a href="#donnees-de-sante">Données de santé</a>.</p></details>
+      <details><summary>Puis-je coller une plaque sur une surface métallique ?</summary><p>Préférez une surface non métallique (bois, verre, plastique, mélaminé) : le métal peut gêner la lecture NFC. Le QR code reste lisible dans tous les cas.</p></details>
+      <details><summary>Le QR code Wi-Fi expose-t-il le réseau de l'officine ?</summary><p>Il donne accès au réseau que vous choisissez. Nous vous conseillons d'y associer un réseau « invité », distinct du réseau utilisé par vos postes.</p></details>
+      <details><summary>Quels sont les délais et les frais de livraison ?</summary><p>Plaques standard : expédiées sous 3 jours ouvrés après le paiement. Plaques personnalisées : sous 15 jours ouvrés après la validation de votre maquette. Stickers de sol : en stock. La livraison est offerte.</p></details>
+      <details><summary>Comment payer, et vais-je recevoir une facture ?</summary><p>Par carte bancaire, via un lien de paiement sécurisé, ou par virement. Une facture vous est adressée. TVA non applicable, art. 293 B du CGI.</p></details>
+      <details><summary>Qui peut m'aider à configurer ma page ?</summary><p>Notre équipe peut paramétrer la page pour votre compte. Ensuite, un chat intégré à votre espace de gestion vous permet de demander de l'aide en un clic, avec une réponse sous 24 h maximum.</p></details>
+      <details><summary>Puis-je supprimer mon compte ?</summary><p>Oui. Vous pouvez demander à tout moment la suppression complète de votre compte et de vos données.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTACT ══ -->
+<section class="section section--brume" id="contact">
+  <div class="conteneur">
+    <h2>Parlons de votre pharmacie</h2>
+    <p class="chapo">Un devis, une présentation, une question : écrivez-nous, nous revenons vers vous par email ou par téléphone.</p>
+
+    <div class="contact">
+      <form class="formulaire" id="formulaire" novalidate>
+        <fieldset class="champ champ--large" style="border:none">
+          <legend>Vous êtes</legend>
+          <div class="bascule">
+            <label><input type="radio" name="profil" value="officine" checked><span>Une officine</span></label>
+            <label><input type="radio" name="profil" value="groupement"><span>Un groupement</span></label>
+          </div>
+        </fieldset>
+        <div class="champ"><label for="f-nom">Nom et prénom</label><input id="f-nom" name="nom" autocomplete="name" required></div>
+        <div class="champ"><label for="f-structure" id="l-structure">Pharmacie</label><input id="f-structure" name="structure" autocomplete="organization" required></div>
+        <div class="champ"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" inputmode="email"></div>
+        <div class="champ"><label for="f-tel">Téléphone</label><input id="f-tel" name="telephone" type="tel" autocomplete="tel" inputmode="tel"></div>
+        <div class="champ"><label for="f-ville">Ville</label><input id="f-ville" name="ville" autocomplete="address-level2"></div>
+        <div class="champ"><label for="f-objet">Objet</label>
+          <select id="f-objet" name="objet">
+            <option>Devis plaques et stickers</option>
+            <option>Rendez-vous de présentation</option>
+            <option>Offre groupement</option>
+            <option>Documentation RGPD</option>
+            <option>Autre question</option>
+          </select>
+        </div>
+        <div class="champ champ--large"><label for="f-quantite">Nombre de plaques envisagé <small>(facultatif)</small></label><input id="f-quantite" name="quantite" inputmode="numeric" placeholder="Par exemple : 10"></div>
+        <div class="champ champ--large"><label for="f-message">Message <small>(facultatif)</small></label><textarea id="f-message" name="message"></textarea></div>
+        <div class="piege" aria-hidden="true"><label for="f-site">Site web</label><input id="f-site" name="site_web" tabindex="-1" autocomplete="off"></div>
+        <p class="message-form" id="form-erreur" role="alert"></p>
+        <div class="envoi">
+          <button class="btn btn--plein" type="submit" id="f-envoyer">Envoyer ma demande</button>
+          <p class="petit">Vos coordonnées servent uniquement à vous répondre. Indiquez au moins un email ou un téléphone.</p>
+        </div>
+      </form>
+
+      <aside class="direct">
+        <h3>Nous joindre directement</h3>
+        <p>Pour un premier échange de quelques minutes, ou pour fixer un rendez-vous de présentation.</p>
+        <div class="actions" id="contact-direct"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="pied">
+  <div class="conteneur">
+    <a class="marque" href="/"><b>Swifty</b>Pharm</a>
+    <nav aria-label="Liens utiles">
+      <a href="/">Accueil</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#contact">Contact</a>
+      <a href="https://swiftup.fr" target="_blank" rel="noopener">Développé par swiftup.fr</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════
+//  À RENSEIGNER
+// ═══════════════════════════════════════════
+// Coordonnées affichées dans « Nous joindre directement ».
+// Laissez vide pour masquer le bouton correspondant.
+const CONTACT_TEL   = '';   // ex. '06 12 34 56 78'
+const CONTACT_EMAIL = '';   // ex. 'contact@swiftypharm.fr'
+// Pages en ligne données en exemple. Laissez vide pour masquer.
+const EXEMPLES = [
+  // { nom: 'Pharmacie Lachaux, Paris', url: 'https://swiftypharm.fr/...' },
+];
+
+// ── Contact direct ──
+(function(){
+  const zone = document.getElementById('contact-direct');
+  if (CONTACT_TEL) {
+    const a = document.createElement('a');
+    a.className = 'btn btn--plein';
+    a.href = 'tel:' + CONTACT_TEL.replace(/[^\d+]/g, '');
+    a.textContent = 'Appeler le ' + CONTACT_TEL;
+    zone.appendChild(a);
+  }
+  if (CONTACT_EMAIL) {
+    const a = document.createElement('a');
+    a.className = 'btn btn--contour';
+    a.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('SwiftyPharm : demande d\'information');
+    a.textContent = 'Écrire à ' + CONTACT_EMAIL;
+    zone.appendChild(a);
+  }
+  if (!CONTACT_TEL && !CONTACT_EMAIL) {
+    zone.closest('.direct').hidden = true;
+    zone.closest('.contact').classList.add('contact--seul');
+  }
+})();
+
+// ── Pages exemples ──
+(function(){
+  if (!EXEMPLES.length) return;
+  const zone = document.getElementById('exemples');
+  EXEMPLES.forEach(function(e){
+    const a = document.createElement('a');
+    a.className = 'btn btn--contour';
+    a.href = e.url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = 'Voir la page ' + e.nom;
+    zone.appendChild(a);
+  });
+  zone.hidden = false;
+})();
+
+// ── Parcours d'une ordonnance : le document traverse les étapes une fois ──
+(function(){
+  const liste = document.getElementById('parcours');
+  if (!liste || !('IntersectionObserver' in window)) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Centre du 1er cercle au centre du 5e : 4 colonnes et 4 gouttières de 20 px
+  const reglerFin = function(){ liste.style.setProperty('--fin', (4 * ((liste.clientWidth - 80) / 5 + 20)) + 'px'); };
+  reglerFin(); window.addEventListener('resize', reglerFin);
+  const obs = new IntersectionObserver(function(entrees){
+    entrees.forEach(function(e){
+      if (e.isIntersecting) { liste.classList.add('anime'); obs.disconnect(); }
+    });
+  }, { threshold: 0.6 });
+  obs.observe(liste);
+})();
+
+// ── Formulaire ──
+(function(){
+  const form   = document.getElementById('formulaire');
+  const erreur = document.getElementById('form-erreur');
+  const bouton = document.getElementById('f-envoyer');
+  const lStruct = document.getElementById('l-structure');
+
+  function majProfil(){
+    const g = form.profil.value === 'groupement';
+    lStruct.textContent = g ? 'Groupement' : 'Pharmacie';
+  }
+  form.querySelectorAll('input[name=profil]').forEach(function(r){ r.addEventListener('change', majProfil); });
+
+  // Les boutons « Organiser une présentation », « Demander la documentation »
+  // préremplissent l'objet et le profil.
+  document.querySelectorAll('[data-objet]').forEach(function(a){
+    a.addEventListener('click', function(){
+      form.objet.value = a.dataset.objet;
+      if (a.dataset.profil) {
+        form.querySelector('input[name=profil][value="' + a.dataset.profil + '"]').checked = true;
+        majProfil();
+      }
+    });
+  });
+
+  function montrerErreur(msg){
+    erreur.textContent = msg;
+    erreur.className = 'message-form erreur';
+  }
+
+  form.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    erreur.className = 'message-form';
+    const d = {
+      action: 'demande_pro',
+      profil: form.profil.value,
+      nom: form.nom.value.trim(),
+      structure: form.structure.value.trim(),
+      ville: form.ville.value.trim(),
+      email: form.email.value.trim(),
+      telephone: form.telephone.value.trim(),
+      objet: form.objet.value,
+      quantite: form.quantite.value.trim(),
+      message: form.message.value.trim(),
+      site_web: form.site_web.value
+    };
+    if (!d.nom) { montrerErreur('Indiquez votre nom.'); form.nom.focus(); return; }
+    if (!d.structure) { montrerErreur('Indiquez le nom de votre ' + (d.profil === 'groupement' ? 'groupement.' : 'pharmacie.')); form.structure.focus(); return; }
+    if (!d.email && !d.telephone) { montrerErreur('Indiquez un email ou un téléphone pour que nous puissions vous répondre.'); form.email.focus(); return; }
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) { montrerErreur('Cette adresse email n\'est pas valide.'); form.email.focus(); return; }
+
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    try {
+      const res = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(d)
+      });
+      const rep = await res.json().catch(function(){ return {}; });
+      if (!res.ok || !rep.ok) throw new Error(rep.error || '');
+      form.classList.add('envoye');
+      form.innerHTML = '<div class="merci" tabindex="-1"><h3>Demande envoyée</h3><p>Merci ' + d.nom.replace(/[<>&"]/g, '') + '. Nous revenons vers vous rapidement, par email ou par téléphone.</p></div>';
+      form.querySelector('.merci').focus();
+    } catch (e) {
+      bouton.disabled = false;
+      bouton.textContent = 'Envoyer ma demande';
+      montrerErreur((e && e.message) ? e.message : 'L\'envoi a échoué. Vérifiez votre connexion et réessayez.');
+    }
+  });
+})();
+</script>
+</body>
+</html>
