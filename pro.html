@@ -80,13 +80,12 @@ p{max-width:68ch}
 .accroche h1{max-width:15ch}
 .accroche .chapo{font-size:19.5px}
 .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
-.vitrine{justify-self:end;width:min(100%,440px)}
+.vitrine{justify-self:end;width:min(100%,440px);display:grid;gap:26px}
 .vitrine-grille{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
 .vitrine-grille li{display:grid;justify-items:center;gap:4px}
 .vitrine-grille img{width:100%;filter:drop-shadow(0 12px 16px rgba(0,0,70,.16)) drop-shadow(0 2px 4px rgba(0,0,70,.10))}
 .vitrine-grille span{font-size:12.5px;font-weight:600;color:var(--doux)}
-.vitrine figcaption{margin-top:16px;text-align:center;font-size:14px;color:var(--doux)}
-.essentiels{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:36px;list-style:none}
+.vitrine-groupe figcaption{margin-top:12px;padding-top:10px;border-top:1px solid var(--trait);text-align:center;font-size:14px;font-weight:600;color:var(--nuit)}.essentiels{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:36px;list-style:none}
 .essentiels li{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--nuit)}
 .essentiels svg{flex-shrink:0;color:var(--vert)}
 .confiance{border-top:1px solid var(--trait);padding:26px 0}
@@ -392,19 +391,24 @@ p{max-width:68ch}
         <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Livraison offerte</li>
       </ul>
     </div>
-    <figure class="vitrine">
-      <ul class="vitrine-grille">
-        <li><img src="/assets/pro/plaque-perso-quatrieme.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Quatrième, à Marseille, avec QR code Wi-Fi" fetchpriority="high"><span>Personnalisée</span></li>
-        <li><img src="/assets/pro/plaque-perso-elsie.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Val d'Yerres, à Quincy-sous-Sénart"><span>Personnalisée</span></li>
-        <li><img src="/assets/pro/plaque-perso-verte.webp" width="560" height="560" alt="Plaque personnalisée verte de la Pharmacie Intercommunale, à Chevilly-Larue"><span>Personnalisée</span></li>
-        <li><img src="/assets/pro/plaque.webp" width="900" height="900" alt="Plaque standard : « Envoyez votre ordonnance », approchez votre téléphone ou scannez le QR code"><span>Standard</span></li>
-        <figcaption>Plaques 12 × 12 cm, NFC et QR code</figcaption>
-        <li><img src="/assets/pro/sticker-bleu.webp" width="560" height="560" alt="Sticker de sol bleu : « Gagnez du temps ! », QR code pour envoyer son ordonnance"><span>Sticker de sol</span></li>
-        <li><img src="/assets/pro/sticker-orange.webp" width="560" height="560" alt="Sticker de sol orange : « Gagnez du temps ! », QR code pour envoyer son ordonnance"><span>Sticker de sol</span></li>
-      </ul>
-      <figcaption>Stickers de sol 60 × 60 cm, avec QR code</figcaption>
-    </figure>
-  </div>
+        <div class="vitrine">
+      <figure class="vitrine-groupe">
+        <ul class="vitrine-grille">
+          <li><img src="/assets/pro/plaque-perso-quatrieme.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Quatrième, à Marseille, avec QR code Wi-Fi" fetchpriority="high"><span>Personnalisée</span></li>
+          <li><img src="/assets/pro/plaque-perso-elsie.webp" width="560" height="560" alt="Plaque personnalisée de la Pharmacie du Val d'Yerres, à Quincy-sous-Sénart"><span>Personnalisée</span></li>
+          <li><img src="/assets/pro/plaque-perso-verte.webp" width="560" height="560" alt="Plaque personnalisée verte de la Pharmacie Intercommunale, à Chevilly-Larue"><span>Personnalisée</span></li>
+          <li><img src="/assets/pro/plaque.webp" width="900" height="900" alt="Plaque standard : « Envoyez votre ordonnance », approchez votre téléphone ou scannez le QR code"><span>Standard</span></li>
+        </ul>
+        <figcaption>Plaques NFC 12 × 12 cm, avec QR code</figcaption>
+      </figure>
+      <figure class="vitrine-groupe">
+        <ul class="vitrine-grille">
+          <li><img src="/assets/pro/sticker-bleu.webp" width="560" height="560" alt="Sticker de sol bleu : « Gagnez du temps ! », QR code pour envoyer son ordonnance"></li>
+          <li><img src="/assets/pro/sticker-orange.webp" width="560" height="560" alt="Sticker de sol orange : « Gagnez du temps ! », QR code pour envoyer son ordonnance"></li>
+        </ul>
+        <figcaption>Stickers de sol 60 × 60 cm, avec QR code</figcaption>
+      </figure>
+    </div>
 </section>
 
 <div class="confiance">
