@@ -69,10 +69,21 @@ p{max-width:68ch}
 .nav a{color:var(--nuit);text-decoration:none;font-size:14.5px;font-weight:600}
 .nav a:hover{color:var(--action)}
 .entete .btn{min-height:42px;padding:0 20px;font-size:14.5px;white-space:nowrap;flex-shrink:0}
-@media (max-width:1020px){.nav{display:none}.entete .btn{margin-left:auto}}
+@media (max-width:1100px){.nav{display:none}.entete .btn{margin-left:auto}}
+.menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;border-radius:12px;border:1.5px solid var(--trait);background:#fff;color:var(--nuit);cursor:pointer}
+.menu-btn .menu-fermer{display:none}
+.menu-btn[aria-expanded="true"] .menu-ouvrir{display:none}
+.menu-btn[aria-expanded="true"] .menu-fermer{display:inline}
+.menu-mobile{background:#fff;border-top:1px solid var(--trait);box-shadow:0 18px 30px -18px rgba(0,0,70,.25)}
+.menu-mobile[hidden]{display:none}
+.menu-mobile ul{list-style:none;max-width:var(--largeur);margin:0 auto;padding:4px 24px 12px}
+.menu-mobile li + li{border-top:1px solid var(--trait)}
+.menu-mobile a{display:block;padding:14px 0;color:var(--nuit);font-weight:600;font-size:16px;text-decoration:none}
+@media (max-width:1100px){.menu-btn{display:inline-flex}}
+@media (min-width:1101px){.menu-mobile{display:none!important}}
 .txt-court{display:none}
 @media (max-width:420px){.marque span{display:none}}
-@media (max-width:370px){.txt-long{display:none}.txt-court{display:inline}}
+@media (max-width:480px){.txt-long{display:none}.txt-court{display:inline}}
 
 /* ── Accroche ── */
 .accroche{padding:72px 0 64px}
@@ -102,6 +113,9 @@ p{max-width:68ch}
 .fonctions{display:grid;grid-template-columns:340px 1fr;gap:72px;margin-top:56px;align-items:start}
 .telephone{position:sticky;top:110px;width:300px;border-radius:44px;background:var(--nuit);padding:12px;box-shadow:0 30px 60px -28px rgba(0,0,70,.5)}
 .ecran{border-radius:34px;overflow:hidden;background:#d2d2d2;height:600px;position:relative}
+.ecran.ecran--video{height:auto;aspect-ratio:9/16;background:var(--nuit);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.telephone:has(.ecran--video){background:#1b1f4b}
+.ecran--video video{display:block;width:100%;height:100%;object-fit:cover}
 .ecran-banniere{height:120px;background:linear-gradient(135deg,#0b2f6b,#1cb5e0)}
 .ecran-logo{width:76px;height:76px;border-radius:50%;background:#fff;border:4px solid #fff;box-shadow:0 0 0 3px var(--cyan);margin:-40px auto 0;display:grid;place-items:center;position:relative}
 .ecran-logo svg{width:40px;height:40px}
@@ -346,7 +360,8 @@ p{max-width:68ch}
   .btn{width:100%}
   .actions .btn{flex:1 1 100%}
   .entete .btn{width:auto;padding:0 16px}
-  .entete .conteneur{gap:12px}
+  .entete .conteneur{gap:10px}
+  .menu-mobile ul{padding:4px 16px 12px}
   .bascule span{font-size:14px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -370,7 +385,22 @@ p{max-width:68ch}
       <a href="#faq">Questions</a>
     </nav>
     <a class="btn btn--plein" href="#contact"><span class="txt-long">Demander un devis</span><span class="txt-court" aria-hidden="true">Devis</span></a>
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu-mobile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="menu-ouvrir" d="M4 7h16M4 12h16M4 17h16"/><path class="menu-fermer" d="M6 6l12 12M18 6 6 18"/></svg>
+      <span class="sr">Menu</span>
+    </button>
   </div>
+  <nav class="menu-mobile" id="menu-mobile" aria-label="Sections de la page" hidden>
+    <ul>
+      <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+      <li><a href="#donnees-de-sante">Données de santé</a></li>
+      <li><a href="#supports">Supports</a></li>
+      <li><a href="#tarifs">Tarifs</a></li>
+      <li><a href="#groupements">Groupements</a></li>
+      <li><a href="#faq">Questions</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
 </header>
 
 <main>
@@ -379,7 +409,7 @@ p{max-width:68ch}
 <section class="accroche">
   <div class="conteneur">
     <div>
-      <h1>Vos patients envoient leur ordonnance avant d'arriver au comptoir.</h1>
+      <h1>Vos patients envoient leur ordonnance en 5 secondes.</h1>
       <p class="chapo">SwiftyPharm donne à votre pharmacie une page mobile qui s'ouvre d'un geste, depuis une plaque NFC au comptoir ou un sticker dans la file d'attente. Envoi d'ordonnance, avis Google, réseaux sociaux, horaires : tout y est, sans application et sans abonnement.</p>
       <div class="actions">
         <a class="btn btn--plein" href="#contact">Demander un devis</a>
@@ -389,6 +419,8 @@ p{max-width:68ch}
         <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Ordonnances transmises, jamais stockées</li>
         <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Paiement unique, accès à vie</li>
         <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Livraison offerte</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>30 jours satisfait ou remboursé</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>SAV 7j/7</li>
       </ul>
     </div>
         <div class="vitrine">
@@ -409,6 +441,7 @@ p{max-width:68ch}
         <figcaption>Stickers de sol 60 × 60 cm, avec QR code</figcaption>
       </figure>
     </div>
+  </div>
 </section>
 
 <div class="confiance">
@@ -424,24 +457,12 @@ p{max-width:68ch}
     <p class="chapo">Chaque pharmacie dispose d'une page personnalisée, et d'un espace de gestion pour la tenir à jour en toute autonomie.</p>
 
     <div class="fonctions">
-      <div class="telephone" aria-hidden="true">
-        <div class="ecran">
-          <div class="ecran-banniere"></div>
-          <div class="ecran-logo"><svg viewBox="0 0 40 40"><rect x="15" y="6" width="10" height="28" rx="2" fill="#2fb36d"/><rect x="6" y="15" width="28" height="10" rx="2" fill="#2fb36d"/></svg></div>
-          <div class="ecran-nom">Votre pharmacie</div>
-          <div class="ecran-sous">Ouverte aujourd'hui · 8h30 – 20h00</div>
-          <div class="ecran-icones">
-            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span>
-            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
-            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-          </div>
-          <div class="ecran-cartes">
-            <div class="ecran-carte ecran-carte--ordo"><i style="background:#1cb5e0">⇪</i>Envoyer mon ordonnance</div>
-            <div class="ecran-carte"><i style="background:#fbbc04">★</i>Laisser un avis Google</div>
-            <div class="ecran-carte"><i style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)">◎</i>Instagram</div>
-            <div class="ecran-carte"><i style="background:#0596de">D</i>Prendre rendez-vous</div>
-            <div class="ecran-carte"><i style="background:#e11d48">%</i>Promo du mois</div>
-          </div>
+      <div class="telephone">
+        <div class="ecran ecran--video">
+          <video id="video-promo" muted loop playsinline preload="none"
+            poster="/assets/pro/swiftypharm-promo-poster.jpg"
+            data-src="/assets/pro/swiftypharm-promo.mp4"
+            aria-label="Vidéo de présentation : la page de la pharmacie, la plaque NFC au comptoir et l'espace de gestion"></video>
         </div>
       </div>
 
@@ -908,6 +929,40 @@ const EXEMPLES = [
     });
   }, { threshold: 0.6 });
   obs.observe(liste);
+})();
+
+// ── Menu mobile ──
+(function(){
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('menu-mobile');
+  if (!btn || !menu) return;
+  function basculer(ouvrir){
+    btn.setAttribute('aria-expanded', ouvrir ? 'true' : 'false');
+    menu.hidden = !ouvrir;
+  }
+  btn.addEventListener('click', function(){ basculer(menu.hidden); });
+  menu.addEventListener('click', function(e){ if (e.target.closest('a')) basculer(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden) { basculer(false); btn.focus(); } });
+  window.addEventListener('resize', function(){ if (window.innerWidth > 1100 && !menu.hidden) basculer(false); });
+})();
+
+// ── Vidéo de présentation ──
+// Chargée seulement à l'approche (économise les données mobiles),
+// mise en pause hors de l'écran. Sans lecture automatique si
+// l'utilisateur a demandé à réduire les animations.
+(function(){
+  const v = document.getElementById('video-promo');
+  if (!v) return;
+  const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function charger(){ if (!v.getAttribute('src')) v.src = v.dataset.src; }
+  if (calme) { v.controls = true; v.preload = 'metadata'; charger(); return; }
+  if (!('IntersectionObserver' in window)) { charger(); v.play().catch(function(){}); return; }
+  new IntersectionObserver(function(entrees){
+    entrees.forEach(function(e){
+      if (e.isIntersecting) { charger(); v.play().catch(function(){ v.controls = true; }); }
+      else if (!v.paused) v.pause();
+    });
+  }, { rootMargin: '200px 0px' }).observe(v);
 })();
 
 // ── Formulaire ──
