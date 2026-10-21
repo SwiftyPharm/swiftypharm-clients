@@ -15,7 +15,14 @@
     // L'aperçu du back office (?apercu=1) ne compte pas comme une visite
     if (!/[?&]apercu=/.test(location.search)) gtag('config', 'G-KH4392ZE5G');
     function trackSend() { gtag('event', 'ordonnance_envoyee'); }
+    // Aperçu du back office : barre de défilement masquée, comme sur un
+    // téléphone. Sinon elle réduit la largeur et les icônes passent à 2 par ligne.
+    if (/[?&]apercu=/.test(location.search)) document.documentElement.classList.add('apercu');
   </script>
+  <style>
+    html.apercu { scrollbar-width: none; }
+    html.apercu::-webkit-scrollbar { display: none; }
+  </style>
 
   <!-- EmailJS retiré : les ordonnances passent par /api/notify (Brevo, RGPD) -->
 
@@ -1196,10 +1203,11 @@
         try {
           const { data: promos } = await supabaseClient
             .from('promos')
-            .select('active,name')
+            .select('actif,nom')
             .eq('pharmacie_slug', PAGE_SLUG);
+          // Colonnes de la table promos : actif et nom (comme promos.html).
           const aDesPromos = (promos || []).some(function(p){
-            return p.active && p.name && p.name.trim() !== '';
+            return p.actif === true && p.nom && p.nom.trim() !== '';
           });
           cartePromo.style.display = aDesPromos ? 'block' : 'none';
         } catch (e) {
