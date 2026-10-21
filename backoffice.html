@@ -3503,7 +3503,6 @@ function majCompletion(){
   // [clé, libellé, fait ?, libellé du bouton]
   const criteres = [
     ['logo',       'Logo',                               aImage('logo-preview-img'),     'Ajouter'],
-    ['banniere',   'Bannière',                           aImage('banniere-preview-img'), 'Ajouter'],
     ['nom',        'Nom affiché',                        v('ph-name') !== '',            'Compléter'],
     ['soustitre',  'Sous-titre',                         v('ph-sub') !== '',             'Compléter'],
     ['tel',        'Téléphone',                          v('ph-tel') !== '',             'Compléter'],
@@ -3536,7 +3535,6 @@ function majCompletion(){
 function completer(cle){
   const cibles = {
     logo:      () => allerA('page', { sous:'identite', focus:'logo-preview-box' }),
-    banniere:  () => allerA('page', { sous:'identite', focus:'banniere-preview-box' }),
     nom:       () => allerA('page', { sous:'identite', focus:'ph-name' }),
     soustitre: () => allerA('page', { sous:'identite', focus:'ph-sub' }),
     tel:       () => allerA('page', { sous:'infos', focus:'ph-tel' }),
