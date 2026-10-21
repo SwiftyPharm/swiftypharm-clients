@@ -30,45 +30,64 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
 <div class="container">
   <a class="back" href="/">← Retour à l'accueil</a>
   <h1>Politique de confidentialité</h1>
-  <div class="date">Dernière mise à jour : juin 2025</div>
+  <div class="date">Dernière mise à jour : octobre 2026</div>
 
   <h2>1. Qui sommes-nous ?</h2>
-  <p>SwiftyPharm est une plateforme SaaS éditée par Swiftup, permettant aux pharmaciens de créer et gérer leur vitrine digitale. Notre site est accessible à l'adresse <strong>swiftypharm.fr</strong>.</p>
+  <p>SwiftyPharm est un service édité par Swiftup. Il permet aux pharmacies d'officine de disposer d'une page en ligne (swiftypharm.fr/nom-de-la-pharmacie) et de la gérer depuis un espace dédié, le back office. Notre site est accessible à l'adresse <strong>swiftypharm.fr</strong>.</p>
+  <p>Swiftup est <strong>responsable de traitement</strong> des données des pharmaciens titulaires d'un compte et des personnes qui nous contactent. Pour les données des patients (ordonnances, commandes), Swiftup agit en qualité de <strong>sous-traitant</strong> de la pharmacie concernée, dans les conditions de l'<a href="/dpa.html">accord de sous-traitance des données</a>.</p>
 
   <h2>2. Données collectées</h2>
-  <p>Nous collectons les données suivantes lors de l'utilisation de nos services :</p>
+  <p><strong>Pharmaciens titulaires d'un compte :</strong></p>
   <ul>
-    <li>Données d'identification : nom, prénom, adresse email</li>
-    <li>Données professionnelles : nom de la pharmacie, adresse, numéro de téléphone</li>
-    <li>Données de connexion : adresse IP, navigateur, horodatage</li>
-    <li>Données de paiement : traitées exclusivement par Stripe (nous ne stockons aucune donnée bancaire)</li>
-    <li>Données patients : uniquement les informations transmises volontairement via les formulaires (ordonnances, commandes)</li>
+    <li>Identifiants de connexion : adresse email et mot de passe (stocké sous forme hachée, illisible par Swiftup)</li>
+    <li>Informations affichées sur la page de la pharmacie : nom, sous-titre, adresse, téléphone, nom du pharmacien titulaire, horaires, logo, bannière, liens (Google Avis, réseaux sociaux, Doctolib, Bilan de prévention, liens personnalisés) et promotions. Pour le logo et la bannière, l'image d'origine et le cadrage choisi sont conservés afin de pouvoir recadrer sans réimporter</li>
+    <li>Adresse email de réception des ordonnances et des commandes</li>
+    <li>Invitation et achat : nom de la pharmacie, ville, email, montant et date de l'achat, et adresse de livraison des supports physiques (plaques NFC, stickers). Les données bancaires sont traitées exclusivement par Stripe ou Shopify : Swiftup n'en conserve aucune</li>
+    <li>Messages envoyés à l'assistance depuis le back office</li>
+    <li>Données de connexion : adresse IP, navigateur, date et heure, enregistrées dans les journaux techniques de nos hébergeurs</li>
+  </ul>
+  <p><strong>Personnes qui nous contactent depuis la page /pro :</strong> nom, pharmacie ou groupement, ville, email, téléphone et message.</p>
+  <p><strong>Patients qui utilisent la page d'une pharmacie :</strong></p>
+  <ul>
+    <li>Envoi d'ordonnance : document (photo ou PDF), nom, téléphone et, s'ils sont renseignés, email et message. Ces données sont transmises à la pharmacie et ne sont jamais conservées par Swiftup (voir l'article 3)</li>
+    <li>Commande click &amp; collect : nom, prénom, téléphone, email facultatif, articles commandés et créneau de retrait</li>
+  </ul>
+  <p><strong>Statistiques du tableau de bord :</strong> les pages des pharmacies comptent les ordonnances transmises et les clics vers Google Avis, Instagram, Facebook et TikTok. Chaque compteur enregistre uniquement la page, le type d'événement et la date : aucun nom, aucune adresse IP, aucun identifiant d'appareil. Ces compteurs ne sont pas des données personnelles.</p>
+
+  <h2>3. Ordonnances : transmises, jamais conservées</h2>
+  <p>Le document envoyé par le patient est compressé dans son navigateur, puis transmis par nos fonctions serveur à notre prestataire d'envoi d'emails, qui le remet en pièce jointe à l'adresse de réception choisie par la pharmacie. Swiftup n'en garde aucune copie : l'ordonnance n'est enregistrée ni dans notre base de données, ni dans notre stockage de fichiers, ni dans nos journaux. Seule la date de réception alimente le compteur du tableau de bord de la pharmacie.</p>
+  <p>La messagerie de la pharmacie est le seul endroit où l'ordonnance est conservée ; la pharmacie en est responsable.</p>
+
+  <h2>4. Finalités et bases légales</h2>
+  <ul>
+    <li>Création et gestion du compte, affichage de la page de la pharmacie, tableau de bord : exécution du contrat (conditions générales d'utilisation)</li>
+    <li>Transmission des ordonnances et des commandes à la pharmacie, suivi de commande et SMS de suivi lorsque ce service est activé : exécution du contrat conclu avec la pharmacie, pour le compte de laquelle Swiftup agit</li>
+    <li>Gestion des achats et facturation : exécution du contrat et obligations légales</li>
+    <li>Réponse aux demandes d'assistance et de contact : intérêt légitime de Swiftup à répondre aux personnes qui le sollicitent</li>
+    <li>Sécurité du service et prévention des abus : intérêt légitime. L'adresse IP sert à limiter le nombre d'envois ; Swiftup ne l'enregistre pas</li>
   </ul>
 
-  <h2>3. Finalités du traitement</h2>
-  <p>Vos données sont utilisées pour :</p>
+  <h2>5. Destinataires et sous-traitants</h2>
+  <p>Vos données ne sont jamais vendues ni utilisées à des fins publicitaires. Elles sont accessibles aux seuls membres de l'équipe Swiftup qui en ont besoin, et aux prestataires suivants :</p>
   <ul>
-    <li>Créer et gérer votre compte SwiftyPharm</li>
-    <li>Fournir les services souscrits (vitrine, ordonnances, promotions)</li>
-    <li>Traiter les paiements et gérer les abonnements</li>
-    <li>Envoyer les notifications liées à votre compte</li>
-    <li>Améliorer nos services</li>
-  </ul>
-
-  <h2>4. Base légale</h2>
-  <p>Le traitement de vos données repose sur l'exécution du contrat (CGU), votre consentement pour les communications marketing, et nos obligations légales.</p>
-
-  <h2>5. Partage des données</h2>
-  <p>Vos données ne sont jamais vendues. Elles peuvent être partagées avec :</p>
-  <ul>
-    <li><strong>Supabase</strong> — hébergement et base de données (serveurs en Europe)</li>
-    <li><strong>Stripe</strong> — traitement des paiements</li>
-    <li><strong>EmailJS / OneSignal</strong> — envoi de notifications</li>
-    <li><strong>Netlify</strong> — hébergement du site</li>
+    <li><strong>Supabase</strong> — base de données, authentification et stockage des images. Données hébergées à Paris (région AWS eu-west-3)</li>
+    <li><strong>Netlify</strong> — hébergement du site et fonctions serveur qui transmettent les ordonnances et les commandes. Ces fonctions s'exécutent aux États-Unis (Ohio) : les données y transitent sans y être conservées par Swiftup. Transfert encadré par le Data Privacy Framework UE–États-Unis, avec les clauses contractuelles types de la Commission européenne en repli</li>
+    <li><strong>Brevo</strong> — envoi des emails (ordonnances, commandes, invitations, assistance) et des SMS de suivi de commande. Serveurs situés dans l'Union européenne</li>
+    <li><strong>Stripe</strong> et <strong>Shopify</strong> — paiement de l'accès et des supports physiques, livraison des supports. Transferts éventuels hors de l'Union européenne encadrés par leurs propres garanties (Data Privacy Framework, clauses contractuelles types)</li>
+    <li><strong>Telegram</strong> — alertes internes de l'équipe Swiftup (nouvelle inscription, demande de contact, demande d'assistance). Ces alertes peuvent contenir le nom, l'email ou le téléphone d'un pharmacien ou d'un contact professionnel, jamais de données de patient. Telegram est situé hors de l'Union européenne</li>
+    <li><strong>Base Adresse Nationale</strong> (api-adresse.data.gouv.fr) — suggestions d'adresse lors de la saisie de l'adresse de la pharmacie</li>
+    <li><strong>Google Fonts</strong> et <strong>jsDelivr</strong> — polices de caractères et bibliothèque technique chargées par les pages, qui reçoivent l'adresse IP de connexion</li>
   </ul>
 
   <h2>6. Durée de conservation</h2>
-  <p>Vos données sont conservées pendant toute la durée de votre abonnement, puis supprimées dans un délai de 12 mois après la résiliation du compte, sauf obligation légale contraire.</p>
+  <ul>
+    <li>Compte du pharmacien et contenu de sa page : jusqu'à la suppression du compte. Le pharmacien peut supprimer son compte à tout moment depuis son back office (Mon compte) : sa fiche, ses commandes, ses promotions et son accès sont alors effacés</li>
+    <li>Données de facturation : 10 ans, conformément aux obligations comptables</li>
+    <li>Ordonnances : aucune conservation par Swiftup</li>
+    <li>Commandes click &amp; collect : 12 mois après la commande, puis suppression automatique</li>
+    <li>Demandes de contact et d'assistance : 3 ans au plus après le dernier échange</li>
+    <li>Journaux techniques : durée limitée, fixée par nos hébergeurs</li>
+  </ul>
 
   <h2>7. Vos droits</h2>
   <p>Conformément au RGPD, vous disposez des droits suivants :</p>
@@ -77,15 +96,20 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
     <li>Droit à la portabilité</li>
     <li>Droit d'opposition et de limitation du traitement</li>
   </ul>
-  <p>Pour exercer ces droits, contactez-nous à : <strong>contact@swiftup.fr</strong></p>
+  <p>Pour exercer ces droits, contactez-nous à : <strong>contact@swiftup.fr</strong>. Nous répondons dans un délai d'un mois.</p>
+  <p>Patients : pour une ordonnance ou une commande, la pharmacie est responsable de vos données. Adressez-vous d'abord à elle ; Swiftup l'aide à vous répondre. Vous pouvez aussi nous écrire à la même adresse.</p>
+  <p>Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).</p>
 
-  <h2>8. Cookies</h2>
-  <p>SwiftyPharm utilise uniquement des cookies techniques nécessaires au fonctionnement du service (session, authentification). Aucun cookie publicitaire n'est utilisé.</p>
+  <h2>8. Cookies et stockage local</h2>
+  <p>SwiftyPharm n'utilise aucun cookie publicitaire ni aucun outil de mesure d'audience tiers. Les pages des pharmacies conservent seulement, dans le navigateur du patient, son panier en cours et les numéros de ses dernières commandes, pour lui permettre d'en suivre l'état. Le back office conserve la session de connexion du pharmacien. Ces éléments sont strictement nécessaires au fonctionnement du service et ne nécessitent pas de consentement.</p>
 
   <h2>9. Sécurité</h2>
-  <p>Vos données sont protégées par chiffrement HTTPS, stockées dans des infrastructures sécurisées (Supabase / Netlify), et l'accès est limité aux seuls membres de l'équipe autorisés.</p>
+  <p>Les échanges sont chiffrés (HTTPS) et les données sont hébergées chez Supabase, à Paris, avec chiffrement au repos. Les mots de passe sont stockés sous forme hachée. Le suivi d'une commande par le patient passe par un lien personnel et imprévisible. L'accès aux données est réservé aux membres de l'équipe Swiftup qui en ont besoin, et les ordonnances ne sont jamais enregistrées sur nos serveurs.</p>
 
-  <h2>10. Contact</h2>
+  <h2>10. Modifications</h2>
+  <p>Cette politique peut évoluer avec le service. La date de mise à jour figure en haut de la page ; en cas de changement important, les pharmaciens sont prévenus par email.</p>
+
+  <h2>11. Contact</h2>
   <p>Pour toute question relative à vos données personnelles : <strong>contact@swiftup.fr</strong></p>
 </div>
 </body>
