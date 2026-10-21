@@ -6,6 +6,8 @@
 //   action: 'commande'    → click & collect : email au pharmacien + SMS au client
 //   action: 'statut'      → la commande passe à « prête » : SMS au client
 //   action: 'demande_pro'         → formulaire de la page /pro : alerte Telegram
+//   action: 'clic'                → clic vers Google Avis ou un réseau social (compteur)
+//   action: 'stats'               → chiffres du tableau de bord du back office
 //   action: 'demande_avis_google' → le pharmacien demande qu'on crée son
 //                                   lien Google Avis : alerte Telegram
 //
@@ -80,6 +82,36 @@ async function sb(path, options = {}) {
   const t = await res.text();
   if (!res.ok) throw new Error('Supabase ' + res.status + ' : ' + t.slice(0, 200));
   return t ? JSON.parse(t) : null;
+}
+
+// ── Compteurs du tableau de bord (table `evenements`) ──
+// Une ligne par évènement : page, type, date. Aucune donnée personnelle.
+// Un échec (table absente, base indisponible) ne bloque jamais l'action
+// principale : on le journalise et on continue.
+const TYPES_EVENEMENT = ['ordonnance', 'avis', 'reseau'];
+const SLUG_VALIDE = /^[a-z0-9][a-z0-9-]{0,99}$/;
+
+async function enregistrerEvenement(slug, type) {
+  if (!SLUG_VALIDE.test(slug) || !TYPES_EVENEMENT.includes(type)) return;
+  try {
+    await sb('evenements', {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ slug, type }),
+    });
+  } catch (e) { console.error('evenement', type, e.message); }
+}
+
+// Nombre de lignes correspondant à un filtre PostgREST, sans les lire.
+async function compter(chemin) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + chemin, {
+    method: 'HEAD',
+    headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, Prefer: 'count=exact' },
+  });
+  if (!res.ok) throw new Error('Supabase ' + res.status);
+  const plage = res.headers.get('content-range') || '';
+  const total = parseInt(plage.split('/')[1], 10);
+  return Number.isFinite(total) ? total : 0;
 }
 
 // ── Envoi email Brevo ──
@@ -248,6 +280,51 @@ exports.handler = async (event) => {
     );
 
     return json(200, { ok: true });
+  }
+
+  // ═══════════════════════════════════════════
+  //  CLIC SUR LA PAGE PUBLIQUE — compteur du tableau de bord
+  //  Envoyé par navigator.sendBeacon : on répond vite, sans contenu.
+  // ═══════════════════════════════════════════
+  if (body.action === 'clic') {
+    const slugC = String(body.slug || '').trim().toLowerCase();
+    const type  = String(body.type || '');
+    if (!SLUG_VALIDE.test(slugC) || !['avis', 'reseau'].includes(type)) {
+      return json(400, { error: 'Clic invalide' });
+    }
+    const ipC = String(event.headers?.['x-nf-client-connection-ip']
+      || event.headers?.['x-forwarded-for'] || 'inconnue').split(',')[0].trim();
+    if (quotaDepasse('clic:' + ipC, 300)) return json(200, { ok: true });   // ignoré, sans erreur
+    await enregistrerEvenement(slugC, type);
+    return json(200, { ok: true });
+  }
+
+  // ═══════════════════════════════════════════
+  //  STATISTIQUES — tableau de bord du back office
+  //  Seulement des nombres, sur la période demandée (90 jours max
+  //  par défaut, 366 jours au plus).
+  // ═══════════════════════════════════════════
+  if (body.action === 'stats') {
+    const slugS = String(body.slug || '').trim().toLowerCase();
+    if (!SLUG_VALIDE.test(slugS)) return json(400, { error: 'Pharmacie non identifiée' });
+    const ipS = String(event.headers?.['x-nf-client-connection-ip']
+      || event.headers?.['x-forwarded-for'] || 'inconnue').split(',')[0].trim();
+    if (quotaDepasse('stats:' + ipS, 600)) return json(429, { error: 'Trop de demandes. Réessayez plus tard.' });
+
+    const fin   = Date.parse(body.jusqua) || Date.now();
+    let debut   = Date.parse(body.depuis) || (fin - 30 * 86400000);
+    if (debut > fin) debut = fin;
+    if (fin - debut > 366 * 86400000) debut = fin - 366 * 86400000;
+    const de = new Date(debut).toISOString(), a = new Date(fin).toISOString();
+    const periode = 'and=(created_at.gte.' + encodeURIComponent(de) + ',created_at.lt.' + encodeURIComponent(a) + ')';
+    const evt = (type) => compter('evenements?select=id&slug=eq.' + encodeURIComponent(slugS)
+      + '&type=eq.' + type + '&' + periode).catch(() => null);
+
+    const [ordonnances, avis, reseaux, commandes] = await Promise.all([
+      evt('ordonnance'), evt('avis'), evt('reseau'),
+      compter('commandes?select=id&pharmacie_slug=eq.' + encodeURIComponent(slugS) + '&' + periode).catch(() => null),
+    ]);
+    return json(200, { ok: true, depuis: de, jusqua: a, ordonnances, avis, reseaux, commandes });
   }
 
   // ═══════════════════════════════════════════
@@ -435,13 +512,15 @@ exports.handler = async (event) => {
         to: pharma.email_contact,
         toName: pharma.nom,
         replyTo: email || undefined,
-        subject: `Ordonnance de : ${nom}`,
+        subject: (body.test ? '[Test] ' : '') + `Ordonnance de : ${nom}`,
         html: gabarit({ corps }),
         attachments,
       });
 
       // Aucune trace de l'ordonnance n'est conservée : ni en base,
       // ni dans les journaux. Voir la note RGPD du guide.
+      // Seul le compteur avance (page + date), et pas pour un envoi de test.
+      if (!body.test) await enregistrerEvenement(slug, 'ordonnance');
       return json(200, { ok: true });
     }
 
