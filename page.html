@@ -12,7 +12,8 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-KH4392ZE5G');
+    // L'aperçu du back office (?apercu=1) ne compte pas comme une visite
+    if (!/[?&]apercu=/.test(location.search)) gtag('config', 'G-KH4392ZE5G');
     function trackSend() { gtag('event', 'ordonnance_envoyee'); }
   </script>
 
@@ -656,7 +657,7 @@
         <div class="success-sub">La pharmacie a bien reçu votre document.<br>Nous vous contacterons si besoin.</div>
         <div class="success-actions">
           <button class="btn-back-home" id="btn-back-home" title="Retour">✕</button>
-          <a href="#" id="btn-google-review" class="btn-google-review" target="_blank" rel="noopener" style="display:none;">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
+          <a href="#" id="btn-google-review" data-suivi="avis" class="btn-google-review" target="_blank" rel="noopener" style="display:none;">⭐ Tout se passe bien ? Laissez-nous un avis !</a>
         </div>
       </div>
       <img src="down-upload.png" alt="" onerror="this.style.display='none'"
@@ -1248,7 +1249,7 @@
       // activée par le pharmacien.
       if (googleAvisUrl && (urlAdmin || (googleObj && googleActif))) {
         container.innerHTML += `
-          <a href="${googleAvisUrl}" target="_blank" class="social-card-item">
+          <a href="${googleAvisUrl}" target="_blank" class="social-card-item" data-suivi="avis">
             <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
             <div class="social-card-txt">Notez nous sur <br>Google !</div>
           </a>`;
@@ -1278,7 +1279,7 @@
           instaUrl = instaUrlVal.startsWith('http') ? instaUrlVal : `https://instagram.com/${clean}`;
         }
         container.innerHTML += `
-          <a href="${instaUrl}" target="_blank" class="social-card-item">
+          <a href="${instaUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
             <img src="instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
             <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
           </a>`;
@@ -1292,7 +1293,7 @@
       if (fbObj && fbActif && fbUrlVal) {
         let fbUrl = fbUrlVal.startsWith('http') ? fbUrlVal : `https://facebook.com/${fbUrlVal}`;
         container.innerHTML += `
-          <a href="${fbUrl}" target="_blank" class="social-card-item">
+          <a href="${fbUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
             <img src="facebook-icon.png" alt="Facebook" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#1877f2;\\'>📘</div>'">
             <div class="social-card-txt">Retrouvez nous<br>sur Facebook !</div>
           </a>`;
@@ -1326,6 +1327,24 @@
           </a>`;
       }
 
+      // ── BILAN DE PRÉVENTION ──
+      // Lien natif : sans adresse saisie, la page officielle sante.fr.
+      const prevObj = soc.prevention;
+      const prevActif = prevObj?.actif ?? prevObj?.active;
+      if (prevObj && prevActif) {
+        let prevUrl = String(prevObj.url || prevObj.valeur || '').trim() || 'https://www.sante.fr/mon-bilan-prevention';
+        if (!/^https?:\/\//i.test(prevUrl)) prevUrl = 'https://' + prevUrl.replace(/^[a-z]+:/i, '');
+        const aPrev = document.createElement('a');
+        aPrev.href = prevUrl;
+        aPrev.target = '_blank';
+        aPrev.rel = 'noopener';
+        aPrev.className = 'social-card-item';
+        aPrev.innerHTML = `
+            <img src="/assets/bilan-prevention-icon.png" alt="Bilan de prévention" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0f9b8e;color:#fff;\\'>&#10010;</div>'">
+            <div class="social-card-txt">Réservez votre<br>bilan prévention !</div>`;
+        container.appendChild(aPrev);
+      }
+
       // ── TIKTOK ──
       const tiktokObj = soc.tiktok || soc.tik;
       const tiktokActif = tiktokObj?.actif ?? tiktokObj?.active;
@@ -1335,7 +1354,7 @@
         const cleanTk = tiktokUrlVal.replace(/.*tiktok\.com\//, '').replace(/\//g, '').replace('@', '');
         let tiktokUrl = tiktokUrlVal.startsWith('http') ? tiktokUrlVal : `https://tiktok.com/@${cleanTk}`;
         container.innerHTML += `
-          <a href="${tiktokUrl}" target="_blank" class="social-card-item">
+          <a href="${tiktokUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
             <img src="/assets/tiktok-icon.png" alt="TikTok" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#000;color:#fff;\\'>🎵</div>'">
             <div class="social-card-txt">Suivez nous sur<br>TikTok !</div>
           </a>`;
@@ -1434,6 +1453,23 @@
     document.addEventListener('visibilitychange', function(){
       if (!document.hidden && v.paused) { v.play().catch(function(){}); }
     });
+  })();
+
+  // ── Compteurs du tableau de bord du pharmacien ──
+  // Un clic vers Google Avis ou un réseau social incrémente un compteur
+  // (page + type + date). Aucune donnée sur le visiteur n'est transmise.
+  // Désactivé dans l'aperçu du back office (?apercu=1).
+  (function(){
+    if (new URLSearchParams(location.search).has('apercu')) return;
+    document.addEventListener('click', function(e){
+      const lien = e.target.closest && e.target.closest('[data-suivi]');
+      if (!lien || !PAGE_SLUG) return;
+      const donnees = JSON.stringify({ action: 'clic', slug: PAGE_SLUG, type: lien.dataset.suivi });
+      try {
+        if (navigator.sendBeacon && navigator.sendBeacon('/api/notify', new Blob([donnees], { type: 'application/json' }))) return;
+      } catch (_) {}
+      fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: donnees, keepalive: true }).catch(function(){});
+    }, true);
   })();
 
   // Chargement des données au démarrage de la page
