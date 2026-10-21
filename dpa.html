@@ -35,11 +35,11 @@ td{padding:9px 12px;border:1px solid #e2e8f0;color:#374151;vertical-align:top;}
 <div class="container">
   <a class="back" href="/">← Retour à l'accueil</a>
   <h1>Accord de sous-traitance des données</h1>
-  <div class="date">Dernière mise à jour : août 2026 — Version 1.0</div>
+  <div class="date">Dernière mise à jour : octobre 2026 — Version 1.1</div>
 
   <div class="intro-box">
     <strong>Ce que dit ce document, en résumé</strong>
-    Lorsque vous utilisez SwiftyPharm pour recevoir des commandes ou des ordonnances de vos patients, vous restez responsable de ces données vis-à-vis de vos patients. Swiftup agit pour son compte en tant que sous-traitant technique, dans les conditions décrites ci-dessous. Ce document complète les conditions générales d'utilisation et la politique de confidentialité.
+    Lorsque vous utilisez SwiftyPharm pour recevoir des commandes ou des ordonnances de vos patients, vous restez responsable de ces données vis-à-vis de vos patients. Swiftup agit pour son compte en tant que sous-traitant technique, dans les conditions décrites ci-dessous. Les ordonnances sont transmises, jamais conservées. Ce document complète les conditions générales d'utilisation et la politique de confidentialité.
   </div>
 
   <h2><span class="art-num">1</span>Objet et champ d'application</h2>
@@ -60,23 +60,24 @@ td{padding:9px 12px;border:1px solid #e2e8f0;color:#374151;vertical-align:top;}
       <td>Traite les données uniquement pour le compte du Pharmacien, selon ses instructions documentées dans les paramètres du service</td>
     </tr>
   </table>
-  <p>Pour les données propres au compte du Pharmacien lui-même (identifiants, coordonnées de facturation), Swiftup agit en qualité de responsable de traitement — cette relation est régie par la politique de confidentialité, non par le présent accord.</p>
+  <p>Pour les données propres au compte du Pharmacien lui-même (identifiants, coordonnées, achat), Swiftup agit en qualité de responsable de traitement — cette relation est régie par la politique de confidentialité, non par le présent accord.</p>
 
   <h2><span class="art-num">3</span>Description des traitements confiés</h2>
   <table>
     <tr><th>Traitement</th><th>Nature des données</th><th>Finalité</th></tr>
     <tr>
       <td>Commandes click &amp; collect</td>
-      <td>Nom, prénom, téléphone, email facultatif, contenu de la commande</td>
-      <td>Permettre au patient de réserver des articles et d'organiser leur retrait en officine</td>
+      <td>Nom, prénom, téléphone, email facultatif, articles commandés, créneau de retrait</td>
+      <td>Permettre au patient de réserver des articles, d'organiser leur retrait en officine et d'en suivre l'état ; SMS de suivi lorsque ce service est activé</td>
     </tr>
     <tr>
       <td>Transmission d'ordonnance</td>
-      <td>Document d'ordonnance, nom, téléphone du patient</td>
+      <td>Document d'ordonnance (photo ou PDF), nom et téléphone du patient, email et message facultatifs</td>
       <td>Transmission directe par email au Pharmacien, sans conservation par Swiftup</td>
     </tr>
   </table>
-  <p>La durée du traitement correspond à la durée de conservation définie dans la politique de confidentialité de SwiftyPharm, à laquelle le Pharmacien se réfère pour ses propres obligations d'information envers ses patients.</p>
+  <p>L'ordonnance est une donnée de santé. Swiftup n'en assure aucun hébergement : elle transite par les fonctions serveur du service jusqu'au prestataire d'envoi d'emails, sans être enregistrée en base de données, dans le stockage de fichiers ni dans les journaux.</p>
+  <p>Durées : les ordonnances ne sont pas conservées ; les commandes sont supprimées automatiquement 12 mois après leur création, ou plus tôt à la suppression du compte. Les compteurs du tableau de bord (page, type d'événement, date) ne contiennent aucune donnée personnelle et n'entrent pas dans le champ du présent accord.</p>
 
   <h2><span class="art-num">4</span>Obligations de Swiftup</h2>
   <p>Dans le cadre des traitements décrits à l'article 3, Swiftup s'engage à :</p>
@@ -86,7 +87,7 @@ td{padding:9px 12px;border:1px solid #e2e8f0;color:#374151;vertical-align:top;}
     <li>Mettre en œuvre les mesures de sécurité techniques et organisationnelles décrites à l'article 6</li>
     <li>Ne recourir à un autre sous-traitant qu'avec l'autorisation générale du Pharmacien, telle qu'accordée par la liste figurant à l'article 5, et l'informer de toute modification envisagée de cette liste</li>
     <li>Assister le Pharmacien pour répondre aux demandes d'exercice des droits de ses patients, dans la mesure de ce qui est techniquement possible</li>
-    <li>Notifier au Pharmacien toute violation de données le concernant dans un délai raisonnable après en avoir eu connaissance</li>
+    <li>Notifier au Pharmacien toute violation de données le concernant dans les meilleurs délais après en avoir eu connaissance</li>
     <li>Supprimer ou restituer l'ensemble des données à caractère personnel à l'issue de la relation contractuelle, à moins qu'une obligation légale n'impose leur conservation</li>
     <li>Mettre à disposition du Pharmacien les informations nécessaires pour démontrer le respect du présent accord</li>
   </ul>
@@ -95,21 +96,22 @@ td{padding:9px 12px;border:1px solid #e2e8f0;color:#374151;vertical-align:top;}
   <p>Le Pharmacien autorise Swiftup à recourir aux sous-traitants suivants pour l'exécution des traitements décrits :</p>
   <table>
     <tr><th>Sous-traitant</th><th>Fonction</th><th>Localisation</th></tr>
-    <tr><td>Supabase</td><td>Hébergement et base de données</td><td>Paris, France</td></tr>
-    <tr><td>Brevo</td><td>Envoi d'emails et SMS de confirmation de commande</td><td>France / Union européenne</td></tr>
-    <tr><td>EmailJS</td><td>Transmission des ordonnances par email</td><td>États-Unis</td></tr>
-    <tr><td>Stripe</td><td>Traitement des paiements du Pharmacien</td><td>Union européenne, transferts encadrés</td></tr>
-    <tr><td>Netlify</td><td>Hébergement du site et des fonctions serveur</td><td>Union européenne / États-Unis selon région</td></tr>
+    <tr><td>Supabase</td><td>Base de données (commandes) et authentification</td><td>Paris, France (AWS eu-west-3)</td></tr>
+    <tr><td>Netlify</td><td>Hébergement du site et fonctions serveur qui transmettent les ordonnances et les commandes, sans les conserver</td><td>États-Unis (Ohio) — transfert encadré par le Data Privacy Framework UE–États-Unis, clauses contractuelles types en repli</td></tr>
+    <tr><td>Brevo</td><td>Envoi des emails (ordonnances, commandes) et des SMS de suivi de commande</td><td>Union européenne</td></tr>
   </table>
+  <p>Les autres prestataires de Swiftup (paiement, alertes internes) ne reçoivent aucune donnée de patient ; ils sont décrits dans la politique de confidentialité.</p>
   <p>Toute modification substantielle de cette liste sera communiquée au Pharmacien par email, lui permettant de s'y opposer dans un délai raisonnable.</p>
 
   <h2><span class="art-num">6</span>Mesures de sécurité</h2>
   <ul>
-    <li>Chiffrement des données en transit et au repos</li>
-    <li>Authentification requise pour tout accès au compte et aux données</li>
+    <li>Chiffrement des échanges (HTTPS) et des données au repos chez l'hébergeur</li>
+    <li>Ordonnances jamais enregistrées en base de données, dans le stockage de fichiers ni dans les journaux</li>
+    <li>Accès au back office protégé par identifiant et mot de passe</li>
     <li>Accès aux données limité au personnel de Swiftup dont la mission le nécessite</li>
-    <li>Journalisation des accès et des opérations sensibles</li>
-    <li>Suppression automatisée des données au terme des durées de conservation définies</li>
+    <li>Suivi de commande par le patient au moyen d'un lien personnel et imprévisible</li>
+    <li>Limitation du nombre d'envois pour prévenir les abus</li>
+    <li>Suppression automatique des commandes au terme de 12 mois</li>
   </ul>
 
   <h2><span class="art-num">7</span>Obligations du Pharmacien</h2>
@@ -118,11 +120,12 @@ td{padding:9px 12px;border:1px solid #e2e8f0;color:#374151;vertical-align:top;}
     <li>Informer ses patients du traitement de leurs données dans les conditions prévues par le RGPD</li>
     <li>Disposer d'une base légale valide pour la collecte des données de ses patients</li>
     <li>Ne pas utiliser SwiftyPharm pour collecter des catégories de données que le service n'est pas conçu pour traiter</li>
+    <li>Renseigner une adresse email de réception fiable, en vérifier la bonne réception (ordonnance test) et conserver les ordonnances reçues dans le respect du secret professionnel</li>
     <li>Répondre aux demandes d'exercice des droits de ses patients qui lui seraient directement adressées</li>
   </ul>
 
   <h2><span class="art-num">8</span>Sort des données en fin de contrat</h2>
-  <p>À la résiliation du compte, à la demande du Pharmacien ou automatiquement à l'issue des délais définis dans la politique de confidentialité, l'ensemble des données traitées dans le cadre du présent accord est supprimé des systèmes de Swiftup, sauf obligation légale de conservation plus longue applicable à Swiftup.</p>
+  <p>À la suppression du compte, à la demande du Pharmacien ou automatiquement à l'issue des délais définis à l'article 3, l'ensemble des données traitées dans le cadre du présent accord est supprimé des systèmes de Swiftup, sauf obligation légale de conservation plus longue applicable à Swiftup.</p>
 
   <h2><span class="art-num">9</span>Durée</h2>
   <p>Le présent accord s'applique pendant toute la durée d'utilisation du service par le Pharmacien et prend fin de plein droit avec la clôture de son compte.</p>
