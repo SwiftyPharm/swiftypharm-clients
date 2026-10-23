@@ -7,14 +7,9 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH4392ZE5G"></script>
+  <!-- Google Analytics retiré : aucun cookie de mesure d'audience (CNIL).
+       Les ordonnances et les clics sont comptés par le tableau de bord. -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    // L'aperçu du back office (?apercu=1) ne compte pas comme une visite
-    if (!/[?&]apercu=/.test(location.search)) gtag('config', 'G-KH4392ZE5G');
-    function trackSend() { gtag('event', 'ordonnance_envoyee'); }
     // Aperçu du back office : barre de défilement masquée, comme sur un
     // téléphone. Sinon elle réduit la largeur et les icônes passent à 2 par ligne.
     if (/[?&]apercu=/.test(location.search)) document.documentElement.classList.add('apercu');
@@ -334,6 +329,16 @@
     }
 
     /* ══ CHAMPS FORMULAIRE ══ */
+    /* Choix du destinataire (pharmacie avec deux emails de réception) */
+    .dest-switch { margin: -8px 0 20px; }
+    .dest-switch-label { font-size: 13px; font-weight: 500; color: #111; margin-bottom: 7px; }
+    .dest-options { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #eef0f6; }
+    .dest-opt {
+      flex: 1; min-width: 0; padding: 10px 8px; border: none; border-radius: 10px; background: transparent;
+      font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; color: #555; cursor: pointer;
+      line-height: 1.25; transition: background .15s, color .15s, box-shadow .15s;
+    }
+    .dest-opt.actif { background: #fff; color: #0012ff; box-shadow: 0 1px 4px rgba(0,0,70,.12); }
     .input-group label {
       display: block;
       margin-bottom: 7px;
@@ -613,6 +618,14 @@
       <div id="form-content">
         <div style="color:#111; font-weight:800; font-size:18px; margin-bottom:24px; text-align:center;">Envoyer votre ordonnance</div>
 
+        <div class="dest-switch" id="dest-switch" style="display:none">
+          <div class="dest-switch-label" id="dest-switch-label">Envoyer à :</div>
+          <div class="dest-options" role="radiogroup" aria-labelledby="dest-switch-label">
+            <button type="button" class="dest-opt actif" data-dest="1" role="radio" aria-checked="true"></button>
+            <button type="button" class="dest-opt" data-dest="2" role="radio" aria-checked="false"></button>
+          </div>
+        </div>
+
         <div class="input-group">
           <label for="sender-name">Nom et Prénom :</label>
           <input type="text" id="sender-name" autocomplete="name" placeholder="Ex: DUPONT Jean">
@@ -698,6 +711,19 @@
 
   const MAX_SIZE_MB = 5;
   let selectedFile  = null;
+  // Destinataire de l'ordonnance : 1 = email principal, 2 = deuxième email.
+  // La page ne connaît que le numéro ; l'adresse est lue par le serveur.
+  let destinataireOrdo = 1;
+  document.addEventListener('click', function(e){
+    const opt = e.target.closest && e.target.closest('.dest-opt');
+    if (!opt) return;
+    destinataireOrdo = opt.dataset.dest === '2' ? 2 : 1;
+    document.querySelectorAll('.dest-opt').forEach(function(b){
+      const actif = b === opt;
+      b.classList.toggle('actif', actif);
+      b.setAttribute('aria-checked', actif ? 'true' : 'false');
+    });
+  });
 
   function playSound(type) {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -885,6 +911,7 @@
           slug: PAGE_SLUG,
           patient_nom: senderName,
           patient_tel: senderPhone || '',
+          destinataire: destinataireOrdo,
           fichiers: [fichier]
         })
       });
@@ -897,7 +924,6 @@
         const detail = data.error || brut.slice(0, 120) || 'réponse vide';
         throw new Error('[' + res.status + '] ' + detail);
       }
-      trackSend();
       playSound('success');
       formContent.style.display = 'none';
       successOverlay.style.display = 'flex';
@@ -1217,6 +1243,15 @@
         }
       }
 
+
+      // Deux emails de réception : le patient choisit le destinataire
+      const email2 = String(data.email_contact_2 || '').trim();
+      if (email2) {
+        const opts = document.querySelectorAll('.dest-opt');
+        opts[0].textContent = String(data.email_titre_1 || '').trim() || data.nom || 'Pharmacie';
+        opts[1].textContent = String(data.email_titre_2 || '').trim() || 'Autre service';
+        document.getElementById('dest-switch').style.display = '';
+      }
 
       // Téléphone & Maps dynamiques
       if (data.telephone) document.getElementById('link-phone').href = 'tel:' + data.telephone;
