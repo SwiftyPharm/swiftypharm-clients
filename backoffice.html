@@ -1109,6 +1109,23 @@ body.plus-ouvert #sav-fab{display:none}
   .periode-chips{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
 }
 .media-act .btns > .btn,.media-act .btns > .img-file-btn{height:38px;padding:0 14px;font-size:13px;margin:0;display:inline-flex;align-items:center;gap:7px}
+
+/* ── Deux emails de réception ── */
+body:not(.deux-emails) .titre-email,
+body:not(.deux-emails) .ord-test-dest,
+body:not(.deux-emails) .promo-dest{display:none}
+body:not(.deux-emails) .emails-row{grid-template-columns:1fr}
+.emails-row{margin-bottom:14px}
+.facultatif{font-weight:500;color:var(--doux)}
+.emails-alerte{display:none;font-size:12.5px;line-height:1.5;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;
+  border-radius:10px;padding:9px 12px;margin:-2px 0 16px}
+.emails-alerte.show{display:block}
+input.manquant{border-color:#f59e0b !important}
+.ord-test-dest{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ord-test-dest label{font-size:12.5px;font-weight:700;color:var(--nuit);margin:0}
+.ord-test-dest select,.promo-dest select{width:auto;max-width:100%;padding:8px 11px;border-radius:10px;font-size:13px;
+  border:1.5px solid var(--line);background:#fff;color:var(--nuit)}
+.promo-dest select{width:100%}
 </style>
 </head>
 <body>
@@ -1454,15 +1471,36 @@ body.plus-ouvert #sav-fab{display:none}
 <div class="section" id="section-ordonnances">
   <div class="card">
     <div class="card-title">Réception des ordonnances</div>
-    <p class="card-sous">Les ordonnances envoyées depuis votre page arrivent dans cette boîte mail, en pièce jointe.</p>
-    <div class="field">
-      <label for="ph-email">Email de réception des ordonnances</label>
-      <input type="email" id="ph-email" placeholder="contact@mapharmacie.fr" oninput="autoSave()">
+    <p class="card-sous">Les ordonnances envoyées depuis votre page arrivent dans cette boîte mail, en pièce jointe. Un autre service les reçoit aussi (matériel médical, orthopédie…) ? Ajoutez un deuxième email : vos patients choisiront le destinataire.</p>
+    <div class="field-row emails-row">
+      <div class="field">
+        <label for="ph-email">Email de réception des ordonnances</label>
+        <input type="email" id="ph-email" placeholder="contact@mapharmacie.fr" oninput="autoSave()">
+      </div>
+      <div class="field titre-email">
+        <label for="ph-titre-1">Titre affiché sur votre page</label>
+        <input type="text" id="ph-titre-1" placeholder="Ex : Pharmacie Lachaux" maxlength="40" oninput="autoSave()">
+      </div>
     </div>
+    <div class="field-row emails-row">
+      <div class="field">
+        <label for="ph-email-2">Deuxième email <span class="facultatif">(facultatif)</span></label>
+        <input type="email" id="ph-email-2" placeholder="materiel@mapharmacie.fr" oninput="autoSave()">
+      </div>
+      <div class="field titre-email">
+        <label for="ph-titre-2">Titre affiché sur votre page</label>
+        <input type="text" id="ph-titre-2" placeholder="Ex : Matériel médical" maxlength="40" oninput="autoSave()">
+      </div>
+    </div>
+    <p class="emails-alerte" id="emails-alerte" role="status"></p>
     <div class="ord-test">
       <div class="ord-test-txt">
         <strong>Vérifiez la réception</strong>
         <span>Recevez une ordonnance fictive (patient : Jean TEST, 06 00 00 00 00), exactement comme celles de vos patients.</span>
+        <div class="ord-test-dest">
+          <label for="ord-test-dest">Envoyer le test à</label>
+          <select id="ord-test-dest" class="dest-email"><option value="1">Email principal</option><option value="2">Deuxième email</option></select>
+        </div>
       </div>
       <button type="button" class="btn btn-primary" id="btn-ord-test" onclick="envoyerOrdonnanceTest()"><svg class="ico ico-sm"><use href="#i-send"/></svg>M'envoyer une ordonnance test</button>
     </div>
@@ -1789,6 +1827,16 @@ async function syncToSupabase(cfg){
       logo_url: cfg.pharmacy.logo || '',
       reseaux:cfg.pharmacy.reseaux||{}
     };
+    // Deuxième email : envoyé si les colonnes existent en base, ou dès qu'il
+    // est utilisé (sans migration, l'échec s'affiche alors en rouge).
+    const p2 = cfg.pharmacy;
+    let avecEmails2 = false;
+    if(colonnesDeuxEmails || p2.email_contact_2 || p2.email_titre_1 || p2.email_titre_2){
+      payload.email_contact_2 = p2.email_contact_2 || '';
+      payload.email_titre_1   = p2.email_titre_1 || '';
+      payload.email_titre_2   = p2.email_titre_2 || '';
+      avecEmails2 = true;
+    }
     const res = await fetch(SUPABASE_REST+'pharmacies?on_conflict=slug',{
       method:'POST',
       headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
@@ -1798,6 +1846,7 @@ async function syncToSupabase(cfg){
       flashErreur('HTTP ' + res.status + ' · ' + (await res.text()).slice(0,200));
       return false;
     }
+    if(avecEmails2) colonnesDeuxEmails = true;
     const promosPayload=cfg.promos.map((p,i)=>({
       pharmacie_slug:SLUG,
       position:i+1,
@@ -1809,6 +1858,12 @@ async function syncToSupabase(cfg){
       prix_apres:p.priceAfter?parseFloat(p.priceAfter):null,
       badge:p.badge,stock:parseInt(p.stock)||0
     }));
+    // Email qui reçoit les commandes de chaque article (1 = principal)
+    let avecDest = false;
+    if(colonnesDestPromos || cfg.promos.some(p => p.dest === 2)){
+      promosPayload.forEach((x, i) => { x.email_destinataire = cfg.promos[i].dest === 2 ? 2 : 1; });
+      avecDest = true;
+    }
     const resP = await fetch(SUPABASE_REST+'promos?on_conflict=pharmacie_slug,position',{
       method:'POST',
       headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
@@ -1816,7 +1871,7 @@ async function syncToSupabase(cfg){
     });
     if(!resP.ok){
       flashErreur('Promotions · HTTP ' + resP.status + ' · ' + (await resP.text()).slice(0,200));
-    }
+    } else if(avecDest) colonnesDestPromos = true;
     apercuRecharger();
     return true;
   }catch(e){ flashErreur(e.message); return false; }
@@ -1841,6 +1896,10 @@ async function loadFromSupabase(){
         cfg.pharmacy.sub           = d.soustitre || '';
         cfg.pharmacy.tel           = d.telephone || '';
         cfg.pharmacy.email_contact = d.email_contact || '';
+        cfg.pharmacy.email_contact_2 = d.email_contact_2 || '';
+        cfg.pharmacy.email_titre_1   = d.email_titre_1 || '';
+        cfg.pharmacy.email_titre_2   = d.email_titre_2 || '';
+        colonnesDeuxEmails = d.email_contact_2 !== undefined;
 
         // Le reste reste vide tant que non rempli
         cfg.pharmacy.adresse      = d.adresse || '';
@@ -1893,7 +1952,9 @@ async function loadFromSupabase(){
               priceAfter:  r.prix_apres != null ? String(r.prix_apres) : '',
               badge:       r.badge || '',
               stock:       parseInt(r.stock) || 0,
+              dest:        Number(r.email_destinataire) === 2 ? 2 : 1,
             }));
+            colonnesDestPromos = (rowsP || []).some(r => 'email_destinataire' in r);
           }
         } catch(e) {
           console.warn('Promos non chargées depuis Supabase :', e);
@@ -3024,6 +3085,9 @@ function fillInfo(cfg){
   document.getElementById('ph-sub').value=p.sub||'';
   document.getElementById('ph-tel').value=p.tel||'';
   document.getElementById('ph-email').value=p.email_contact||'';
+  document.getElementById('ph-email-2').value=p.email_contact_2||'';
+  document.getElementById('ph-titre-1').value=p.email_titre_1||'';
+  document.getElementById('ph-titre-2').value=p.email_titre_2||'';
   document.getElementById('ph-adresse').value=p.adresse||'';
   document.getElementById('ph-docteur').value=p.docteur||'';
   majFond(p.couleur_fond || '#d2d2d2');
@@ -3053,6 +3117,7 @@ function fillInfo(cfg){
 // Met à jour les boutons « Voir ma page » / « Voir mes promos »
 function majLienPage(){
   majIdentite();
+  majDeuxEmails();
   if(!SLUG) return;
   const p = document.getElementById('btn-view-page');
   if(p) p.href = 'https://swiftypharm.fr/' + SLUG;
@@ -3071,6 +3136,9 @@ function collectInfo(){
     sub:document.getElementById('ph-sub').value,
     tel:document.getElementById('ph-tel').value,
     email_contact:document.getElementById('ph-email').value,
+    email_contact_2:(document.getElementById('ph-email-2')?.value||'').trim(),
+    email_titre_1:(document.getElementById('ph-titre-1')?.value||'').trim(),
+    email_titre_2:(document.getElementById('ph-titre-2')?.value||'').trim(),
     adresse:document.getElementById('ph-adresse').value,
     adresse_maps:getConfig().pharmacy?.adresse_maps||'',
     lat:getConfig().pharmacy?.lat??null,
@@ -3173,6 +3241,7 @@ function buildPromoGrid(cfg){
           <div class="field"><label>Prix après (€)</label><input type="number" id="promo-after-${i}" placeholder="8.99" value="${esc(p.priceAfter)}" step="0.01" oninput="autoSave()"></div>
         </div>
         <div class="field"><label>Badge</label><input type="text" id="promo-badge-${i}" placeholder="-30%" value="${esc(p.badge)}" oninput="autoSave()"></div>
+        <div class="field promo-dest"><label>Commandes reçues sur</label><select id="promo-dest-${i}" class="dest-email" onchange="autoSave()"><option value="1">${esc(libellesEmails()[0])}</option><option value="2" ${p.dest===2?'selected':''}>${esc(libellesEmails()[1])}</option></select></div>
         <div class="field">
           <label>Stock</label>
           <div class="stock-row">
@@ -3237,6 +3306,7 @@ function collectPromos(){
       priceAfter:document.getElementById('promo-after-'+i)?.value||'',
       badge:document.getElementById('promo-badge-'+i)?.value||'',
       stock:parseInt(document.getElementById('promo-stock-'+i)?.value)||0,
+      dest:document.getElementById('promo-dest-'+i)?.value==='2'?2:1,
     };
   });
 }
@@ -3891,7 +3961,9 @@ function blobEnBase64(blob){
 async function envoyerOrdonnanceTest(){
   const btn = document.getElementById('btn-ord-test');
   const zone = document.getElementById('ord-test-res');
-  const champ = document.getElementById('ph-email');
+  // Deux emails : le test part vers celui choisi dans la liste
+  const choix = document.body.classList.contains('deux-emails') && document.getElementById('ord-test-dest')?.value === '2' ? 2 : 1;
+  const champ = document.getElementById(choix === 2 ? 'ph-email-2' : 'ph-email');
   const email = (champ.value || '').trim();
   const dire = (cls, html) => { zone.className = 'ord-res ' + cls; zone.innerHTML = html; };
 
@@ -3920,7 +3992,7 @@ async function envoyerOrdonnanceTest(){
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
-        action:'ordonnance', slug:SLUG, test:true,
+        action:'ordonnance', slug:SLUG, test:true, destinataire:choix,
         patient_nom:'Jean TEST',
         patient_tel:'06 00 00 00 00',
         message:"Envoi de test depuis votre back office SwiftyPharm. Aucune action n'est nécessaire.",
@@ -4056,6 +4128,51 @@ document.addEventListener('DOMContentLoaded', function(){
 
 window.allerA=allerA; window.editerImage=editerImage; window.envoyerOrdonnanceTest=envoyerOrdonnanceTest;
 window.fermerPlus=fermerPlus; window.clearBanniere=clearBanniere;
+
+
+// ═══════════════════════════════════════════
+//  DEUX EMAILS DE RÉCEPTION
+//  Le deuxième email est facultatif. S'il est rempli, chaque adresse
+//  reçoit un titre affiché sur la page : le patient choisit à qui
+//  envoyer son ordonnance. Chaque article en promotion indique l'email
+//  qui reçoit ses commandes (principal par défaut).
+// ═══════════════════════════════════════════
+let colonnesDeuxEmails = false;   // colonnes présentes en base (migration passée)
+let colonnesDestPromos = false;
+
+function libellesEmails(){
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  return [
+    (v('ph-titre-1') || 'Email principal') + (v('ph-email') ? ' · ' + v('ph-email') : ''),
+    (v('ph-titre-2') || 'Deuxième email') + (v('ph-email-2') ? ' · ' + v('ph-email-2') : ''),
+  ];
+}
+
+function majDeuxEmails(){
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  const deux = v('ph-email-2') !== '';
+  document.body.classList.toggle('deux-emails', deux);
+
+  // Libellés des listes : ordonnance test et articles en promotion
+  const lib = libellesEmails();
+  document.querySelectorAll('select.dest-email').forEach(function(sel){
+    if(sel.options[0]) sel.options[0].textContent = lib[0];
+    if(sel.options[1]) sel.options[1].textContent = lib[1];
+  });
+
+  // Titres obligatoires dès qu'il y a deux adresses
+  const manque1 = deux && !v('ph-titre-1'), manque2 = deux && !v('ph-titre-2');
+  document.getElementById('ph-titre-1')?.classList.toggle('manquant', manque1);
+  document.getElementById('ph-titre-2')?.classList.toggle('manquant', manque2);
+  const alerte = document.getElementById('emails-alerte');
+  if(!alerte) return;
+  let msg = '';
+  if(deux && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('ph-email-2'))) msg = "Le deuxième email ne semble pas valide.";
+  else if(manque1 || manque2) msg = "Indiquez un titre pour chaque adresse : il s'affiche sur votre page pour que le patient choisisse à qui envoyer son ordonnance.";
+  alerte.textContent = msg;
+  alerte.classList.toggle('show', !!msg);
+}
+window.majDeuxEmails = majDeuxEmails;
 
 // Global window exports
 window.doLogin=doLogin;window.doLogout=doLogout;window.showTab=showTab;
@@ -4259,7 +4376,7 @@ const SAV_FAQ = [
   {
     suggeree: true,
     q: "Je ne reçois pas les ordonnances par email, que faire ?",
-    r: "Vérifiez d'abord que votre email de réception est bien renseigné dans « Ordonnances », puis utilisez le bouton « M'envoyer une ordonnance test ». Pensez aussi à regarder votre dossier spam et à y marquer nos emails comme « non indésirables ». Si le problème persiste, contactez-nous via le bouton ci-dessous."
+    r: "Vérifiez d'abord que votre email de réception est bien renseigné dans « Ordonnances », puis utilisez le bouton « M'envoyer une ordonnance test ». Vous pouvez ajouter un deuxième email (ex. matériel médical) : vos patients choisissent alors le destinataire. Pensez aussi à regarder votre dossier spam et à y marquer nos emails comme « non indésirables ». Si le problème persiste, contactez-nous via le bouton ci-dessous."
   },
   {
     suggeree: true,
