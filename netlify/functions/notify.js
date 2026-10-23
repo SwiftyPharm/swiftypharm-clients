@@ -444,10 +444,10 @@ exports.handler = async (event) => {
   // ── Le destinataire vient de la base, jamais de la requête ──
   let pharma;
   try {
-    const rows = await sb(
-      'pharmacies?slug=eq.' + encodeURIComponent(slug)
-      + '&select=slug,nom,email_contact,telephone&limit=1'
-    );
+    const base = 'pharmacies?slug=eq.' + encodeURIComponent(slug) + '&limit=1&select=slug,nom,email_contact,telephone';
+    // Deuxième email (migration « deux emails ») : si les colonnes n'existent
+    // pas encore, on relit sans elles et tout part vers l'email principal.
+    const rows = await sb(base + ',email_contact_2,email_titre_1,email_titre_2').catch(() => sb(base));
     if (!rows?.length) return json(404, { error: 'Pharmacie introuvable' });
     pharma = rows[0];
   } catch (e) {
@@ -460,6 +460,14 @@ exports.handler = async (event) => {
       + `(${esc(slug)}) n'a pas renseigné d'email. Notification perdue.`);
     return json(422, { error: "Cette pharmacie n'a pas encore renseigné son email de contact." });
   }
+
+  // Destinataires : 1 = email principal, 2 = deuxième email (s'il existe).
+  // L'adresse vient toujours de la base, jamais de la requête.
+  const email2 = String(pharma.email_contact_2 || '').trim();
+  const deuxEmails = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email2);
+  const destinataire = (n) => (n === 2 && deuxEmails)
+    ? { email: email2, titre: String(pharma.email_titre_2 || '').trim() || pharma.nom }
+    : { email: pharma.email_contact, titre: String(pharma.email_titre_1 || '').trim() || pharma.nom };
 
   try {
     // ═══════════════════════════════════════════
@@ -496,9 +504,11 @@ exports.handler = async (event) => {
         attachments.push({ name: nomFichier, content: contenu });
       }
 
+      const dest = destinataire(Number(body.destinataire) === 2 ? 2 : 1);
       const corps = `
         <p>Bonjour, un fichier vient de vous être envoyé !</p>
         <ul style="padding-left:20px;margin:16px 0;">
+          ${deuxEmails ? puce('Destinataire choisi par le patient', dest.titre) : ''}
           ${puce("Nom de l'expéditeur", nom)}
           ${puce('Numéro de téléphone', tel)}
           ${email ? puce('Email', email) : ''}
@@ -509,8 +519,8 @@ exports.handler = async (event) => {
         <p>Bon courage !</p>`;
 
       await envoyerEmail({
-        to: pharma.email_contact,
-        toName: pharma.nom,
+        to: dest.email,
+        toName: dest.titre,
         replyTo: email || undefined,
         subject: (body.test ? '[Test] ' : '') + `Ordonnance de : ${nom}`,
         html: gabarit({ corps }),
@@ -562,12 +572,32 @@ exports.handler = async (event) => {
         <p>Retrouvez cette commande dans l'onglet Commandes de votre back office pour la marquer comme prête.</p>
         <p>Bon courage !</p>`;
 
-      await envoyerEmail({
-        to: pharma.email_contact,
-        toName: pharma.nom,
-        subject: `Commande ${numero} — ${client}`,
-        html: gabarit({ corps }),
-      });
+      // Chaque article indique dans le back office l'email qui reçoit ses
+      // commandes. La commande part vers chaque email concerné, et vers
+      // l'email principal si rien n'est précisé.
+      const choix = new Set();
+      if (deuxEmails) {
+        try {
+          const promos = await sb('promos?pharmacie_slug=eq.' + encodeURIComponent(slug) + '&select=*') || [];
+          const parId  = new Map(promos.map(p => [String(p.id), p]));
+          const parNom = new Map(promos.map(p => [String(p.nom || '').trim().toLowerCase(), p]));
+          for (const a of articles) {
+            const p = parId.get(String(a.id)) || parNom.get(String(a.nom || '').trim().toLowerCase());
+            choix.add(p && Number(p.email_destinataire) === 2 ? 2 : 1);
+          }
+        } catch (e) { console.error('Destinataires commande :', e.message); }
+      }
+      if (!choix.size) choix.add(1);
+
+      for (const n of choix) {
+        const dest = destinataire(n);
+        await envoyerEmail({
+          to: dest.email,
+          toName: dest.titre,
+          subject: `Commande ${numero} — ${client}`,
+          html: gabarit({ corps }),
+        });
+      }
 
       // ── SMS de confirmation au client ──
       let smsEnvoye = false;
