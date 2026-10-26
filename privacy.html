@@ -51,17 +51,19 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
   <ul>
     <li>Envoi d'ordonnance : document (photo ou PDF), nom, téléphone et, s'ils sont renseignés, email et message. Ces données sont transmises à la pharmacie et ne sont jamais conservées par Swiftup (voir l'article 3)</li>
     <li>Commande click &amp; collect : nom, prénom, téléphone, email facultatif, articles commandés et créneau de retrait</li>
+    <li>Questionnaire de bilan de prévention : tranche d'âge, réponses sur la santé et les habitudes de vie, sujets à aborder lors du bilan, nom, téléphone, disponibilités et, s'il est renseigné, email. Ces réponses sont transmises à la pharmacie et ne sont jamais conservées par Swiftup ; une copie est envoyée au patient s'il la demande</li>
   </ul>
-  <p><strong>Statistiques du tableau de bord :</strong> les pages des pharmacies comptent les ordonnances transmises et les clics vers Google Avis, Instagram, Facebook et TikTok. Chaque compteur enregistre uniquement la page, le type d'événement et la date : aucun nom, aucune adresse IP, aucun identifiant d'appareil. Ces compteurs ne sont pas des données personnelles.</p>
+  <p><strong>Statistiques du tableau de bord :</strong> les pages des pharmacies comptent les ordonnances transmises, les questionnaires de bilan de prévention envoyés et les clics vers Google Avis, Instagram, Facebook et TikTok. Chaque compteur enregistre uniquement la page, le type d'événement et la date : aucun nom, aucune adresse IP, aucun identifiant d'appareil. Ces compteurs ne sont pas des données personnelles.</p>
 
-  <h2>3. Ordonnances : transmises, jamais conservées</h2>
+  <h2>3. Ordonnances et bilans de prévention : transmis, jamais conservés</h2>
   <p>Le document envoyé par le patient est compressé dans son navigateur, puis transmis par nos fonctions serveur à notre prestataire d'envoi d'emails, qui le remet en pièce jointe à l'adresse de réception choisie par la pharmacie. Swiftup n'en garde aucune copie : l'ordonnance n'est enregistrée ni dans notre base de données, ni dans notre stockage de fichiers, ni dans nos journaux. Seule la date de réception alimente le compteur du tableau de bord de la pharmacie.</p>
-  <p>La messagerie de la pharmacie est le seul endroit où l'ordonnance est conservée ; la pharmacie en est responsable.</p>
+  <p>Les réponses au questionnaire de bilan de prévention suivent le même chemin : elles sont envoyées par email à la pharmacie, et au patient s'il demande une copie, sans jamais être enregistrées par Swiftup.</p>
+  <p>La messagerie de la pharmacie est le seul endroit où l'ordonnance et le questionnaire sont conservés ; la pharmacie en est responsable.</p>
 
   <h2>4. Finalités et bases légales</h2>
   <ul>
     <li>Création et gestion du compte, affichage de la page de la pharmacie, tableau de bord : exécution du contrat (conditions générales d'utilisation)</li>
-    <li>Transmission des ordonnances et des commandes à la pharmacie, suivi de commande et SMS de suivi lorsque ce service est activé : exécution du contrat conclu avec la pharmacie, pour le compte de laquelle Swiftup agit</li>
+    <li>Transmission des ordonnances, des questionnaires de bilan de prévention et des commandes à la pharmacie, suivi de commande et SMS de suivi lorsque ce service est activé : exécution du contrat conclu avec la pharmacie, pour le compte de laquelle Swiftup agit</li>
     <li>Gestion des achats et facturation : exécution du contrat et obligations légales</li>
     <li>Réponse aux demandes d'assistance et de contact : intérêt légitime de Swiftup à répondre aux personnes qui le sollicitent</li>
     <li>Sécurité du service et prévention des abus : intérêt légitime. L'adresse IP sert à limiter le nombre d'envois ; Swiftup ne l'enregistre pas</li>
@@ -71,8 +73,8 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
   <p>Vos données ne sont jamais vendues ni utilisées à des fins publicitaires. Elles sont accessibles aux seuls membres de l'équipe Swiftup qui en ont besoin, et aux prestataires suivants :</p>
   <ul>
     <li><strong>Supabase</strong> — base de données, authentification et stockage des images. Données hébergées à Paris (région AWS eu-west-3)</li>
-    <li><strong>Netlify</strong> — hébergement du site et fonctions serveur qui transmettent les ordonnances et les commandes. Ces fonctions s'exécutent aux États-Unis (Ohio) : les données y transitent sans y être conservées par Swiftup. Transfert encadré par le Data Privacy Framework UE–États-Unis, avec les clauses contractuelles types de la Commission européenne en repli</li>
-    <li><strong>Brevo</strong> — envoi des emails (ordonnances, commandes, invitations, assistance) et des SMS de suivi de commande. Serveurs situés dans l'Union européenne</li>
+    <li><strong>Netlify</strong> — hébergement du site et fonctions serveur qui transmettent les ordonnances, les questionnaires de bilan de prévention et les commandes. Ces fonctions s'exécutent aux États-Unis (Ohio) : les données y transitent sans y être conservées par Swiftup. Transfert encadré par le Data Privacy Framework UE–États-Unis, avec les clauses contractuelles types de la Commission européenne en repli</li>
+    <li><strong>Brevo</strong> — envoi des emails (ordonnances, questionnaires de bilan de prévention, commandes, invitations, assistance) et des SMS de suivi de commande. Serveurs situés dans l'Union européenne</li>
     <li><strong>Stripe</strong> et <strong>Shopify</strong> — paiement de l'accès et des supports physiques, livraison des supports. Transferts éventuels hors de l'Union européenne encadrés par leurs propres garanties (Data Privacy Framework, clauses contractuelles types)</li>
     <li><strong>Telegram</strong> — alertes internes de l'équipe Swiftup (nouvelle inscription, demande de contact, demande d'assistance). Ces alertes peuvent contenir le nom, l'email ou le téléphone d'un pharmacien ou d'un contact professionnel, jamais de données de patient. Telegram est situé hors de l'Union européenne</li>
     <li><strong>Base Adresse Nationale</strong> (api-adresse.data.gouv.fr) — suggestions d'adresse lors de la saisie de l'adresse de la pharmacie</li>
@@ -83,7 +85,7 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
   <ul>
     <li>Compte du pharmacien et contenu de sa page : jusqu'à la suppression du compte. Le pharmacien peut supprimer son compte à tout moment depuis son back office (Mon compte) : sa fiche, ses commandes, ses promotions et son accès sont alors effacés</li>
     <li>Données de facturation : 10 ans, conformément aux obligations comptables</li>
-    <li>Ordonnances : aucune conservation par Swiftup</li>
+    <li>Ordonnances et questionnaires de bilan de prévention : aucune conservation par Swiftup</li>
     <li>Commandes click &amp; collect : 12 mois après la commande, puis suppression automatique</li>
     <li>Demandes de contact et d'assistance : 3 ans au plus après le dernier échange</li>
     <li>Journaux techniques : durée limitée, fixée par nos hébergeurs</li>
@@ -104,7 +106,7 @@ ul li{font-size:14px;color:#374151;margin-bottom:6px;}
   <p>SwiftyPharm n'utilise aucun cookie publicitaire ni aucun outil de mesure d'audience tiers. Les pages des pharmacies conservent seulement, dans le navigateur du patient, son panier en cours et les numéros de ses dernières commandes, pour lui permettre d'en suivre l'état. Le back office conserve la session de connexion du pharmacien. Ces éléments sont strictement nécessaires au fonctionnement du service et ne nécessitent pas de consentement.</p>
 
   <h2>9. Sécurité</h2>
-  <p>Les échanges sont chiffrés (HTTPS) et les données sont hébergées chez Supabase, à Paris, avec chiffrement au repos. Les mots de passe sont stockés sous forme hachée. Le suivi d'une commande par le patient passe par un lien personnel et imprévisible. L'accès aux données est réservé aux membres de l'équipe Swiftup qui en ont besoin, et les ordonnances ne sont jamais enregistrées sur nos serveurs.</p>
+  <p>Les échanges sont chiffrés (HTTPS) et les données sont hébergées chez Supabase, à Paris, avec chiffrement au repos. Les mots de passe sont stockés sous forme hachée. Le suivi d'une commande par le patient passe par un lien personnel et imprévisible. L'accès aux données est réservé aux membres de l'équipe Swiftup qui en ont besoin, et les ordonnances comme les questionnaires de bilan de prévention ne sont jamais enregistrés sur nos serveurs.</p>
 
   <h2>10. Modifications</h2>
   <p>Cette politique peut évoluer avec le service. La date de mise à jour figure en haut de la page ; en cas de changement important, les pharmaciens sont prévenus par email.</p>
