@@ -1371,16 +1371,17 @@
       }
 
       // ── BILAN DE PRÉVENTION ──
-      // Lien natif : sans adresse saisie, la page officielle sante.fr.
+      // Lien natif : sans adresse saisie, le questionnaire SwiftyPharm de la
+      // pharmacie (swiftypharm.fr/<slug>/bilan), ouvert dans le même onglet.
       const prevObj = soc.prevention;
       const prevActif = prevObj?.actif ?? prevObj?.active;
       if (prevObj && prevActif) {
-        let prevUrl = String(prevObj.url || prevObj.valeur || '').trim() || 'https://www.sante.fr/mon-bilan-prevention';
-        if (!/^https?:\/\//i.test(prevUrl)) prevUrl = 'https://' + prevUrl.replace(/^[a-z]+:/i, '');
+        let prevUrl = String(prevObj.url || prevObj.valeur || '').trim() || ('/' + PAGE_SLUG + '/bilan');
+        if (prevUrl[0] !== '/' && !/^https?:\/\//i.test(prevUrl)) prevUrl = 'https://' + prevUrl.replace(/^[a-z]+:/i, '');
+        const prevInterne = prevUrl[0] === '/' || /^https?:\/\/(www\.)?swiftypharm\.fr\//i.test(prevUrl);
         const aPrev = document.createElement('a');
         aPrev.href = prevUrl;
-        aPrev.target = '_blank';
-        aPrev.rel = 'noopener';
+        if (!prevInterne) { aPrev.target = '_blank'; aPrev.rel = 'noopener'; }
         aPrev.className = 'social-card-item';
         aPrev.innerHTML = `
             <img src="/assets/bilan-prevention-icon.png" alt="Bilan de prévention" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0f9b8e;color:#fff;\\'>&#10010;</div>'">
