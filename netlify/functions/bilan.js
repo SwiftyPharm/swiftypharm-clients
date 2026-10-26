@@ -1,7 +1,7 @@
 // netlify/functions/bilan.js
 //
 // Questionnaire « Bilan de prévention » de chaque pharmacie
-// (swiftypharm.fr/<slug>/bilan).
+// (swiftypharm.fr/<slug>/bilan)
 //
 //   GET  /api/bilan?slug=…  → nom et logo de la pharmacie + questionnaire
 //   POST /api/bilan         → envoi des réponses par email à la pharmacie
