@@ -234,6 +234,9 @@
       gap: 10px;
       text-decoration: none;
       transition: transform 0.2s;
+      /* Jamais plus d'un tiers de la ligne (3 icônes par ligne même avec un
+         texte agrandi dans les réglages du téléphone). */
+      max-width: calc((100% - 48px) / 3);
     }
     .social-card-item:hover {
       transform: translateY(-3px);
@@ -273,6 +276,18 @@
       font-weight: 600;
       color: #111;
       line-height: 1.4;
+      /* Le texte peut déborder de 8 px de chaque côté de l'icône sans élargir
+         la carte : la largeur de la carte reste celle de l'icône. */
+      margin: 0 -8px;
+    }
+    /* Écrans de moins de 390 px (la plupart des Android, iPhone SE) :
+       3 icônes par ligne comme sur iPhone, au lieu de 2. */
+    @media (max-width: 389px) {
+      .dynamic-social-container { gap: 20px 10px; padding: 0 10px; }
+      .social-card-item { flex: 0 0 calc((100% - 20px) / 3); min-width: 0; max-width: none; }
+      .social-card-img, .social-card-fallback { width: 88px; height: 88px; }
+      .social-card-fallback { font-size: 36px; }
+      .social-card-txt { font-size: 12px; overflow-wrap: anywhere; margin: 0; }
     }
 
     /* ══ BENTO GRID ══ */
