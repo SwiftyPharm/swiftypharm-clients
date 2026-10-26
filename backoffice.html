@@ -1126,6 +1126,14 @@ input.manquant{border-color:#f59e0b !important}
 .ord-test-dest select,.promo-dest select{width:auto;max-width:100%;padding:8px 11px;border-radius:10px;font-size:13px;
   border:1.5px solid var(--line);background:#fff;color:var(--nuit)}
 .promo-dest select{width:100%}
+
+/* Raccourcis du lien « Bilan de prévention » */
+.lm-raccourcis{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;align-items:center}
+.lm-raccourci{padding:8px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--nuit);
+  font-size:12.5px;font-weight:700;cursor:pointer}
+.lm-raccourci:hover{border-color:var(--action);color:var(--action)}
+.lm-raccourci-voir{font-size:12.5px;font-weight:700;color:var(--action);text-decoration:none;padding:4px}
+.lm-raccourci-voir:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -2546,10 +2554,10 @@ const RESEAUX_DEF = {
   prevention:{
     label:'Bilan de prévention', img:'/assets/bilan-prevention-icon.png', svg:'i-heart-pulse',
     couleur:'linear-gradient(135deg,#0f9b8e,#1cb5e0)',
-    saisie:'url', exemple:'https://www.sante.fr/mon-bilan-prevention',
-    // Adresse proposée d'office : la page officielle, valable pour toutes les pharmacies.
-    defaut:'https://www.sante.fr/mon-bilan-prevention',
-    aide:"Par défaut, le bouton ouvre la page officielle « Mon bilan prévention » (sante.fr). Si vos patients peuvent réserver leur bilan en ligne chez vous (Doctolib, votre site…), collez plutôt l'adresse de votre page de réservation.",
+    saisie:'url', exemple:'https://swiftypharm.fr/ma-pharmacie/bilan',
+    // Adresse proposée d'office : le questionnaire SwiftyPharm de la pharmacie.
+    get defaut(){ return SLUG ? 'https://swiftypharm.fr/' + SLUG + '/bilan' : 'https://www.sante.fr/mon-bilan-prevention'; },
+    aide:"Par défaut, le bouton ouvre votre questionnaire de bilan de prévention : le patient y répond en moins de 5 minutes et ses réponses vous arrivent par email, pour que vous le rappeliez. Vous pouvez aussi renvoyer vers la page officielle sante.fr ou vers votre propre lien de réservation (Doctolib, votre site…).",
     valider:v=>/^https?:\/\/.+\..+/.test(v) ? '' : "L'adresse doit commencer par https:// et contenir un nom de domaine.",
     construire:v=>v.trim(),
     extraire:u=>u||'',
@@ -2811,6 +2819,15 @@ function ouvrirEditeur(cle){
   if(d.aide){
     champ.insertAdjacentHTML('beforeend', `<p class="lm-apercu">${d.aide}</p>`);
   }
+  // Bilan de prévention : choix rapide entre le questionnaire et sante.fr
+  if(cle === 'prevention'){
+    const monQuestionnaire = 'https://swiftypharm.fr/' + SLUG + '/bilan';
+    champ.insertAdjacentHTML('beforeend', `<div class="lm-raccourcis">
+      <button type="button" class="lm-raccourci" data-lm-url="${esc(monQuestionnaire)}">Mon questionnaire SwiftyPharm</button>
+      <button type="button" class="lm-raccourci" data-lm-url="https://www.sante.fr/mon-bilan-prevention">Page officielle sante.fr</button>
+      <a class="lm-raccourci-voir" href="/${esc(SLUG)}/bilan" target="_blank" rel="noopener">Voir mon questionnaire</a>
+    </div>`);
+  }
   if(cle === 'google' && !etat.valeur && etat.url){
     champ.insertAdjacentHTML('beforeend',
       `<p class="lm-apercu" style="color:#b45309">Votre lien actuel reste actif tant que vous n'avez pas saisi de Place ID.</p>`);
@@ -3059,6 +3076,13 @@ document.addEventListener('click', function(e){
     }
     document.getElementById('lm-picker').classList.remove('show');
     setTimeout(() => ouvrirEditeur(cle), 120);
+    return;
+  }
+
+  const raccourci = e.target.closest('[data-lm-url]');
+  if(raccourci){
+    const champUrl = document.getElementById('lm-valeur');
+    if(champUrl){ champUrl.value = raccourci.dataset.lmUrl; majApercuLien(); }
     return;
   }
 
@@ -4415,7 +4439,7 @@ const SAV_FAQ = [
   },
   {
     q: "Comment afficher le bilan de prévention sur ma page ?",
-    r: "Dans « Liens », touchez + puis « Bilan de prévention ». Par défaut, le bouton ouvre la page officielle Mon bilan prévention (sante.fr) ; vous pouvez la remplacer par votre propre lien de réservation."
+    r: "Dans « Liens », touchez + puis « Bilan de prévention ». Par défaut, le bouton ouvre votre questionnaire de bilan de prévention (swiftypharm.fr/votre-page/bilan) : le patient y répond en moins de 5 minutes et ses réponses vous arrivent par email. Vous pouvez aussi renvoyer vers la page officielle sante.fr ou votre propre lien de réservation."
   },
   {
     q: "Comment supprimer mon compte ?",
