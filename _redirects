@@ -17,6 +17,9 @@
 /terms          /terms.html        200
 /dpa            /dpa.html          200
 
-# 3. Page de chaque pharmacie : swiftypharm.fr/<slug>
+# 3. Questionnaire de bilan de prévention : swiftypharm.fr/<slug>/bilan
+/:slug/bilan    /bilan.html        200
+
+# 4. Page de chaque pharmacie : swiftypharm.fr/<slug>
 #    Toujours en dernier : elle capte toute adresse à un seul niveau.
 /:slug          /page.html         200
