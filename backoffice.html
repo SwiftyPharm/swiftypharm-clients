@@ -1134,6 +1134,31 @@ input.manquant{border-color:#f59e0b !important}
 .lm-raccourci:hover{border-color:var(--action);color:var(--action)}
 .lm-raccourci-voir{font-size:12.5px;font-weight:700;color:var(--action);text-decoration:none;padding:4px}
 .lm-raccourci-voir:hover{text-decoration:underline}
+
+/* Ordre des logos : bouton, numéros, glisser-déposer */
+.liens-ordre-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;
+  padding:7px 13px;background:var(--action-050);color:var(--action);
+  font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:0;cursor:pointer;
+  transition:background .15s,color .15s}
+.liens-ordre-btn:hover{background:#e0e5ff}
+.liens-ordre-btn[aria-pressed="true"]{background:var(--action);color:#fff}
+.liens-ordre-btn[aria-pressed="true"]:hover{background:var(--action-d)}
+.liens-ordre-btn[hidden]{display:none}
+.card-title .liens-ordre-btn .ico{width:15px;height:15px;color:currentColor}
+.lien-rang{display:none}
+.liens-grid.mode-ordre{position:relative;box-shadow:inset 0 0 0 2px var(--action-050)}
+.liens-grid.mode-ordre .lien-edit,
+.liens-grid.mode-ordre .lien-add{display:none}
+.liens-grid.mode-ordre .lien-tile{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.liens-grid.mode-ordre .lien-tile img{-webkit-user-drag:none;pointer-events:none}
+.liens-grid.mode-ordre .lien-tile:focus-visible{outline:2px solid var(--action);outline-offset:4px;border-radius:12px}
+.liens-grid.mode-ordre .lien-rang{
+  display:flex;position:absolute;top:-6px;right:calc(50% + 20px);z-index:2;width:22px;height:22px;border-radius:50%;
+  align-items:center;justify-content:center;background:var(--action);color:#fff;font-size:11px;font-weight:800;
+  box-shadow:0 2px 6px rgba(0,0,70,.2)}
+.lien-tile.glisse{z-index:5;cursor:grabbing}
+.lien-tile.glisse .lien-ico{box-shadow:0 12px 26px rgba(0,0,70,.28);transform:scale(1.08)}
+.liens-grid.en-glisse,.liens-grid.en-glisse .lien-tile{cursor:grabbing}
 </style>
 </head>
 <body>
@@ -1189,6 +1214,7 @@ input.manquant{border-color:#f59e0b !important}
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
   <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24"><path d="m5 9-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></symbol>
 </svg>
 
@@ -1457,10 +1483,18 @@ input.manquant{border-color:#f59e0b !important}
 <!-- ═════ LIENS ═════ -->
 <div class="section" id="section-liens">
   <div class="card">
-    <div class="card-title">Réseaux et liens</div>
-    <p class="liens-hint" style="margin:0 0 16px">
+    <div class="card-title">Réseaux et liens
+      <button type="button" class="liens-ordre-btn" id="liens-ordre-btn" aria-pressed="false" hidden>
+        <svg class="ico"><use href="#i-move"/></svg><span>Modifier l'ordre</span>
+      </button>
+    </div>
+    <p class="liens-hint" id="liens-hint" style="margin:0 0 16px">
       Touchez le logo d'une application pour modifier son lien ou la retirer.
       Le bouton <strong>+</strong> ajoute une nouvelle application.
+    </p>
+    <p class="liens-hint" id="liens-hint-ordre" style="margin:0 0 16px" hidden>
+      Faites glisser les logos dans l'ordre voulu : le n° 1 s'affiche en premier sur votre page.
+      L'ordre est enregistré automatiquement.
     </p>
     <div class="liens-grid" id="liens-grid"></div>
   </div>
@@ -2615,6 +2649,23 @@ let googleDemandeAt = '';
 let reseauxState = {};
 let lmCleEnCours = null;
 
+// Ordre des logos sur la page, choisi par le pharmacien et enregistré dans
+// la clé « _ordre » de `reseaux`. Vide : ordre par défaut de la page.
+let ordreLiens = [];
+const ORDRE_PAGE = ['google','instagram','facebook','website','doctolib','prevention','tiktok'];
+function clesOrdonnees(){
+  const presentes = Object.keys(reseauxState);
+  const parDefaut = ORDRE_PAGE.filter(c => reseauxState[c])
+    .concat(presentes.filter(c => !ORDRE_PAGE.includes(c)));
+  if(!ordreLiens.length) return parDefaut;
+  // Les logos classés prennent les places des logos classés, dans l'ordre
+  // choisi ; un logo absent du classement garde sa place par défaut.
+  const classees = parDefaut.filter(c => ordreLiens.includes(c))
+    .sort((a, b) => ordreLiens.indexOf(a) - ordreLiens.indexOf(b));
+  let k = 0;
+  return parDefaut.map(c => ordreLiens.includes(c) ? classees[k++] : c);
+}
+
 // Clés de `reseaux` que ce back office ne gère pas (écrites par l'admin
 // ou par une version ultérieure) : conservées à l'identique, sinon la
 // première sauvegarde du pharmacien les effacerait.
@@ -2622,19 +2673,35 @@ let reseauxInconnus = {};
 
 const estPerso = cle => typeof cle === 'string' && cle.indexOf('perso_') === 0;
 
+// Lien personnalisé : adresse web, ou adresse email. Une adresse email
+// devient un lien « mailto: » qui ouvre la messagerie du patient.
+const MAIL_PERSO = /^[^\s@\/:?]+@[^\s@\/:?]+\.[a-z]{2,}$/i;
+const estMailto = u => /^mailto:/i.test(String(u || '').trim());
+function lienPerso(v){
+  v = String(v || '').trim();
+  if(estMailto(v)) return 'mailto:' + v.slice(7).trim();
+  if(MAIL_PERSO.test(v)) return 'mailto:' + v;
+  return v;
+}
+
 function defPour(cle){
   if(!estPerso(cle)) return RESEAUX_DEF[cle];
   const e = reseauxState[cle] || {};
   return {
     label: e.label || 'Mon lien',
     img: e.icone || '',
-    svg: 'i-globe',
+    svg: estMailto(e.url) ? 'i-mail' : 'i-globe',
     couleur: '#0f172a',
-    saisie: 'url',
-    exemple: 'https://mon-lien.fr',
-    aide: "Collez l'adresse complète, en commençant par https://",
-    valider: v => /^https?:\/\/.+\..+/.test(v) ? '' : "L'adresse doit commencer par https:// et contenir un nom de domaine.",
-    construire: v => v.trim(),
+    saisie: 'lien',
+    exemple: 'https://mon-lien.fr ou contact@pharmacie.fr',
+    aide: "Collez une adresse web complète (https://…) ou une adresse email : le bouton ouvrira alors la messagerie du patient, avec votre adresse déjà remplie.",
+    valider: v => {
+      const l = lienPerso(v);
+      if(estMailto(l) || (l.includes('@') && !/^https?:\/\//i.test(l)))
+        return MAIL_PERSO.test(l.replace(/^mailto:/i, '').split('?')[0]) ? '' : "Adresse email invalide (exemple : contact@pharmacie.fr).";
+      return /^https?:\/\/.+\..+/i.test(l) ? '' : "Saisissez une adresse web commençant par https:// ou une adresse email.";
+    },
+    construire: v => lienPerso(v),
     extraire: u => u || '',
     perso: true,
   };
@@ -2653,6 +2720,9 @@ function normaliserReseaux(brut){
   Object.keys(brut || {}).forEach(cle => {
     if(!RESEAUX_DEF[cle] && !estPerso(cle) && !ALIAS_ANCIENS.includes(cle)) reseauxInconnus[cle] = brut[cle];
   });
+  // Ordre choisi des logos : géré à part, pas comme une clé inconnue
+  delete reseauxInconnus._ordre;
+  ordreLiens = Array.isArray(brut?._ordre) ? brut._ordre.filter(c => typeof c === 'string') : [];
 
   // Liens personnalisés : repris tels qu'enregistrés.
   Object.keys(brut || {}).filter(estPerso).forEach(cle => {
@@ -2711,6 +2781,8 @@ function serialiserReseaux(){
       _name: valeur,          // compatibilité avec l'ancien format
     };
   });
+  // Ordre choisi des logos (absent tant que le pharmacien ne l'a pas modifié)
+  if(ordreLiens.length) out._ordre = clesOrdonnees();
   return out;
 }
 
@@ -2730,15 +2802,16 @@ function renderLiensGrid(){
   const grille = document.getElementById('liens-grid');
   if(!grille) return;
 
-  const cles = Object.keys(RESEAUX_DEF).filter(cle => reseauxState[cle])
-    .concat(Object.keys(reseauxState).filter(estPerso));
+  // Même ordre que sur la page
+  const cles = clesOrdonnees();
 
   const tuiles = cles
-    .map(cle => {
+    .map((cle, i) => {
       const d = defPour(cle);
       const off = reseauxState[cle].actif ? '' : ' off';
       return `
-        <div class="lien-tile${off}">
+        <div class="lien-tile${off}" data-cle="${esc(cle)}">
+          <span class="lien-rang" aria-hidden="true">${i + 1}</span>
           <div class="lien-ico" style="${styleIcone(cle)}">${iconeHTML(cle)}</div>
           <button class="lien-edit" data-lm-edit="${cle}" title="Modifier ${esc(d.label)}">
             <svg class="ico"><use href="#i-pencil"/></svg>
@@ -2752,6 +2825,7 @@ function renderLiensGrid(){
       <div class="lien-ico"><svg class="ico"><use href="#i-plus-lg"/></svg></div>
       <div class="lien-nom">Ajouter un lien</div>
     </div>`;
+  majModeOrdre();
 }
 
 // ── Sélecteur d'application ──
@@ -2838,6 +2912,9 @@ function ouvrirEditeur(cle){
   }
 
   const input = document.getElementById('lm-valeur');
+  // Lien personnalisé : champ texte libre (le @ reste accessible au clavier
+  // du téléphone), sans majuscule automatique
+  if(d.perso){ input.setAttribute('autocapitalize', 'off'); input.setAttribute('autocorrect', 'off'); }
   input.value = etat.valeur || d.defaut || '';
   input.addEventListener('input', majApercuLien);
 
@@ -2854,6 +2931,11 @@ function majApercuLien(){
   const el = document.getElementById('lm-apercu');
   if(!d || !el) return;
   el.textContent = v ? d.construire(v) : '';
+  // Lien personnalisé : enveloppe pour un email, globe pour une adresse web
+  if(d.perso){
+    const ico = estMailto(lienPerso(v)) ? '#i-mail' : '#i-globe';
+    document.querySelectorAll('#lm-ico svg use, .lm-perso-ico svg use').forEach(u => u.setAttribute('href', ico));
+  }
   document.getElementById('lm-erreur').classList.remove('show');
 }
 
@@ -2910,8 +2992,11 @@ function sauverLien(){
     }
     entree.label = nom;
     entree.icone = document.getElementById('lm-perso-icone').value || '';
+    entree.valeur = entree.url;   // adresse email enregistrée en « mailto: »
   }
   reseauxState[cle] = entree;
+  // Ordre déjà choisi : un nouveau logo se place en dernier
+  if(ordreLiens.length && !ordreLiens.includes(cle)) ordreLiens.push(cle);
   fermerModales();
   renderLiensGrid();
   autoSave();
@@ -2923,6 +3008,7 @@ function supprimerLien(){
   if(!cle) return;
   if(!confirm(`Retirer ${defPour(cle).label} de votre page ?`)) return;
   delete reseauxState[cle];
+  ordreLiens = ordreLiens.filter(c => c !== cle);
   fermerModales();
   renderLiensGrid();
   autoSave();
@@ -4198,6 +4284,162 @@ function majDeuxEmails(){
 }
 window.majDeuxEmails = majDeuxEmails;
 
+// ═══════════════════════════════════════════
+//  ORDRE DES LOGOS — « Modifier l'ordre » puis glisser-déposer
+//  (souris, doigt, ou flèches du clavier sur un logo sélectionné)
+// ═══════════════════════════════════════════
+let modeOrdre = false;
+let glisse = null;
+
+function ordreDOM(){
+  return [...document.querySelectorAll('#liens-grid .lien-tile[data-cle]')].map(t => t.dataset.cle);
+}
+
+function majRangs(){
+  document.querySelectorAll('#liens-grid .lien-tile[data-cle] .lien-rang')
+    .forEach((r, i) => { r.textContent = i + 1; });
+}
+
+function majModeOrdre(){
+  const grille = document.getElementById('liens-grid');
+  if(!grille) return;
+  const tuiles = [...grille.querySelectorAll('.lien-tile[data-cle]')];
+  if(tuiles.length < 2) modeOrdre = false;
+
+  const btn = document.getElementById('liens-ordre-btn');
+  if(btn){
+    btn.hidden = tuiles.length < 2;
+    btn.setAttribute('aria-pressed', modeOrdre ? 'true' : 'false');
+    btn.querySelector('span').textContent = modeOrdre ? 'Terminé' : "Modifier l'ordre";
+    btn.querySelector('use').setAttribute('href', modeOrdre ? '#i-check' : '#i-move');
+  }
+  grille.classList.toggle('mode-ordre', modeOrdre);
+  const aide = document.getElementById('liens-hint');
+  const aideOrdre = document.getElementById('liens-hint-ordre');
+  if(aide) aide.hidden = modeOrdre;
+  if(aideOrdre) aideOrdre.hidden = !modeOrdre;
+
+  tuiles.forEach((t, i) => {
+    if(modeOrdre){
+      t.tabIndex = 0;
+      t.setAttribute('aria-label', `${t.querySelector('.lien-nom')?.textContent || ''}, position ${i + 1} sur ${tuiles.length}. Flèches pour déplacer.`);
+    } else {
+      t.removeAttribute('tabindex');
+      t.removeAttribute('aria-label');
+    }
+  });
+}
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#liens-ordre-btn')) return;
+  modeOrdre = !modeOrdre;
+  majModeOrdre();
+});
+
+// ── Glisser-déposer ──
+// Les positions sont lues sur la mise en page (offsetLeft/Top), pas sur
+// l'écran : les logos en train de glisser ne faussent pas la détection.
+document.addEventListener('pointerdown', function(e){
+  if(!modeOrdre || e.button > 0) return;
+  const t = e.target.closest('#liens-grid .lien-tile[data-cle]');
+  if(!t) return;
+  e.preventDefault();
+  const grille = t.parentNode;
+  const gr = grille.getBoundingClientRect();
+  try { t.setPointerCapture(e.pointerId); } catch(_){}
+  glisse = {
+    t, grille, id: e.pointerId, x0: e.clientX, y0: e.clientY,
+    ox: e.clientX - gr.left - t.offsetLeft,
+    oy: e.clientY - gr.top - t.offsetTop,
+    actif: false, avant: ordreDOM(),
+  };
+});
+
+document.addEventListener('pointermove', function(e){
+  const g = glisse;
+  if(!g || e.pointerId !== g.id) return;
+  if(!g.actif){
+    if(Math.hypot(e.clientX - g.x0, e.clientY - g.y0) < 5) return;
+    g.actif = true;
+    g.t.classList.add('glisse');
+    g.grille.classList.add('en-glisse');
+  }
+  e.preventDefault();
+  const gr = g.grille.getBoundingClientRect();
+  const px = e.clientX - gr.left, py = e.clientY - gr.top;
+  const tuiles = [...g.grille.querySelectorAll('.lien-tile[data-cle]')];
+  const cible = tuiles.find(o => o !== g.t
+    && px >= o.offsetLeft && px < o.offsetLeft + o.offsetWidth
+    && py >= o.offsetTop && py < o.offsetTop + o.offsetHeight);
+
+  if(cible){
+    const avant = new Map(tuiles.map(o => [o, [o.offsetLeft, o.offsetTop]]));
+    if(tuiles.indexOf(cible) > tuiles.indexOf(g.t)) cible.after(g.t);
+    else cible.before(g.t);
+    try { g.t.setPointerCapture(g.id); } catch(_){}
+    // Les autres logos glissent jusqu'à leur nouvelle place
+    tuiles.forEach(o => {
+      if(o === g.t || !o.animate) return;
+      const [x, y] = avant.get(o);
+      const dx = x - o.offsetLeft, dy = y - o.offsetTop;
+      if(dx || dy) o.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }],
+                             { duration: 180, easing: 'ease-out' });
+    });
+    majRangs();
+  }
+  // Le logo saisi reste sous le doigt
+  g.t.style.transform = `translate(${px - g.ox - g.t.offsetLeft}px,${py - g.oy - g.t.offsetTop}px)`;
+});
+
+function finGlisse(e){
+  const g = glisse;
+  if(!g || e.pointerId !== g.id) return;
+  glisse = null;
+  g.t.classList.remove('glisse');
+  g.grille.classList.remove('en-glisse');
+  if(!g.actif) return;
+  const depart = g.t.style.transform;
+  g.t.style.transform = '';
+  if(depart && g.t.animate){
+    g.t.animate([{ transform: depart }, { transform: 'none' }], { duration: 160, easing: 'ease-out' });
+  }
+  const apres = ordreDOM();
+  if(apres.join('|') !== g.avant.join('|')){
+    ordreLiens = apres;
+    autoSave();
+  }
+  majModeOrdre();
+}
+document.addEventListener('pointerup', finGlisse);
+document.addEventListener('pointercancel', finGlisse);
+document.addEventListener('dragstart', function(e){
+  if(modeOrdre && e.target.closest && e.target.closest('#liens-grid')) e.preventDefault();
+});
+
+// ── Clavier : flèches sur un logo sélectionné, Échap pour terminer ──
+document.addEventListener('keydown', function(e){
+  if(!modeOrdre) return;
+  if(e.key === 'Escape' && !document.body.classList.contains('lm-open')){
+    modeOrdre = false;
+    majModeOrdre();
+    return;
+  }
+  const t = e.target.closest && e.target.closest('#liens-grid .lien-tile[data-cle]');
+  if(!t) return;
+  const sens = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key];
+  if(!sens) return;
+  e.preventDefault();
+  const ordre = ordreDOM();
+  const i = ordre.indexOf(t.dataset.cle), j = i + sens;
+  if(j < 0 || j >= ordre.length) return;
+  [ordre[i], ordre[j]] = [ordre[j], ordre[i]];
+  ordreLiens = ordre;
+  renderLiensGrid();
+  const meme = [...document.querySelectorAll('#liens-grid .lien-tile[data-cle]')].find(x => x.dataset.cle === t.dataset.cle);
+  if(meme) meme.focus();
+  autoSave();
+});
+
 // Global window exports
 window.doLogin=doLogin;window.doLogout=doLogout;window.showTab=showTab;
 // Keep these for inline handlers in dynamically generated HTML
@@ -4419,7 +4661,7 @@ const SAV_FAQ = [
   },
   {
     q: "Comment ajouter mes réseaux sociaux (Instagram, Doctolib…) ?",
-    r: "Dans « Liens », touchez + pour ajouter un réseau et collez l'adresse de votre profil. Ils apparaîtront sur votre page publique sous forme d'icônes."
+    r: "Dans « Liens », touchez + pour ajouter un réseau et collez l'adresse de votre profil. Ils apparaîtront sur votre page publique sous forme d'icônes. Pour changer leur ordre, touchez « Modifier l'ordre » puis faites glisser les logos."
   },
   {
     q: "Comment mettre en avant mon lien Google Avis ?",
