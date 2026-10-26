@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilan de prévention</title>
+<meta name="description" content="Préparez votre bilan de prévention en quelques minutes : vos réponses sont transmises à votre pharmacie, qui vous recontacte pour fixer le rendez-vous.">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bleu:#0012ff; --bleu-050:#eef1ff; --nuit:#000046; --texte:#111; --doux:#5f6474; --trait:#e3e6ee; --fond:#d2d2d2; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Montserrat', sans-serif; background:var(--fond); color:var(--texte); min-height:100vh;
+    -webkit-font-smoothing:antialiased; }
+  button, input, textarea { font-family:'Montserrat', sans-serif; }
+  .wrap { max-width:480px; margin:0 auto; padding:18px 16px 36px; display:flex; flex-direction:column; align-items:stretch; }
+
+  /* En-tête : la pharmacie */
+  .retour { align-self:flex-start; font-size:13px; font-weight:700; color:var(--nuit); text-decoration:none; padding:6px 2px; margin-bottom:8px; }
+  .retour:hover { text-decoration:underline; }
+  .tete { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .logo { width:64px; height:64px; border-radius:50%; background:#fff; border:3px solid #1cb5e0; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:var(--bleu); }
+  .logo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .sur { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--bleu); }
+  h1 { font-size:20px; font-weight:800; color:var(--texte); line-height:1.25; margin-top:2px; }
+
+  /* Carte */
+  .carte { background:#fff; border-radius:20px; padding:22px 20px 20px; box-shadow:0 6px 24px rgba(0,0,0,.06); }
+  .progression { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; color:var(--doux); margin-bottom:8px; }
+  .barre { height:6px; border-radius:6px; background:#eef0f6; overflow:hidden; margin-bottom:20px; }
+  .barre div { height:100%; background:var(--bleu); border-radius:6px; transition:width .35s ease; }
+  h2 { font-size:19px; font-weight:800; color:var(--texte); line-height:1.3; margin-bottom:6px; }
+  .intro { font-size:13.5px; color:var(--doux); line-height:1.6; margin-bottom:18px; }
+  .note { font-size:12.5px; line-height:1.55; color:#1e3a8a; background:var(--bleu-050); border-radius:12px; padding:11px 13px; margin:4px 0 18px; }
+
+  .question { margin-bottom:22px; }
+  .question-l { font-size:14.5px; font-weight:700; color:var(--texte); line-height:1.45; margin-bottom:4px; }
+  .question-aide { font-size:12px; color:var(--doux); line-height:1.5; margin-bottom:8px; }
+  .question-multi { font-size:11.5px; font-weight:600; color:var(--doux); margin-bottom:8px; }
+  .options { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .opt { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:12px 14px; border-radius:12px;
+    border:1.5px solid var(--trait); background:#f7f8fb; color:var(--texte); font-size:14px; font-weight:600; line-height:1.35;
+    cursor:pointer; transition:border-color .15s, background .15s, color .15s; }
+  .opt:hover { border-color:#b8c0ff; }
+  .opt .marque { width:20px; height:20px; border-radius:50%; border:2px solid #c3c8d6; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; }
+  .opt.multi .marque { border-radius:6px; }
+  .opt[aria-pressed="true"] { border-color:var(--bleu); background:var(--bleu-050); color:var(--bleu); }
+  .opt[aria-pressed="true"] .marque { border-color:var(--bleu); background:var(--bleu); }
+  .opt[aria-pressed="true"] .marque::after { content:''; width:9px; height:5px; border-left:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(-45deg) translate(1px,-1px); }
+  .options.grille { display:grid; grid-template-columns:1fr 1fr; }
+
+  label.champ-l { display:block; font-size:13px; font-weight:600; color:var(--texte); margin:0 0 7px; }
+  .champ { width:100%; padding:12px 13px; border-radius:12px; border:1.5px solid #d0d0d0; background:#f7f7f7; color:var(--texte);
+    font-size:14px; margin-bottom:14px; outline:none; transition:border-color .2s; }
+  .champ:focus { border-color:var(--bleu); background:#fff; }
+  textarea.champ { resize:vertical; min-height:84px; line-height:1.5; }
+  .champ.erreur { border-color:#d93025; }
+  .compteur { font-size:11px; color:var(--doux); text-align:right; margin:-10px 0 14px; }
+
+  .case { display:flex; gap:11px; align-items:flex-start; font-size:13.5px; line-height:1.5; color:var(--texte); cursor:pointer;
+    padding:13px 14px; border-radius:12px; background:#f7f8fb; border:1.5px solid var(--trait); margin-bottom:12px; }
+  .case input { width:19px; height:19px; margin-top:1px; accent-color:var(--bleu); flex-shrink:0; cursor:pointer; }
+  .case a { color:var(--bleu); font-weight:600; }
+
+  .points { list-style:none; margin:2px 0 18px; display:flex; flex-direction:column; gap:9px; }
+  .points li { display:flex; gap:10px; font-size:13.5px; line-height:1.5; color:var(--texte); }
+  .points li::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--bleu); margin-top:7px; flex-shrink:0; }
+
+  .erreur-msg { display:none; font-size:12.5px; font-weight:600; color:#b3261e; background:#fdeceb; border-radius:10px; padding:10px 12px; margin:4px 0 14px; line-height:1.5; }
+  .erreur-msg.show { display:block; }
+
+  .actions { display:flex; align-items:center; gap:12px; margin-top:8px; }
+  .btn { flex:1; height:52px; border-radius:30em; border:none; background:var(--bleu); color:#fff; font-size:15px; font-weight:800;
+    cursor:pointer; box-shadow:0 4px 16px rgba(0,18,255,.25); transition:opacity .2s, transform .2s; }
+  .btn:hover { transform:translateY(-1px); }
+  .btn:disabled { opacity:.55; cursor:wait; transform:none; }
+  .btn-sec { background:none; border:none; color:var(--nuit); font-size:14px; font-weight:700; padding:12px 8px; cursor:pointer; }
+  .btn-sec:hover { text-decoration:underline; }
+
+  /* Récapitulatif */
+  .recap { border:1.5px solid var(--trait); border-radius:14px; padding:13px 14px; margin-bottom:12px; }
+  .recap-tete { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .recap-t { font-size:13.5px; font-weight:800; color:var(--texte); }
+  .recap-mod { background:none; border:none; color:var(--bleu); font-size:12.5px; font-weight:700; cursor:pointer; padding:2px; }
+  .recap-l { font-size:12.5px; line-height:1.5; color:var(--doux); margin-top:5px; }
+  .recap-l b { color:var(--texte); font-weight:600; }
+  .recap-vide { font-size:12.5px; color:#9aa0ad; font-style:italic; }
+
+  /* Écrans d'état */
+  .etat { text-align:center; padding:10px 4px 6px; }
+  .etat-ico { width:64px; height:64px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:#e7f6ec; }
+  .etat-ico svg { width:32px; height:32px; }
+  .etat p { font-size:14px; color:var(--doux); line-height:1.6; margin-top:8px; }
+  .etat .btn { display:block; width:100%; margin-top:20px; text-decoration:none; line-height:52px; }
+  .chargement { text-align:center; color:var(--doux); font-size:14px; padding:40px 0; }
+
+  .pot { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .credit { margin:26px auto 0; font-size:11px; font-weight:500; letter-spacing:.02em; color:rgba(0,0,0,.38); text-decoration:none; }
+  .credit:hover { color:rgba(0,0,0,.6); }
+  @media (max-width:360px) { .options.grille { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="retour" id="retour" href="/">← Retour à la pharmacie</a>
+  <header class="tete">
+    <div class="logo" id="logo">+</div>
+    <div>
+      <div class="sur">Bilan de prévention</div>
+      <h1 id="nom-pharmacie">Votre pharmacie</h1>
+    </div>
+  </header>
+  <section class="carte" id="carte" aria-live="polite">
+    <div class="chargement">Chargement du questionnaire…</div>
+  </section>
+  <a class="credit" href="https://swiftup.fr" target="_blank" rel="noopener">Développé par swiftup.fr</a>
+</main>
+
+<script>
+(function () {
+  // ── Pharmacie : swiftypharm.fr/<slug>/bilan (ou bilan.html?slug=…) ──
+  const params = new URLSearchParams(location.search);
+  const segments = location.pathname.split('/').filter(Boolean);
+  const SLUG = (params.get('slug') || (segments.length >= 2 ? segments[0] : '')).toLowerCase();
+
+  const carte = document.getElementById('carte');
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const TEL_VALIDE = /^\+?[0-9 .()-]{9,20}$/;
+  const EMAIL_VALIDE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Aucune réponse n'est enregistrée dans le navigateur : tout reste en mémoire
+  // le temps du questionnaire, puis part par email à la pharmacie.
+  const etat = { etape: 0, reponses: {}, jours: [], moments: [], nom: '', telephone: '', email: '', copie: false, consentement: false };
+  let def = null, pharmacie = null, envoiEnCours = false;
+
+  // Étapes : accueil, rubriques du questionnaire, coordonnées, récapitulatif
+  const etapes = () => ['accueil'].concat(def.questionnaire.map((_, i) => i), ['coordonnees', 'recap']);
+  const questionsVisibles = (rubrique) => rubrique.questions.filter(q => !q.si || q.si.includes(etat.reponses.age));
+
+  function afficherErreur(msg) {
+    const el = document.getElementById('erreur');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.classList.toggle('show', !!msg);
+    if (msg) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function progression() {
+    const total = etapes().length - 1;            // l'accueil ne compte pas
+    const n = etat.etape;
+    return `<div class="progression"><span>Étape ${n} sur ${total}</span><span>${Math.round(n / total * 100)} %</span></div>
+            <div class="barre"><div style="width:${Math.round(n / total * 100)}%"></div></div>`;
+  }
+
+  function optionHtml(q, opt) {
+    const v = etat.reponses[q.id];
+    const actif = q.type === 'multi' ? Array.isArray(v) && v.includes(opt) : v === opt;
+    return `<button type="button" class="opt${q.type === 'multi' ? ' multi' : ''}" data-q="${esc(q.id)}" data-v="${esc(opt)}" aria-pressed="${actif}">
+              <span class="marque" aria-hidden="true"></span><span>${esc(opt)}</span></button>`;
+  }
+
+  function questionHtml(q) {
+    if (q.type === 'texte') {
+      const v = etat.reponses[q.id] || '';
+      return `<div class="question"><label class="champ-l" for="q-${esc(q.id)}">${esc(q.label)}</label>
+        <textarea class="champ" id="q-${esc(q.id)}" data-texte="${esc(q.id)}" maxlength="${q.max || 300}" rows="3">${esc(v)}</textarea>
+        <div class="compteur"><span id="n-${esc(q.id)}">${v.length}</span> / ${q.max || 300}</div></div>`;
+    }
+    return `<div class="question" role="group" aria-label="${esc(q.label)}">
+      <div class="question-l">${esc(q.label)}${q.obligatoire ? ' *' : ''}</div>
+      ${q.aide ? `<div class="question-aide">${esc(q.aide)}</div>` : ''}
+      ${q.type === 'multi' ? '<div class="question-multi">Plusieurs réponses possibles</div>' : ''}
+      <div class="options">${q.options.map(o => optionHtml(q, o)).join('')}</div></div>`;
+  }
+
+  function boutons(libelle) {
+    return `<div class="erreur-msg" id="erreur" role="alert"></div>
+      <div class="actions">
+        ${etat.etape > 0 ? '<button type="button" class="btn-sec" data-action="precedent">Précédent</button>' : ''}
+        <button type="button" class="btn" data-action="suivant">${libelle}</button>
+      </div>`;
+  }
+
+  // ── Rendu d'une étape ──
+  function rendre() {
+    const id = etapes()[etat.etape];
+    let html = '';
+
+    if (id === 'accueil') {
+      html = `<h2>Préparez votre bilan de prévention</h2>
+        <p class="intro">Répondez à quelques questions sur vos habitudes et votre santé. Comptez moins de 5 minutes.</p>
+        <ul class="points">
+          <li>Vos réponses sont envoyées à ${esc(pharmacie.nom || 'votre pharmacie')}, qui vous recontacte pour fixer le rendez-vous.</li>
+          <li>Le bilan est pris en charge à 100 % par l’Assurance Maladie, sans avance de frais. Il concerne les 18-25, 45-50, 60-65 et 70-75 ans.</li>
+          <li>Vous pouvez passer une question : seule votre tranche d’âge est demandée.</li>
+        </ul>
+        <label class="case"><input type="checkbox" id="consentement" ${etat.consentement ? 'checked' : ''}>
+          <span>J’accepte que mes réponses soient transmises par email à ${esc(pharmacie.nom || 'ma pharmacie')} pour préparer mon bilan. Elles ne sont pas conservées par SwiftyPharm. <a href="/privacy.html" target="_blank" rel="noopener">Confidentialité</a></span></label>
+        ${boutons('Commencer')}`;
+    } else if (typeof id === 'number') {
+      const r = def.questionnaire[id];
+      html = progression() + `<h2>${esc(r.titre)}</h2>
+        ${r.intro ? `<p class="intro">${esc(r.intro)}</p>` : ''}
+        ${r.note ? `<p class="note">${esc(r.note)}</p>` : ''}
+        ${questionsVisibles(r).map(questionHtml).join('')}
+        ${boutons('Continuer')}`;
+    } else if (id === 'coordonnees') {
+      html = progression() + `<h2>Vos coordonnées</h2>
+        <p class="intro">Pour que la pharmacie puisse vous rappeler et fixer votre rendez-vous.</p>
+        <label class="champ-l" for="c-nom">Nom et prénom *</label>
+        <input class="champ" id="c-nom" type="text" autocomplete="name" placeholder="Ex : DUPONT Jean" maxlength="120" value="${esc(etat.nom)}">
+        <label class="champ-l" for="c-tel">Téléphone *</label>
+        <input class="champ" id="c-tel" type="tel" autocomplete="tel" placeholder="06 12 34 56 78" maxlength="30" value="${esc(etat.telephone)}">
+        <label class="champ-l" for="c-email">Email (facultatif)</label>
+        <input class="champ" id="c-email" type="email" autocomplete="email" placeholder="vous@exemple.fr" maxlength="160" value="${esc(etat.email)}">
+        <label class="case"><input type="checkbox" id="c-copie" ${etat.copie ? 'checked' : ''}><span>Recevoir une copie de mes réponses par email</span></label>
+        <div class="question"><div class="question-l">Vos disponibilités</div><div class="question-multi">Plusieurs réponses possibles</div>
+          <div class="options grille">${def.jours.map(j => optionHtml({ id: '__jours', type: 'multi' }, j)).join('')}</div>
+          <div class="options grille" style="margin-top:8px">${def.moments.map(m => optionHtml({ id: '__moments', type: 'multi' }, m)).join('')}</div></div>
+        <div class="pot" aria-hidden="true"><input type="text" id="site_web" tabindex="-1" autocomplete="off"></div>
+        ${boutons('Continuer')}`;
+    } else {
+      html = progression() + `<h2>Vérifiez vos réponses</h2>
+        <p class="intro">Vous pouvez modifier chaque rubrique avant l’envoi.</p>
+        ${def.questionnaire.map((r, i) => {
+          const lignes = questionsVisibles(r).filter(q => etat.reponses[q.id] != null && etat.reponses[q.id] !== '' && !(Array.isArray(etat.reponses[q.id]) && !etat.reponses[q.id].length))
+            .map(q => `<div class="recap-l">${esc(q.label)} : <b>${esc([].concat(etat.reponses[q.id]).join(', '))}</b></div>`).join('');
+          return `<div class="recap"><div class="recap-tete"><span class="recap-t">${esc(r.titre)}</span>
+            <button type="button" class="recap-mod" data-aller="${i + 1}">Modifier</button></div>${lignes || '<div class="recap-vide">Aucune réponse</div>'}</div>`;
+        }).join('')}
+        <div class="recap"><div class="recap-tete"><span class="recap-t">Coordonnées</span>
+          <button type="button" class="recap-mod" data-aller="${etapes().indexOf('coordonnees')}">Modifier</button></div>
+          <div class="recap-l">${esc(etat.nom)} · <b>${esc(etat.telephone)}</b>${etat.email ? ' · ' + esc(etat.email) : ''}</div>
+          <div class="recap-l">Disponibilités : <b>${esc(etat.jours.concat(etat.moments).join(', ') || 'non précisées')}</b></div></div>
+        ${boutons('Envoyer à la pharmacie')}`;
+    }
+    carte.innerHTML = html;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Lecture des champs de l'étape avant de la quitter ──
+  function lireChamps() {
+    const id = etapes()[etat.etape];
+    if (id === 'accueil') etat.consentement = !!document.getElementById('consentement')?.checked;
+    if (id === 'coordonnees') {
+      etat.nom = document.getElementById('c-nom').value.trim();
+      etat.telephone = document.getElementById('c-tel').value.trim();
+      etat.email = document.getElementById('c-email').value.trim();
+      etat.copie = document.getElementById('c-copie').checked;
+    }
+    document.querySelectorAll('[data-texte]').forEach(t => { etat.reponses[t.dataset.texte] = t.value.trim(); });
+  }
+
+  function etapeValide() {
+    const id = etapes()[etat.etape];
+    if (id === 'accueil' && !etat.consentement) return 'Cochez la case pour accepter la transmission de vos réponses à la pharmacie.';
+    if (id === 0 && !etat.reponses.age) return 'Indiquez votre tranche d’âge pour continuer.';
+    if (id === 'coordonnees') {
+      document.getElementById('c-nom').classList.toggle('erreur', !etat.nom);
+      document.getElementById('c-tel').classList.toggle('erreur', !TEL_VALIDE.test(etat.telephone));
+      if (!etat.nom) return 'Indiquez votre nom et votre prénom.';
+      if (!TEL_VALIDE.test(etat.telephone)) return 'Indiquez un numéro de téléphone valide.';
+      if (etat.email && !EMAIL_VALIDE.test(etat.email)) return 'Cette adresse email ne semble pas valide.';
+      if (etat.copie && !etat.email) return 'Indiquez votre email pour recevoir une copie de vos réponses.';
+    }
+    return '';
+  }
+
+  // ── Interactions ──
+  carte.addEventListener('click', function (e) {
+    const opt = e.target.closest('.opt');
+    if (opt) {
+      const qid = opt.dataset.q, v = opt.dataset.v;
+      if (qid === '__jours' || qid === '__moments') {
+        const liste = qid === '__jours' ? etat.jours : etat.moments;
+        const i = liste.indexOf(v); i >= 0 ? liste.splice(i, 1) : liste.push(v);
+        opt.setAttribute('aria-pressed', i < 0);
+        return;
+      }
+      const q = def.questionnaire.flatMap(r => r.questions).find(x => x.id === qid);
+      if (!q) return;
+      if (q.type === 'choix') {
+        etat.reponses[qid] = etat.reponses[qid] === v && !q.obligatoire ? undefined : v;
+      } else {
+        let liste = Array.isArray(etat.reponses[qid]) ? etat.reponses[qid].slice() : [];
+        const seul = q.seul || [];
+        if (liste.includes(v)) liste = liste.filter(x => x !== v);
+        else liste = seul.includes(v) ? [v] : liste.filter(x => !seul.includes(x)).concat(v);
+        etat.reponses[qid] = liste;
+      }
+      opt.closest('.options').querySelectorAll('.opt').forEach(b => {
+        const val = etat.reponses[qid];
+        b.setAttribute('aria-pressed', Array.isArray(val) ? val.includes(b.dataset.v) : val === b.dataset.v);
+      });
+      afficherErreur('');
+      return;
+    }
+    const aller = e.target.closest('[data-aller]');
+    if (aller) { etat.etape = parseInt(aller.dataset.aller, 10); etat.retourRecap = true; rendre(); return; }
+
+    const action = e.target.closest('[data-action]');
+    if (!action) return;
+    lireChamps();
+    if (action.dataset.action === 'precedent') { etat.etape = Math.max(0, etat.etape - 1); rendre(); return; }
+    const erreur = etapeValide();
+    if (erreur) { afficherErreur(erreur); return; }
+    if (etapes()[etat.etape] === 'recap') { envoyer(action); return; }
+    // Après une modification depuis le récapitulatif, on y revient directement
+    etat.etape = etat.retourRecap ? etapes().indexOf('recap') : etat.etape + 1;
+    etat.retourRecap = false;
+    rendre();
+  });
+  carte.addEventListener('input', function (e) {
+    const t = e.target.closest('[data-texte]');
+    if (t) { const n = document.getElementById('n-' + t.dataset.texte); if (n) n.textContent = t.value.length; }
+  });
+
+  // ── Envoi ──
+  async function envoyer(bouton) {
+    if (envoiEnCours) return;
+    envoiEnCours = true;
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    const reponses = {};
+    Object.keys(etat.reponses).forEach(k => {
+      const v = etat.reponses[k];
+      if (v != null && v !== '' && !(Array.isArray(v) && !v.length)) reponses[k] = v;
+    });
+    try {
+      const res = await fetch('/api/bilan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: SLUG, consentement: true, reponses,
+          nom: etat.nom, telephone: etat.telephone, email: etat.email, copie: etat.copie,
+          jours: etat.jours, moments: etat.moments,
+          site_web: document.getElementById('site_web')?.value || '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || 'L’envoi a échoué. Réessayez dans un instant.');
+      etat.reponses = {};   // plus rien en mémoire une fois transmis
+      carte.innerHTML = `<div class="etat">
+          <div class="etat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></div>
+          <h2>Questionnaire envoyé !</h2>
+          <p>${esc(pharmacie.nom || 'Votre pharmacie')} a bien reçu vos réponses et vous recontactera au <strong>${esc(etat.telephone)}</strong> pour fixer votre rendez-vous.</p>
+          ${data.copie ? '<p>Une copie vous a été envoyée par email.</p>' : ''}
+          <p>Le jour du bilan, pensez à votre carte Vitale.</p>
+          <a class="btn" href="/${encodeURIComponent(SLUG)}">Retour à la page de la pharmacie</a></div>`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      envoiEnCours = false;
+      bouton.disabled = false;
+      bouton.textContent = 'Envoyer à la pharmacie';
+      afficherErreur(e.message);
+    }
+  }
+
+  // ── Chargement : pharmacie + questionnaire ──
+  function erreurChargement(msg) {
+    carte.innerHTML = `<div class="etat"><h2>Questionnaire indisponible</h2><p>${esc(msg)}</p></div>`;
+  }
+  if (!SLUG) { erreurChargement('Adresse incomplète : ouvrez ce questionnaire depuis la page de votre pharmacie.'); return; }
+  document.getElementById('retour').href = '/' + encodeURIComponent(SLUG);
+
+  fetch('/api/bilan?slug=' + encodeURIComponent(SLUG))
+    .then(r => r.json().catch(() => ({})).then(d => ({ ok: r.ok, d })))
+    .then(({ ok, d }) => {
+      if (!ok || !d.ok) throw new Error(d.error || 'Le questionnaire n\u2019a pas pu être chargé. Réessayez dans un instant.');
+      def = d; pharmacie = d.pharmacie;
+      document.title = 'Bilan de prévention · ' + (pharmacie.nom || 'Pharmacie');
+      document.getElementById('nom-pharmacie').textContent = pharmacie.nom || 'Votre pharmacie';
+      if (pharmacie.couleur_fond) document.documentElement.style.setProperty('--fond', pharmacie.couleur_fond);
+      if (pharmacie.logo_url) {
+        const img = new Image();
+        img.alt = pharmacie.nom || '';
+        img.onload = () => { const l = document.getElementById('logo'); l.textContent = ''; l.appendChild(img); };
+        img.src = pharmacie.logo_url;
+      }
+      rendre();
+    })
+    .catch(e => erreurChargement(e instanceof TypeError ? 'Connexion impossible. Vérifiez votre connexion internet et réessayez.' : (e.message || 'Réessayez dans un instant.')));
+})();
+</script>
+</body>
+</html>
