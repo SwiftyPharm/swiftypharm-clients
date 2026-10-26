@@ -1307,7 +1307,7 @@
       // activée par le pharmacien.
       if (googleAvisUrl && (urlAdmin || (googleObj && googleActif))) {
         container.innerHTML += `
-          <a href="${googleAvisUrl}" target="_blank" class="social-card-item" data-suivi="avis">
+          <a href="${googleAvisUrl}" target="_blank" class="social-card-item" data-suivi="avis" data-cle="google">
             <img src="google-avis-icon.png" alt="Google Avis" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#f1f5f9;color:#0d2f3f;\\'>⭐</div>'">
             <div class="social-card-txt">Notez nous sur <br>Google !</div>
           </a>`;
@@ -1337,7 +1337,7 @@
           instaUrl = instaUrlVal.startsWith('http') ? instaUrlVal : `https://instagram.com/${clean}`;
         }
         container.innerHTML += `
-          <a href="${instaUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
+          <a href="${instaUrl}" target="_blank" class="social-card-item" data-suivi="reseau" data-cle="instagram">
             <img src="instagram-icon.png" alt="Instagram" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);\\'>📸</div>'">
             <div class="social-card-txt">Suivez nous sur<br>Instagram !</div>
           </a>`;
@@ -1351,7 +1351,7 @@
       if (fbObj && fbActif && fbUrlVal) {
         let fbUrl = fbUrlVal.startsWith('http') ? fbUrlVal : `https://facebook.com/${fbUrlVal}`;
         container.innerHTML += `
-          <a href="${fbUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
+          <a href="${fbUrl}" target="_blank" class="social-card-item" data-suivi="reseau" data-cle="facebook">
             <img src="facebook-icon.png" alt="Facebook" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#1877f2;\\'>📘</div>'">
             <div class="social-card-txt">Retrouvez nous<br>sur Facebook !</div>
           </a>`;
@@ -1365,7 +1365,7 @@
       if (webObj && webActif && webUrlVal) {
         let webUrl = webUrlVal.startsWith('http') ? webUrlVal : `https://${webUrlVal}`;
         container.innerHTML += `
-          <a href="${webUrl}" target="_blank" class="social-card-item">
+          <a href="${webUrl}" target="_blank" class="social-card-item" data-cle="website">
             <img src="website-icon.png" alt="Site Web" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0012ff;\\'>🌐</div>'">
             <div class="social-card-txt">Visitez notre<br>Site Web !</div>
           </a>`;
@@ -1379,7 +1379,7 @@
       if (doctoObj && doctoActif && doctoUrlVal && doctoUrlVal.trim() !== '') {
         let doctoUrl = doctoUrlVal.startsWith('http') ? doctoUrlVal : `https://${doctoUrlVal}`;
         container.innerHTML += `
-          <a href="${doctoUrl}" target="_blank" class="social-card-item">
+          <a href="${doctoUrl}" target="_blank" class="social-card-item" data-cle="doctolib">
             <img src="/assets/doctolib-icon.png" alt="Doctolib" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#107acc;color:#fff;\\'>📅</div>'">
             <div class="social-card-txt">Prenez RDV<br>sur Doctolib !</div>
           </a>`;
@@ -1398,6 +1398,7 @@
         aPrev.href = prevUrl;
         if (!prevInterne) { aPrev.target = '_blank'; aPrev.rel = 'noopener'; }
         aPrev.className = 'social-card-item';
+        aPrev.dataset.cle = 'prevention';
         aPrev.innerHTML = `
             <img src="/assets/bilan-prevention-icon.png" alt="Bilan de prévention" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#0f9b8e;color:#fff;\\'>&#10010;</div>'">
             <div class="social-card-txt">Réservez votre<br>bilan prévention !</div>`;
@@ -1413,7 +1414,7 @@
         const cleanTk = tiktokUrlVal.replace(/.*tiktok\.com\//, '').replace(/\//g, '').replace('@', '');
         let tiktokUrl = tiktokUrlVal.startsWith('http') ? tiktokUrlVal : `https://tiktok.com/@${cleanTk}`;
         container.innerHTML += `
-          <a href="${tiktokUrl}" target="_blank" class="social-card-item" data-suivi="reseau">
+          <a href="${tiktokUrl}" target="_blank" class="social-card-item" data-suivi="reseau" data-cle="tiktok">
             <img src="/assets/tiktok-icon.png" alt="TikTok" class="social-card-img" onerror="this.outerHTML='<div class=\\'social-card-fallback\\' style=\\'background:#000;color:#fff;\\'>🎵</div>'">
             <div class="social-card-txt">Suivez nous sur<br>TikTok !</div>
           </a>`;
@@ -1428,14 +1429,23 @@
           const actif = o.actif ?? o.active;
           const url   = String(o.url || o.valeur || '').trim();
           if (!actif || !url) return;
-          // Seuls les liens web sont acceptés (pas de « javascript: »)
-          const lien = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^[a-z]+:/i, '');
+          // Liens web ou adresse email (mailto:) ; jamais « javascript: »
+          const MAIL = /^[^\s@\/:?]+@[^\s@\/:?]+\.[a-z]{2,}$/i;
+          const adresse = url.replace(/^mailto:/i, '').trim();
+          const mail = /^mailto:/i.test(url) || MAIL.test(url);
+          if (mail && !MAIL.test(adresse.split('?')[0])) return;
+          const lien = mail ? 'mailto:' + adresse
+            : /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^[a-z]+:/i, '');
+          const symbole = mail ? '&#9993;&#65039;' : '&#128279;';
 
           const a = document.createElement('a');
           a.href = lien;
-          a.target = '_blank';
-          a.rel = 'noopener';
+          if (!mail) {           // un email ouvre la messagerie, pas un onglet
+            a.target = '_blank';
+            a.rel = 'noopener';
+          }
           a.className = 'social-card-item';
+          a.dataset.cle = cle;
 
           const icone = String(o.icone || '').trim();
           if (icone) {
@@ -1447,7 +1457,7 @@
               const f = document.createElement('div');
               f.className = 'social-card-fallback';
               f.style.cssText = 'background:#0f172a;color:#fff;';
-              f.innerHTML = '&#128279;';
+              f.innerHTML = symbole;
               img.replaceWith(f);
             };
             a.appendChild(img);
@@ -1455,7 +1465,7 @@
             const f = document.createElement('div');
             f.className = 'social-card-fallback';
             f.style.cssText = 'background:#0f172a;color:#fff;';
-            f.innerHTML = '&#128279;';
+            f.innerHTML = symbole;
             a.appendChild(f);
           }
           const txt = document.createElement('div');
@@ -1464,6 +1474,21 @@
           a.appendChild(txt);
           container.appendChild(a);
         });
+
+      // ── ORDRE CHOISI DANS LE BACK OFFICE ──
+      // Les cartes classées prennent les places des cartes classées, dans
+      // l'ordre choisi ; une carte absente du classement garde sa place.
+      const ordre = Array.isArray(soc._ordre) ? soc._ordre.map(String) : [];
+      if (ordre.length) {
+        const cartes = Array.from(container.children);
+        const classees = cartes
+          .filter(function(c){ return ordre.indexOf(c.dataset.cle) >= 0; })
+          .sort(function(a, b){ return ordre.indexOf(a.dataset.cle) - ordre.indexOf(b.dataset.cle); });
+        let k = 0;
+        cartes
+          .map(function(c){ return ordre.indexOf(c.dataset.cle) >= 0 ? classees[k++] : c; })
+          .forEach(function(c){ container.appendChild(c); });
+      }
 
     } catch (err) {
       console.error("Erreur lors de la synchronisation Supabase du profil :", err);
