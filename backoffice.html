@@ -1045,8 +1045,8 @@ input[type=date]{width:auto;border:1.5px solid var(--line);outline:none;backgrou
 .apercu-carte h2{font-size:15px;font-weight:800;color:var(--nuit)}
 .apercu-carte p{font-size:12.5px;color:var(--doux);margin-top:3px}
 .tel{width:264px;margin:14px auto 0;border-radius:38px;background:var(--nuit);padding:9px;box-shadow:0 12px 30px rgba(0,0,70,.18)}
-.tel-ecran{position:relative;width:246px;height:500px;border-radius:30px;overflow:hidden;background:#d2d2d2}
-#apercu-frame{position:absolute;left:0;top:0;width:390px;height:793px;border:0;transform:scale(.6308);transform-origin:0 0;background:#d2d2d2}
+.tel-ecran{position:relative;width:246px;height:500px;border-radius:30px;overflow:hidden;background:#e6e6e6}
+#apercu-frame{position:absolute;left:0;top:0;width:390px;height:793px;border:0;transform:scale(.6308);transform-origin:0 0;background:#e6e6e6}
 .apercu-pied{display:flex;justify-content:center;gap:16px;margin-top:12px}
 .apercu-pied button,.apercu-pied a{background:none;border:none;padding:4px;font-size:12.5px;font-weight:700;color:var(--action);
   cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
@@ -1463,8 +1463,8 @@ input.manquant{border-color:#f59e0b !important}
       <div class="card-title">Couleur de fond</div>
       <p class="card-sous">Choisissez la couleur de fond de votre page.</p>
       <div class="fond-choix" id="fond-choix">
-        <button type="button" class="fond-opt" data-fond="#d2d2d2" onclick="choisirFond('#d2d2d2')">
-          <span class="fond-pastille" style="background:#d2d2d2"></span>
+        <button type="button" class="fond-opt" data-fond="#e6e6e6" onclick="choisirFond('#e6e6e6')">
+          <span class="fond-pastille" style="background:#e6e6e6"></span>
           <span class="fond-nom">Gris</span>
         </button>
         <button type="button" class="fond-opt" data-fond="#ffffff" onclick="choisirFond('#ffffff')">
@@ -1764,10 +1764,10 @@ let STORAGE_KEY = 'swiftlink_config';
 // ── Couleur de fond de la page publique ──
 // Trois presets ; le gris est la valeur historique, conservée par défaut
 // pour que les pages existantes gardent exactement leur apparence.
-let fondActuel = '#d2d2d2';
+let fondActuel = '#e6e6e6';
 
 function majFond(couleur){
-  fondActuel = couleur || '#d2d2d2';
+  fondActuel = couleur || '#e6e6e6';
   document.querySelectorAll('#fond-choix .fond-opt').forEach(function(btn){
     btn.classList.toggle('actif', btn.dataset.fond === fondActuel);
   });
@@ -1863,7 +1863,7 @@ async function syncToSupabase(cfg){
       lat:cfg.pharmacy.lat??null,
       lon:cfg.pharmacy.lon??null,
       docteur:cfg.pharmacy.docteur||'',
-      couleur_fond:cfg.pharmacy.couleur_fond||'#d2d2d2',
+      couleur_fond:cfg.pharmacy.couleur_fond||'#e6e6e6',
       banniere_url:cfg.pharmacy.banniere||'',
       horaires:cfg.pharmacy.horairesSemaine||{},
       logo_url: cfg.pharmacy.logo || '',
@@ -1950,7 +1950,7 @@ async function loadFromSupabase(){
 
         cfg.pharmacy.lon          = d.lon ?? null;
         cfg.pharmacy.docteur      = d.docteur || '';
-        cfg.pharmacy.couleur_fond = d.couleur_fond || '#d2d2d2';
+        cfg.pharmacy.couleur_fond = d.couleur_fond || '#e6e6e6';
         cfg.pharmacy.banniere     = d.banniere_url || '';
         if(d.logo_url){ cfg.pharmacy.logo=d.logo_url; cfg.pharmacy.logoData=''; }
         else if(d.logo_base64){ cfg.pharmacy.logoData=d.logo_base64; cfg.pharmacy.logo=''; }
@@ -3200,7 +3200,7 @@ function fillInfo(cfg){
   document.getElementById('ph-titre-2').value=p.email_titre_2||'';
   document.getElementById('ph-adresse').value=p.adresse||'';
   document.getElementById('ph-docteur').value=p.docteur||'';
-  majFond(p.couleur_fond || '#d2d2d2');
+  majFond(p.couleur_fond || '#e6e6e6');
   const _ban = p.banniere || '';
   const _banInput = document.getElementById('ph-banniere');
   if (_banInput) _banInput.value = _ban;
